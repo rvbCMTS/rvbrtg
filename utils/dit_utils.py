@@ -3,9 +3,7 @@ import numpy as np
 from dicom_image_tools.helpers.point import Point
 
 
-def _calculate_image_lims_exclude_cornerbox(
-    image_array,
-):
+def _calculate_image_lims_exclude_cornerbox(image_array):
 
     mins = []
     maxs = []
@@ -15,15 +13,9 @@ def _calculate_image_lims_exclude_cornerbox(
 
     if len(image_array.shape) == 2:
         image_array = image_array.astype("float")
-        image_array[
-            xlims[0] : xlims[1],
-            ylims[0] : ylims[1],
-        ] = np.nan
+        image_array[xlims[0] : xlims[1], ylims[0] : ylims[1]] = np.nan
 
-        return [
-            np.nanmin(image_array),
-            np.nanmax(image_array),
-        ]
+        return [np.nanmin(image_array), np.nanmax(image_array)]
 
     for i in range(image_array.shape[0]):
         sub_array = image_array[i, :, :]
@@ -99,10 +91,7 @@ def _fetch_roi_trace(
         x_trace.append(corner.x)
         y_trace.append(corner.y)
 
-    return (
-        x_trace,
-        y_trace,
-    )
+    return (x_trace, y_trace)
 
 
 def _find_images_lims(
@@ -115,10 +104,7 @@ def _find_images_lims(
         min_vals.append(ImageVolumes[i].min())
         max_vals.append(ImageVolumes[i].max())
 
-    lims = [
-        np.min(min_vals),
-        np.max(max_vals),
-    ]
+    lims = [np.min(min_vals), np.max(max_vals)]
 
     return lims
 
@@ -126,13 +112,4 @@ def _find_images_lims(
 def _get_image_center(
     image: np.ndarray,
 ):
-    return Point(
-        x=np.divide(
-            image.shape[1],
-            2,
-        ),
-        y=np.divide(
-            image.shape[0],
-            2,
-        ),
-    )
+    return Point(x=np.divide(image.shape[1], 2), y=np.divide(image.shape[0], 2))
