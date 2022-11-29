@@ -164,6 +164,6 @@ def load_dicom_magnitude_image(file_path: str, scale: float = 1.0) -> np.array:
 
     """
     tmp = pydicom.read_file(file_path)
-    img = scale * tmp.RescaleSlope * np.array(tmp.pixel_array)
+    img = scale * tmp.RescaleSlope * np.array(tmp.pixel_array) + tmp.RescaleIntercept
 
     return img
