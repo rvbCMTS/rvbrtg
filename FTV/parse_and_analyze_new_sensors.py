@@ -36,19 +36,24 @@ def parse_onepix_data_for_new_clinic(
     for i in range(len(clinics_list)):
         print(i, clinics_list[i].name)
 
-    selected__clinic_index = input("\n")
-    selected_clinic = clinics_list[int(selected__clinic_index)]
+    selected_clinic_index = input("\n")
+    selected_clinic = clinics_list[int(selected_clinic_index)]
+    # select measurement lab from user input
+    labs_list = []
+    for item in selected_clinic.iterdir():
+        labs_list.append(item)
+    
 
-    # fetch lab where measurments where conducted
-    measurement_labs = []
-    for lab in selected_clinic.iterdir():
-        measurement_labs.append(lab.name)
-    print(measurement_labs)
-    if len(measurement_labs) != 1:
-        raise NotImplementedError
+    print("\nselect lab by index:\n")
+    for i in range(len(labs_list)):
+        print(i, labs_list[i].name)
 
+    selected_lab_index = input("\n")
+    selected_lab = labs_list[int(selected_lab_index)]
+    
+    
     # fetch measurement date
-    for tube_id in (selected_clinic / measurement_labs[0]).iterdir():
+    for tube_id in selected_lab.iterdir():
         for sensor_path in (tube_id / "Kalibrering").iterdir():
             if sensor_path.name in "sensorid_mall":
                 continue
@@ -62,7 +67,7 @@ def parse_onepix_data_for_new_clinic(
     print(
         (
             f"\nMeasurement info\nclinic: {selected_clinic.name}\n"
-            f"measured in lab: {measurement_labs[0]}\n"
+            f"measured in lab: {selected_lab.name}\n"
             f"date: {measurement_date}\n"
         )
     )
@@ -97,80 +102,79 @@ def parse_onepix_data_for_new_clinic(
 
     # folder_clinic_parsed = f"\n{path_clinics_parsed}/{path_clinics_raw.name}_parsed"
     print(f"parsing clinic: {selected_clinic.name}")
+    print(f"parsing lab: {selected_lab.name}")
     print(f"appending dose measurements from {dose_measurements[dose_index].name}\n")
-    for lab in selected_clinic.iterdir():
-        print(f"parsing measurement from lab: {lab.name}")
-        for x_ray_tube in lab.iterdir():
-            print(f"parsing x-ray tube: {x_ray_tube.name}")
+    
+    #for lab in selected_clinic.iterdir():
+    
+    print(f"parsing measurement from lab: {selected_lab.name}")
+    for x_ray_tube in selected_lab.iterdir():
+        print(f"parsing x-ray tube: {x_ray_tube.name}")
 
-            calib_path = x_ray_tube / "Kalibrering"
+        calib_path = x_ray_tube / "Kalibrering"
 
-            sensor_id_list = []
-            for sensor in calib_path.iterdir():
-                if str(sensor.name) in ["sensorid_mall"]:
+        sensor_id_list = []
+        for sensor in calib_path.iterdir():
+            if str(sensor.name) in ["sensorid_mall"]:
+                continue
+
+            sensor_id_list.append(str(sensor.name))
+            print(f"parsing sensor: {sensor.name}")
+
+            for kv in sensor.iterdir():
+                if str(kv.name) in "readme.txt":
                     continue
 
-                sensor_id_list.append(str(sensor.name))
-                print(f"parsing sensor: {sensor.name}")
+                path_res_folder = (
+                    path_clinics_parsed / f"{selected_clinic.name}_parsed"
+                )
+                sub_path = Path(*kv.parts[9:])
 
-                for kv in sensor.iterdir():
-                    if str(kv.name) in "readme.txt":
-                        continue
+                dcm_res_path = path_res_folder / sub_path
+                dcm_res_path.mkdir(
+                    parents=True,
+                    exist_ok=True,
+                )
 
-                    path_res_folder = (
-                        path_clinics_parsed / f"{selected_clinic.name}_parsed"
+                plots_path = (
+                    path_clinics_parsed / "plots" / f"{selected_clinic.name}_parsed"
+                )
+                plots_path.mkdir(exist_ok=True)
+                dcm_files = []  # for DICOM files
+                acq_times = []  # for acquisition times (for sorting)
+
+                for dcm_file in kv.iterdir():
+                    if ".dcm" in str(dcm_file.name):
+                        dcm_files.append(pydicom.dcmread(dcm_file))
+
+                for i in range(len(dcm_files)):
+                    acq_times.append(int(dcm_files[i].AcquisitionTime))
+
+                sort_order = np.argsort(acq_times)
+
+                for i in range(len(dcm_files)):
+
+                    folder_kilovoltage = int(kv.name[:2])
+                    dcm_files[sort_order[i]].ExposureTime = exp_times[i]
+                    dcm_files[sort_order[i]].KVP = folder_kilovoltage
+                    dcm_files[sort_order[i]].XRayTubeCurrent = ma
+                    dcm_files[sort_order[i]].EntranceDoseInmGy = dose_dict[kv.name.lower()][
+                        i
+                    ]
+
+                    parsed_file_name = f"{kv.name}_{ma}ma_{exp_times[i]}ms.dcm"
+
+                    dcm_files[sort_order[i]].save_as(
+                        dcm_res_path / parsed_file_name
                     )
-                    sub_path = Path(*kv.parts[9:])
 
-                    dcm_res_path = path_res_folder / sub_path
-                    dcm_res_path.mkdir(
-                        parents=True,
-                        exist_ok=True,
-                    )
+        create_calibration_plot(
+            main_folder=path_clinics_parsed,
+            output_dir=plots_path,
+            sensor_ids=sensor_id_list,
+        )
 
-                    plots_path = (
-                        path_clinics_parsed / "plots" / f"{selected_clinic.name}_parsed"
-                    )
-                    plots_path.mkdir(exist_ok=True)
-                    dcm_files = []  # for DICOM files
-                    acq_times = []  # for acquisition times (for sorting)
-
-                    for dcm_file in kv.iterdir():
-                        if ".dcm" in str(dcm_file.name):
-                            dcm_files.append(pydicom.dcmread(dcm_file))
-
-                    for i in range(len(dcm_files)):
-                        acq_times.append(int(dcm_files[i].AcquisitionTime))
-
-                    sort_order = np.argsort(acq_times)
-
-                    for i in range(len(dcm_files)):
-
-                        folder_kilovoltage = int(kv.name[:2])
-                        dcm_files[sort_order[i]].ExposureTime = exp_times[i]
-                        dcm_files[sort_order[i]].KVP = folder_kilovoltage
-                        dcm_files[sort_order[i]].XRayTubeCurrent = ma
-                        dcm_files[sort_order[i]].EntranceDoseInmGy = dose_dict[kv.name][
-                            i
-                        ]
-
-                        parsed_file_name = (
-                            f"clinic_{selected_clinic.name}_lab_{lab.name}_tube_"
-                            f"{x_ray_tube.name}_sensor_{sensor.name}_{kv.name}_{ma}"
-                            f"ma_{exp_times[i]}ms.dcm"
-                        )
-
-                        dcm_files[sort_order[i]].save_as(
-                            dcm_res_path / parsed_file_name
-                        )
-
-            create_calibration_plot(
-                main_folder=path_clinics_parsed,
-                output_dir=plots_path,
-                sensor_ids=sensor_id_list,
-            )
-
-            print("parsing completed")
+        print("parsing completed")
 
 
 path_clinics_raw = (
