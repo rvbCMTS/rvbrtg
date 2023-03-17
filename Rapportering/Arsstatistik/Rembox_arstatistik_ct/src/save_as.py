@@ -1,9 +1,9 @@
 import pandas as pd
 
 
-def excel_file(report_dict, year):
+def save_as_excel_file(report_dict, year):
     # TODO: fixa så att data skrivs in i mallen från SSM så att det går att ladda upp direkt på dosreg
-    file_name = 'src/output/rembox_CT-data_årsstatistik_{}.xlsx'.format(year)
+    file_name = r'C:\Users\torbj\GIT\rvbrtg\Data/rembox_CT-data_årsstatistik_{}.xlsx'.format(year)
     writer = pd.ExcelWriter(file_name)
 
     for hospital in report_dict:

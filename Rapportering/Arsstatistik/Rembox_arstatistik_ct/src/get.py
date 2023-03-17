@@ -1,12 +1,11 @@
 from rembox_integration_tools import REMboxDataQuery
 from rembox_integration_tools.rembox_analysis import StudyColumn, SeriesColumn
-from src import get
 import pandas as pd
 import datetime
-import src.constants as con
+import Rapportering.Arsstatistik.Rembox_arstatistik_ct.src.constants as con
 
 
-def study_and_series_data(year):
+def get_study_and_series_data(year):
     rembox = REMboxDataQuery(
         client_id_environment_variable=con.CLIENT_ID_ENV_VAR,
         client_secret_environment_variable=con.CLIENT_PWD_ENV_VAR,
@@ -16,12 +15,12 @@ def study_and_series_data(year):
     )
 
     # Hämtar CT-data
-    study_data, series_data = get.data_from_ct(rembox=rembox, year=year)
+    study_data, series_data = get_data_from_ct(rembox=rembox, year=year)
 
     return study_data, series_data
 
 
-def data_from_ct(rembox: REMboxDataQuery, year) -> tuple[pd.DataFrame, pd.DataFrame]:
+def get_data_from_ct(rembox: REMboxDataQuery, year) -> tuple[pd.DataFrame, pd.DataFrame]:
     valid_study_columns = StudyColumn()
     valid_series_columns = SeriesColumn()
 
@@ -68,7 +67,7 @@ def data_from_ct(rembox: REMboxDataQuery, year) -> tuple[pd.DataFrame, pd.DataFr
     return rembox.run_query()
 
 
-def report_df():
+def get_report_df():
     report_df = pd.read_excel('src/CT Mall årsredovisning DosReg.xlsx', header=[0, 1])
     report_df.columns = ['.'.join(column) for column in report_df.columns.values]
     report_df.rename(columns={
@@ -85,7 +84,7 @@ def report_df():
     return report_df
 
 
-def performing_physician(study_data):
+def get_performing_physician(study_data):
     # add column with name of performing physician
 
     # Översättningstabell från pseudo-operatörer till operatörer
@@ -103,7 +102,7 @@ def performing_physician(study_data):
     print(data_names.OperatorName)
 
 
-def uniques_and_registered_weight_fraction(study_data):
+def get_uniques_and_registered_weight_fraction(study_data):
     """
     This function takes a DataFrame as input, prints the number of studies and unique patients in the DataFrame,
     and the fraction of studies/patients with a registered weight.
@@ -136,7 +135,7 @@ def uniques_and_registered_weight_fraction(study_data):
     )
 
 
-def studies_and_dlp(report_df, study_data, patient_group_studies, patient_group_dlp):
+def get_studies_and_dlp(report_df, study_data, patient_group_studies, patient_group_dlp):
     for procedure in con.procedure_codes_dict:
         # filtrera på undersökningskoden
         study_data_filtered = study_data[
@@ -169,7 +168,7 @@ def studies_and_dlp(report_df, study_data, patient_group_studies, patient_group_
     return report_df
 
 
-def study_data_dict(study_data):
+def get_study_data_dict(study_data):
     # Ta bort rader utan vikt
     study_data = study_data.dropna(subset=["patientsWeight"])
 
@@ -202,7 +201,7 @@ def study_data_dict(study_data):
     return dict_with_study_data
 
 
-def report_dict(study_data_dictionary, report_dataframe):
+def get_report_dict(study_data_dictionary, report_dataframe):
 
     # Skapa en tom dictionary för att lagra rapporterna
     report_dictionary = {}
@@ -216,7 +215,7 @@ def report_dict(study_data_dictionary, report_dataframe):
                 study_data_dictionary[patient_group]['machine'].isin(con.machines_at_hospital[hospital])]
 
             # Hämta antal studier och medeldos för varje undersökningskod
-            report_dataframe = get.studies_and_dlp(
+            report_dataframe = get_studies_and_dlp(
                 report_df=report_dataframe,
                 study_data=study_data_at_hospital,
                 patient_group_studies=con.patient_group['{}-studies'.format(patient_group)],
