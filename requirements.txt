@@ -3,3 +3,4 @@ pydicom
 matplotlib
 dicom_image_tools
 pandas
+plotly
