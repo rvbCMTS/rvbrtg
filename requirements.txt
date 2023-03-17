@@ -1,0 +1,5 @@
+numpy
+pydicom
+matplotlib
+dicom_image_tools
+pandas
