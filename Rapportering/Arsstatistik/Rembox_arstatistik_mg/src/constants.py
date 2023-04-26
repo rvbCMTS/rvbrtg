@@ -34,27 +34,32 @@ procedure_codes_dict = {
     #"CT ländrygg": ["82400"],
     #"CT lungor": ["83079"],
     #"CT buk": ["84000"],
-    #"CT urografi": ["85481", "85464"],
+    #CT urografi": ["85481", "85464"],
     #"CT bäcken": ["86800"],
-    "MG kliniskt": ["66000", "66000D", "66000S"],
-    "MG screening": ["66200"],
+    "Mammografi 2D - klinisk (ett eller två bröst)": ["66000", "66000D", "66000S"],
+    "Mammografi 2D - screening (ett eller två bröst)": ["66200"]
 }
 
 # Maskiner per verksamhetsplats
 
 machines_at_hospital = {
-    "Mammografivagnen": ["M100", "M113"],
+    #"Lycksele lasarett": ["L11", "L5"],
+    #"Skellefteå lasarett": ["S06", "S07"],
+    #"Norrlands universitetssjukhus": ["U209", "U210", "U211", "U213"],
+    "Mammografivagnen": ["Mammovagnen - M113"],
     "Skellefteå lasarett": ["M109"],
-    "Norrlands universitetssjukhus": ["M400", "M401", "M103", "U213"],
+    "Norrlands universitetssjukhus": ["M103", "M400", "M401"],
 }
 
 # patient_group
 
 patient_group = {
-    "female-studies": "Kvinnor (16 år och äldre).Antal ",
-    "female-dlp": "Kvinnor (16 år och äldre).AGD ",
-    "male-studies": "Män (16 år och äldre).Antal ",
-    "male-dlp": "Män (16 år och äldre).AGD ",
-    "girl-studies": "Flickor (15 år och yngre).Antal ",
-    "girl-dlp": "Flickor (15 år och yngre).AGD ",
+    "female-studies": "Kvinnor.Antal ",
+    "female-agd": "Kvinnor.AGD",
+    "male-studies": "Män.Antal",
+    "male-agd": "Män.AGD",
+    #"girl-studies": "Flickor (15 år och yngre).Antal ",
+    #"girl-dlp": "Flickor (15 år och yngre).DLP (mGy*cm)",
+    #"boy-studies": "Pojkar (15 år och yngre).Antal ",
+    #"boy-dlp": "Pojkar (15 år och yngre).DLP (mGy*cm)",
 }
