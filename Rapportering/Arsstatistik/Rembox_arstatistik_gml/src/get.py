@@ -2,7 +2,7 @@ from rembox_integration_tools import REMboxDataQuery
 from rembox_integration_tools.rembox_analysis import StudyColumn, SeriesColumn
 import pandas as pd
 import datetime
-import Rapportering.Arsstatistik.Rembox_arstatistik_int.src.constants as con
+import Rapportering.Arsstatistik.Rembox_arstatistik_gml.src.constants as con
 
 
 def get_study_and_series_data(year):
@@ -15,18 +15,18 @@ def get_study_and_series_data(year):
     )
 
     # Hämtar int-data
-    study_data, series_data = get_data_from_int(rembox=rembox, year=year)
+    study_data, series_data = get_data_from_gml(rembox=rembox, year=year)
 
     return study_data, series_data
 
 
-def get_data_from_int(rembox: REMboxDataQuery, year) -> tuple[pd.DataFrame, pd.DataFrame]:
+def get_data_from_gml(rembox: REMboxDataQuery, year) -> tuple[pd.DataFrame, pd.DataFrame]:
     valid_study_columns = StudyColumn()
     valid_series_columns = SeriesColumn()
 
     rembox.filter_options.set_inclusive_tags(
-        machine_types=["XASTAT"],
-        # machines=["U104", "U105", "U105_old", "U106", "U106_old" "U110", "U601", "U602", "Arytmi 1", "Arytmi 2"]
+        machine_types=["XASTAT", "XAMOB"],
+        # machines=["U104", "U105", "U105_old", "U106", "U106_old", "U704", "U110", "U601", "U602", "Arytmi 1", "Arytmi 2"]
     )
 
     rembox.filter_options.patient_age_interval_include_nulls = True
@@ -47,7 +47,7 @@ def get_data_from_int(rembox: REMboxDataQuery, year) -> tuple[pd.DataFrame, pd.D
             valid_study_columns.Machine,
             valid_study_columns.AccessionNumber,
             valid_study_columns.StudyDescription,
-            valid_study_columns.PatientAge, #Finns inte för Philips Angio
+            valid_study_columns.PatientAge, #Finns inte för Philips
             valid_study_columns.PatientsWeight, #Saknas ofta #Vad används denna till?
             valid_study_columns.TotalNumberOfIrradiationEvents, #Vad används denna till?
             valid_study_columns.PerformingPhysicianName, #Vad används denna till?
@@ -67,7 +67,7 @@ def get_data_from_int(rembox: REMboxDataQuery, year) -> tuple[pd.DataFrame, pd.D
 
 
 def get_report_df():
-    report_df = pd.read_excel('src/INT Mall årsredovisning DosReg.xlsx', header=[0, 1])
+    report_df = pd.read_excel('src/RTG Mall årsredovisning DosReg.xlsx', header=[0, 1]) #Använd rätt mall
     report_df.columns = ['.'.join(column) for column in report_df.columns.values]
     report_df.rename(columns={
         "Undersökning.Unnamed: 0_level_1": "Undersökning",
@@ -101,7 +101,7 @@ def get_studies_and_dap(report_df, study_data, patient_group_studies, patient_gr
             study_data_filtered["procedureCode"].unique(),
         )
         '''
-
+        
         number_of_studies = study_data_filtered["patientDbId"].count()
         mean_dap = study_data_filtered["doseAreaProductTotal"].mean()
 
@@ -130,11 +130,11 @@ def get_study_data_dict(study_data):
     #study_data = study_data.dropna(subset=["patientsWeight"]) #Fimpa denna rad och ganska många nedan?
 
     # Filtrera baserat på ålder
-    #study_data_kids = study_data.copy()
-    #study_data_kids = study_data_kids[study_data_kids['patientAge'] < 16]
+    study_data_kids = study_data.copy()
+    study_data_kids = study_data_kids[study_data_kids['patientAge'] < 16]
 
     study_data_adults = study_data.copy()
-    #study_data_adults = study_data_adults[study_data_adults['patientAge'] >= 16]
+    study_data_adults = study_data_adults[study_data_adults['patientAge'] >= 16]
     # För vuxna patienter, filtrera ut patienter över 60 kg och under 90 kg
 
     #study_data_adults = study_data_adults[
@@ -142,15 +142,15 @@ def get_study_data_dict(study_data):
     #]
 
     # Filtrera baserat på kön
-    #study_data_kids_male = study_data_kids[study_data_kids['patientsSex'] == 'M']
-    #study_data_kids_female = study_data_kids[study_data_kids['patientsSex'] == 'F']
+    study_data_kids_male = study_data_kids[study_data_kids['patientsSex'] == 'M']
+    study_data_kids_female = study_data_kids[study_data_kids['patientsSex'] == 'F']
 
     study_data_adults_male = study_data_adults[study_data_adults['patientsSex'] == 'M']
     study_data_adults_female = study_data_adults[study_data_adults['patientsSex'] == 'F']
 
     dict_with_study_data = {
-    #    'girl': study_data_kids_female,
-    #    'boy': study_data_kids_male,
+        'girl': study_data_kids_female,
+        'boy': study_data_kids_male,
         'male': study_data_adults_male,
         'female': study_data_adults_female,
     }
