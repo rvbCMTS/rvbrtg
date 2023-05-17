@@ -185,8 +185,8 @@ def get_study_data_dict(study_data):
     ]
 
     # Filtrera baserat på kön
-    study_data_kids_male = study_data_adults[study_data_adults['patientsSex'] == 'M']
-    study_data_kids_female = study_data_adults[study_data_adults['patientsSex'] == 'F']
+    study_data_kids_male = study_data_kids[study_data_kids['patientsSex'] == 'M']
+    study_data_kids_female = study_data_kids[study_data_kids['patientsSex'] == 'F']
 
     study_data_adults_male = study_data_adults[study_data_adults['patientsSex'] == 'M']
     study_data_adults_female = study_data_adults[study_data_adults['patientsSex'] == 'F']
