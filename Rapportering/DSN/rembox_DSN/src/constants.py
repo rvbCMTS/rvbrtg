@@ -40,6 +40,14 @@ procedure_codes_adults = {
     "Urinvägar": 8400,
     "Urografi": 85463,
 }
+
+''' 
+trauma i u umeå "838M1 thorax, 810M1 hjärna...
+838M1 thorax-buk multitrauma med iv kontrast
+810M0 hjärna multitrauma
+820M0 halsrygg multitrauma
+'''
+
 # TODO: procedure codes missing for "ventrikel/shunt"
 # Har pratat med Emma om att lägga till dem framöver.
 procedure_codes_kids = {
