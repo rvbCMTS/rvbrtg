@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import pydicom
 
 
-def check_cbct_stacl_axial_alignment(dcm_file, mode='plot', scale_n=25):
+def check_cbct_stack_axial_alignment(dcm_file, mode='plot', scale_n=25):
     
     # image orientation pat
     IO = np.asarray(dcm_file.ImageOrientationPatient)
