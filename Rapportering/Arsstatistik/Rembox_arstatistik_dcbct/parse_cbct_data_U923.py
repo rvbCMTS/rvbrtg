@@ -52,7 +52,7 @@ def select_from_several_axial_series(axial_series_info):
 
 
 # folder
-folder = Path(r"F:\Max\U922_mod")
+folder = Path(r"F:\Max\U923_mod")
 procedure_dicts = []
 
 for pat in folder.iterdir():
