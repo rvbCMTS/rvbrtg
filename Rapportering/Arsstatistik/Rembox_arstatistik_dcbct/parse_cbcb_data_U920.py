@@ -76,7 +76,7 @@ def select_from_several_axial_series(axial_series_info):
 
 
 # folder
-folder = Path(r"F:\Max\U920\ÅÄÖ")
+folder = Path(r"F:\SSM_CBCT_2022\xx")
 procedure_dicts = []
 
 for pat in folder.iterdir():
@@ -142,4 +142,4 @@ for pat in folder.iterdir():
     procedure_dicts.append(axial_serie_info)
 
 res = pd.DataFrame(procedure_dicts)
-res.to_csv('U920_ÅÄÖ.csv')
+#res.to_csv('U920_ÅÄÖ.csv')
