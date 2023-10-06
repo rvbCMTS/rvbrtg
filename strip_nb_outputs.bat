@@ -1,0 +1,2 @@
+@ECHO OFF
+python strip_nb_outputs_with_nbstripout.py
