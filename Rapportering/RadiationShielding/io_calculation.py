@@ -1,11 +1,10 @@
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from math import exp
 from typing import Optional
 
-from numpy import log
-
 import pandas as pd
+from numpy import log
 from rich.logging import RichHandler
 
 logger = logging.getLogger()
@@ -456,17 +455,12 @@ def air_kerma_per_image_at_1_m_from_source(
         Air KERMA (in mGy) per image at 1 m from the source
     """
     air_kerma = (
-        -0.37
-        - 2.58e-3 * tube_voltage
-        + (5.37e-4) * (tube_voltage**2)
-        - 1.02e-6 * (tube_voltage**3)
+        -0.37 - 2.58e-3 * tube_voltage + (5.37e-4) * (tube_voltage**2) - 1.02e-6 * (tube_voltage**3)
     )  # mGy mA-1 min-1
     return air_kerma * tube_current * (exposure_time / 1000 / 60)
 
 
-def get_barrier_transmission_data(
-    material: str, tube_voltage: int, phase: int = 1
-) -> tuple[float, float, float]:
+def get_barrier_transmission_data(material: str, tube_voltage: int, phase: int = 1) -> tuple[float, float, float]:
     """Extract barrier transmission data (alpha, beta, and gamma) for the specification of the input arguments.
 
     Parameters
@@ -527,9 +521,7 @@ def get_barrier_transmission(
         material=barrier_material, tube_voltage=int(tube_voltage), phase=phase
     )
 
-    barrier_transmission = (
-        (1 + beta / alpha) * exp(alpha * gamma * barrier_thickness) - beta / alpha
-    ) ** (-1 / gamma)
+    barrier_transmission = ((1 + beta / alpha) * exp(alpha * gamma * barrier_thickness) - beta / alpha) ** (-1 / gamma)
 
     return barrier_transmission
 
@@ -584,7 +576,7 @@ def total_shielded_scatter_radiation_air_kerma_in_uGy_per_image(
     scattering_angle: float = 180.0,
     workload_per_image: float = 1.0,
     fraction_of_exposures_towards_primary_barrier: float = 0.999,
-    primary_beam_transmission: float = 0.073
+    primary_beam_transmission: float = 0.073,
 ) -> float:
     """Calculate the total shielded scattered radiation air KERMA per image in µGy
 
@@ -617,8 +609,8 @@ def total_shielded_scatter_radiation_air_kerma_in_uGy_per_image(
         1.60e-2 * (tube_voltage - 125)
         + 8.434
         - 1.105e-1 * scattering_angle
-        + 9.828e-4 * (scattering_angle ** 2)
-        - 1.741e-6 * (scattering_angle ** 3)
+        + 9.828e-4 * (scattering_angle**2)
+        - 1.741e-6 * (scattering_angle**3)
     )
 
     if fraction_of_exposures_towards_primary_barrier >= 1:
@@ -626,14 +618,14 @@ def total_shielded_scatter_radiation_air_kerma_in_uGy_per_image(
 
     return (
         (
-            scaled_scatter_fraction_per_unit_beam_area_in_cm2_at_1m_from_scatter_source / 1000000
+            scaled_scatter_fraction_per_unit_beam_area_in_cm2_at_1m_from_scatter_source
+            / 1000000
             * primary_beam_air_kerma
             * (1 - fraction_of_exposures_towards_primary_barrier)
             * workload_per_image
-        ) / (distance_from_patient_to_point_calculation ** 2)
-        * (
-            primary_beam_transmission * primary_field_size_in_cm2 / (distance_from_primary_source_in_m ** 2)
         )
+        / (distance_from_patient_to_point_calculation**2)
+        * (primary_beam_transmission * primary_field_size_in_cm2 / (distance_from_primary_source_in_m**2))
     )
 
 
@@ -709,7 +701,7 @@ def calculate_total_air_kerma_behind_barrier(
         primary_beam_air_kerma=air_kerma,
         tube_voltage=tube_voltage,
         distance_from_patient_to_point_calculation=distance_to_tube,
-        primary_beam_transmission=barrier_transmission
+        primary_beam_transmission=barrier_transmission,
     )
 
     total_shielded_air_kerma = total_shielded_air_kerma_per_image * images_per_year
@@ -774,30 +766,21 @@ def wall_thickness_requirement(
     barrier_transmission = (
         permissible_dose_per_year
         * distance_to_tube**2
-        / (
-            air_kerma
-            * images_per_year
-            * average_transmission_through_patient
-            * use_factor
-        )
+        / (air_kerma * images_per_year * average_transmission_through_patient * use_factor)
     )
 
     if barrier_material == bm.concrete and phase == 1:
-        logger.info(
-            "Setting phase to 3 since we don't have data for concrete for single phase machines"
-        )
+        logger.info("Setting phase to 3 since we don't have data for concrete for single phase machines")
         phase = 3
 
     alpha, beta, gamma = get_barrier_transmission_data(
         material=barrier_material, tube_voltage=int(tube_voltage), phase=phase
     )
 
-    required_thickness_in_mm = log(
-        (barrier_transmission ** (-gamma) + beta / alpha) / (1 + beta / alpha)
-    ) / (alpha * gamma)
-
-    logger.debug(
-        f"Required thickness determined to {required_thickness_in_mm.real} mm {barrier_material}"
+    required_thickness_in_mm = log((barrier_transmission ** (-gamma) + beta / alpha) / (1 + beta / alpha)) / (
+        alpha * gamma
     )
+
+    logger.debug(f"Required thickness determined to {required_thickness_in_mm.real} mm {barrier_material}")
 
     return required_thickness_in_mm.real / 1000
