@@ -1,4 +1,9 @@
 repos:
--   repo: https://github.com/rvbCMTS/rvbrtg/
+-   repo: local
     hooks:
-    -   id: strip_nb_outputs_with_nbstripout
+    -   id: black
+        name: black
+        entry: black
+        language: system
+        types: [python]
+        args: []
