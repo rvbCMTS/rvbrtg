@@ -1,9 +1,8 @@
 repos:
 -   repo: local
     hooks:
-    -   id: black
-        name: black
-        entry: black
-        language: system
-        types: [python]
-        args: ["a.py"]
+    -   id: run_black
+        name: Run Black
+        entry: run_black.bat
+        language: script
+        file: ''
