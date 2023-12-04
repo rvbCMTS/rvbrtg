@@ -1,0 +1,4 @@
+repos:
+-   repo: https://github.com/rvbCMTS/rvbrtg/
+    hooks:
+    -   id: strip_nb_outputs_with_nbstripout
