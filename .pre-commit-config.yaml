@@ -1,7 +1,5 @@
 repos:
--   repo: local
-    hooks:
-    -   id: strip_nb_outputs
-        name: strip nb output
-        language: system
-        entry: python -m strip_nb_outputs
+- repo: https://github.com/kynan/nbstripout
+  rev: 0.5.0
+  hooks:
+    - id: nbstripout
