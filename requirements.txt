@@ -4,3 +4,5 @@ matplotlib
 dicom_image_tools
 pandas
 plotly
+nbstripout
+pre-commit
