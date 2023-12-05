@@ -1,7 +1,7 @@
-import datetime as dt
 import sys
 from pathlib import Path
 from typing import List
+import datetime as dt
 
 import numpy as np
 import pydicom
