@@ -1,8 +1,7 @@
 repos:
 -   repo: local
     hooks:
-    -   id: run_black
-        name: Run Black
-        entry: run_black.bat
-        language: script
-        file: ''
+    -   id: strip_nb_outputs
+        name: strip nb output
+        language: system
+        entry: python -m strip_nb_outputs
