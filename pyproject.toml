@@ -1,5 +1,5 @@
 [tool.black]
-line-length = 88 # override black's default line-length
+line-length = 120 # override black's default line-length
 exclude = '''
 
 (
