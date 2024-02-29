@@ -6,7 +6,8 @@ import pandas as pd
 
 from Rapportering.Arsstatistik.constants import REPORT_TEMPLATE_PATH_PER_MODALITY, OUTPUT_COL_EXAM, MODALITY_CT, \
     REPORT_OUTPUT_DIR, MODALITY_DX, MODALITY_MG, MODALITY_XA, EXAM_GROUPING_RULES_BY_MODALITY, \
-    EXAM_GROUPING_TYPE_PROCEDURE_CODE, EXAM_GROUPING_TYPE_PROTOCOL_CODE
+    EXAM_GROUPING_TYPE_PROCEDURE_CODE, EXAM_GROUPING_TYPE_PROTOCOL_CODE, AGE_SEX_CATEGORY_ADULT_FEMALE, \
+    AGE_SEX_CATEGORY_ADULT_MALE, AGE_SEX_CATEGORY_JUNIOR_FEMALE, AGE_SEX_CATEGORY_JUNIOR_MALE
 
 logger = logging.getLogger("yearly_statistics")
 
@@ -53,18 +54,25 @@ def _create_report_main(template_path: Path, data: pd.DataFrame, hospital: str, 
             continue
 
         sheet.cell(row=row, column=2).value = ", ".join(codes) if (codes := exam_codes.get(exam)) is not None else ""
-        sheet.cell(row=row, column=3).value = df_row["Antal"]["Kvinnor"]
-        sheet.cell(row=row, column=4).value = df_row[dose_column_name]["Kvinnor"]
+
+        if AGE_SEX_CATEGORY_ADULT_FEMALE in df_row.columns:
+            sheet.cell(row=row, column=3).value = df_row["Antal"][AGE_SEX_CATEGORY_ADULT_FEMALE]
+            sheet.cell(row=row, column=4).value = df_row[dose_column_name][AGE_SEX_CATEGORY_ADULT_FEMALE]
 
         if modality == MODALITY_MG:
             continue
 
-        sheet.cell(row=row, column=5).value = df_row["Antal"]["Män"]
-        sheet.cell(row=row, column=6).value = df_row[dose_column_name]["Män"]
-        sheet.cell(row=row, column=7).value = df_row["Antal"]["Flickor"]
-        sheet.cell(row=row, column=8).value = df_row[dose_column_name]["Flickor"]
-        sheet.cell(row=row, column=9).value = df_row["Antal"]["Pojkar"]
-        sheet.cell(row=row, column=10).value = df_row[dose_column_name]["Pojkar"]
+        if AGE_SEX_CATEGORY_ADULT_MALE in df_row.columns:
+            sheet.cell(row=row, column=5).value = df_row["Antal"][AGE_SEX_CATEGORY_ADULT_MALE]
+            sheet.cell(row=row, column=6).value = df_row[dose_column_name][AGE_SEX_CATEGORY_ADULT_MALE]
+
+        if AGE_SEX_CATEGORY_JUNIOR_FEMALE in df_row.columns:
+            sheet.cell(row=row, column=7).value = df_row["Antal"][AGE_SEX_CATEGORY_JUNIOR_FEMALE]
+            sheet.cell(row=row, column=8).value = df_row[dose_column_name][AGE_SEX_CATEGORY_JUNIOR_FEMALE]
+
+        if AGE_SEX_CATEGORY_JUNIOR_MALE in df_row.columns:
+            sheet.cell(row=row, column=9).value = df_row["Antal"][AGE_SEX_CATEGORY_JUNIOR_MALE]
+            sheet.cell(row=row, column=10).value = df_row[dose_column_name][AGE_SEX_CATEGORY_JUNIOR_MALE]
 
     report_template.save(output_path)
     report_template.close()
