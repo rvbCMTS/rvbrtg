@@ -49,7 +49,7 @@ def _format_ct_data(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
-    data[VALID_STUDY_COLUMNS.Hospital][data[VALID_STUDY_COLUMNS.Hospital] == "Södra Lappland"] = "Lycksele"
+    data.loc[data[VALID_STUDY_COLUMNS.Hospital] == "Södra Lappland", [VALID_STUDY_COLUMNS.Hospital]] = "Lycksele"
 
     data = _categorize_by_age_and_sex(data)
 
@@ -68,7 +68,7 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
-    data = data[data[VALID_STUDY_COLUMNS.PatientsSex == "F"]]
+    data = data[data[VALID_STUDY_COLUMNS.PatientsSex] == "F"]
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_XA)
 
@@ -111,21 +111,25 @@ def _categorize_by_age_and_sex(data: pd.DataFrame) -> pd.DataFrame:
     """
     data[OUTPUT_COL_AGE_SEX_CATEGORY] = [None] * len(data)
 
-    data[OUTPUT_COL_AGE_SEX_CATEGORY][
-        (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
-        (data[VALID_STUDY_COLUMNS.PatientsSex] == "M")] = AGE_SEX_CATEGORY_JUNIOR_MALE
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] < 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_JUNIOR_MALE
 
-    data[OUTPUT_COL_AGE_SEX_CATEGORY][
-        (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
-        (data[VALID_STUDY_COLUMNS.PatientsSex] == "F")] = AGE_SEX_CATEGORY_JUNIOR_FEMALE
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] < 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_JUNIOR_FEMALE
 
-    data[OUTPUT_COL_AGE_SEX_CATEGORY][
-        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) &
-        (data[VALID_STUDY_COLUMNS.PatientsSex] == "M")] = AGE_SEX_CATEGORY_ADULT_MALE
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_MALE
 
-    data[OUTPUT_COL_AGE_SEX_CATEGORY][
-        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) &
-        (data[VALID_STUDY_COLUMNS.PatientsSex] == "F")] = AGE_SEX_CATEGORY_ADULT_FEMALE
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_FEMALE
 
     return data
 
@@ -148,7 +152,7 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
     """
     exam_grouping_rules = EXAM_GROUPING_RULES_BY_MODALITY[modality]
 
-    data[OUTPUT_COL_EXAM] = [np.nan] * len(data)
+    data[OUTPUT_COL_EXAM] = [None] * len(data)
 
     for exam_grouping_type, exam_group in exam_grouping_rules.items():
         if exam_grouping_type == EXAM_GROUPING_TYPE_STUDY_DESCRIPTION:
@@ -163,6 +167,6 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
         for exam_name, exam_group_values in exam_group.items():
             if not exam_group_values:
                 continue
-            data[OUTPUT_COL_EXAM][data[grouping_column].isin(exam_group_values)] = exam_name
+            data.loc[data[grouping_column].isin(exam_group_values), [OUTPUT_COL_EXAM]] = exam_name
 
     return data.dropna(subset=[OUTPUT_COL_EXAM])

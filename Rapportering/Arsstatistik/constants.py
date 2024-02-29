@@ -16,6 +16,8 @@ MODALITY_DX: str = "DX"
 MODALITY_MG: str = "MG"
 MODALITY_XA: str = "XA"
 
+REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
+
 MODALITY_LIST = [
     MODALITY_CT,
     MODALITY_DX,
@@ -113,10 +115,10 @@ MODALITY_FILTER_SELECTION_PER_MODALITY = {
 }
 
 REPORT_TEMPLATE_PATH_PER_MODALITY = {
-    MODALITY_CT: Path(__file__).parent / "ReportTemplate/CT Mall årsredovisning DosReg.xlsx",
-    MODALITY_DX: Path(__file__).parent / "ReportTemplate/RTG Mall årsredovisning DosReg.xlsx",
-    MODALITY_MG: Path(__file__).parent / "ReportTemplate/MG Mall årsredovisning DosReg.xlsx",
-    MODALITY_XA: Path(__file__).parent / "ReportTemplate/INT Mall årsredovisning DosReg.xlsx",
+    MODALITY_CT: Path(__file__).parent / "ReportTemplates/CT Mall årsredovisning DosReg.xlsx",
+    MODALITY_DX: Path(__file__).parent / "ReportTemplates/RTG Mall årsredovisning DosReg.xlsx",
+    MODALITY_MG: Path(__file__).parent / "ReportTemplates/MG Mall årsredovisning DosReg.xlsx",
+    MODALITY_XA: Path(__file__).parent / "ReportTemplates/INT Mall årsredovisning DosReg.xlsx",
 }
 
 EXAM_GROUPING_TYPE_STUDY_DESCRIPTION = "Study Description"
