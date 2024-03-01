@@ -69,6 +69,7 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
 
 def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
     data = data[data[VALID_STUDY_COLUMNS.PatientsSex] == "F"]
+    data = data.reset_index(drop=True)
     data.loc[:, OUTPUT_COL_AGE_SEX_CATEGORY] = AGE_SEX_CATEGORY_ADULT_FEMALE
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_MG)
@@ -78,7 +79,11 @@ def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
         AGD=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc="mean")
     )
 
-    return data
+    data = data.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+
+    output = data.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal", "AGD"])
+
+    return output
 
 
 def _format_xa_data(data: pd.DataFrame) -> pd.DataFrame:
@@ -153,7 +158,8 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
     """
     exam_grouping_rules = EXAM_GROUPING_RULES_BY_MODALITY[modality]
 
-    data.loc[:, OUTPUT_COL_EXAM] = [None] * len(data)
+    data.reset_index(drop=True)
+    data.loc[:, OUTPUT_COL_EXAM] = None
 
     for exam_grouping_type, exam_group in exam_grouping_rules.items():
         if exam_grouping_type == EXAM_GROUPING_TYPE_STUDY_DESCRIPTION:

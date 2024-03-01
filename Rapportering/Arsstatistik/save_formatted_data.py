@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 
+import numpy as np
 from openpyxl import load_workbook
 import pandas as pd
 
@@ -55,24 +56,36 @@ def _create_report_main(template_path: Path, data: pd.DataFrame, hospital: str, 
 
         sheet.cell(row=row, column=2).value = ", ".join(codes) if (codes := exam_codes.get(exam)) is not None else ""
 
-        if AGE_SEX_CATEGORY_ADULT_FEMALE in df_row.columns:
+        if AGE_SEX_CATEGORY_ADULT_FEMALE in df_row.index.levels[1]:
             sheet.cell(row=row, column=3).value = df_row["Antal"][AGE_SEX_CATEGORY_ADULT_FEMALE]
-            sheet.cell(row=row, column=4).value = df_row[dose_column_name][AGE_SEX_CATEGORY_ADULT_FEMALE]
+            sheet.cell(row=row, column=4).value = np.round(
+                df_row[dose_column_name][AGE_SEX_CATEGORY_ADULT_FEMALE],
+                decimals=2
+            )
 
         if modality == MODALITY_MG:
             continue
 
-        if AGE_SEX_CATEGORY_ADULT_MALE in df_row.columns:
+        if AGE_SEX_CATEGORY_ADULT_MALE in df_row.index.levels[1]:
             sheet.cell(row=row, column=5).value = df_row["Antal"][AGE_SEX_CATEGORY_ADULT_MALE]
-            sheet.cell(row=row, column=6).value = df_row[dose_column_name][AGE_SEX_CATEGORY_ADULT_MALE]
+            sheet.cell(row=row, column=6).value = np.round(
+                df_row[dose_column_name][AGE_SEX_CATEGORY_ADULT_MALE],
+                decimals=2
+            )
 
-        if AGE_SEX_CATEGORY_JUNIOR_FEMALE in df_row.columns:
+        if AGE_SEX_CATEGORY_JUNIOR_FEMALE in df_row.index.levels[1]:
             sheet.cell(row=row, column=7).value = df_row["Antal"][AGE_SEX_CATEGORY_JUNIOR_FEMALE]
-            sheet.cell(row=row, column=8).value = df_row[dose_column_name][AGE_SEX_CATEGORY_JUNIOR_FEMALE]
+            sheet.cell(row=row, column=8).value = np.round(
+                df_row[dose_column_name][AGE_SEX_CATEGORY_JUNIOR_FEMALE],
+                decimals=2
+            )
 
-        if AGE_SEX_CATEGORY_JUNIOR_MALE in df_row.columns:
+        if AGE_SEX_CATEGORY_JUNIOR_MALE in df_row.index.levels[1]:
             sheet.cell(row=row, column=9).value = df_row["Antal"][AGE_SEX_CATEGORY_JUNIOR_MALE]
-            sheet.cell(row=row, column=10).value = df_row[dose_column_name][AGE_SEX_CATEGORY_JUNIOR_MALE]
+            sheet.cell(row=row, column=10).value = np.round(
+                df_row[dose_column_name][AGE_SEX_CATEGORY_JUNIOR_MALE],
+                decimals=2
+            )
 
     report_template.save(output_path)
     report_template.close()
