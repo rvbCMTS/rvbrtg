@@ -19,10 +19,7 @@ MODALITY_XA: str = "XA"
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
-    MODALITY_CT,
     MODALITY_DX,
-    MODALITY_MG,
-    MODALITY_XA,
 ]
 
 COLUMN_SELECTION_PER_MODALITY = {
@@ -170,15 +167,15 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "Urografi": [],
         },
         EXAM_GROUPING_TYPE_STUDY_DESCRIPTION: {
-            'Bröstkorg (revben)': ['Revben', 'Axel, AC-led DX', 'Axel, AC-led SIN'],
+            'Bröstkorg (revben)': ['Revben', 'Axel, AC-led DX', 'Axel, AC-led SIN', 'Nyckelben', 'Nyckelben DX', 'Nyckelben SIN', 'Skulderblad DX', 'Skulderblad SIN', 'Sternum'],
             'Bröstrygg': ['Bröstrygg'],
-            'Buk': ['Buköversikt', 'Lunga-buk nyfödd'],
-            'Bäcken/höft (skelett)': ['Bäcken', 'Protesbäcken', 'Höft stereo DX', 'Höft stereo SIN', 'Höftled DX', 'Höftled SIN'],
-            'Extremitetsskelett och –leder': ['Armbågsled DX', 'Armbågsled SIN', 'Fot DX', 'Fot SIN', 'Fot belastad DX', 'Fot belastad SIN', 'Fotled DX', 'Fotled SIN', 'Fotled belastad DX', 'Fotled belastad SIN', 'Hand DX', 'Hand SIN', 'Handled DX', 'Handled SIN', 'Knäled DX', 'Knäled SIN', 'Lårben DX', 'Lårben SIN', 'Scaphoideum DX', 'Scaphoideum SIN', 'Underarm DX', 'Underarm SIN', 'Underben DX', 'Underben SIN', 'Överarm DX', 'Överarm SIN'],
+            'Buk': ['Buköversikt', 'Lunga-buk nyfödd', 'Tunntarm'],
+            'Bäcken/höft (skelett)': ['Bäcken', 'Protesbäcken', 'Höftleder, barn', 'Höft stereo DX', 'Höft stereo SIN', 'Höftled DX', 'Höftled SIN', 'Sacrum, coccyx'],
+            'Extremitetsskelett och –leder': ['Armbågsled DX', 'Armbågsled SIN', 'Benlängd', 'Benvinkel DX', 'Benvinkel SIN', 'Fot DX', 'Fot SIN', 'Fot belastad DX', 'Fot belastad SIN', 'Fotled DX', 'Fotled SIN', 'Fotled belastad DX', 'Fotled belastad SIN', 'Hand DX', 'Hand SIN', 'Handled DX', 'Handled SIN', 'Knäled DX', 'Knäled SIN', 'Knäled', 'Lårben DX', 'Lårben SIN', 'Lårben', 'Scaphoideum DX', 'Scaphoideum SIN', 'Skelettålder', 'Underarm DX', 'Underarm SIN', 'Underben DX', 'Underben SIN', 'Överarm DX', 'Överarm SIN'],
             'Hals (mjukvävnad)': [''],
             'Halsrygg': ['Halsrygg'],
             'Hjärta/lungor': ['Lungor', 'Lungor, liggande'],
-            'Huvud (skall- och ansiktsskelett)': ['Ansiktsskelett'],
+            'Huvud (skall- och ansiktsskelett)': ['Ansiktsskelett', 'Shuntkontroll', 'Shuntöversikt', 'Skalle'],
             'Ländrygg': ['Ländrygg'],
             'SI-led': ['Sacroiliacaleder'],
             'Skolios (vinkelmätning)': ['Helrygg']
