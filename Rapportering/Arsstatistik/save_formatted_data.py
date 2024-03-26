@@ -42,7 +42,7 @@ def _create_report_main(template_path: Path, data: pd.DataFrame, hospital: str, 
 
     report_template = load_workbook(template_path)
     sheet = report_template.active
-    sheet_exams = {exam: row for row in range(3, 20) if (exam := sheet.cell(row=row, column=1).value)}
+    sheet_exams = {exam: row for row in range(3, 50) if (exam := sheet.cell(row=row, column=1).value)}
 
     for exam, row in sheet_exams.items():
         if (hospital, exam) not in data.index:
