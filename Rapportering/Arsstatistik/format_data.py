@@ -137,6 +137,17 @@ def _categorize_by_age_and_sex(data: pd.DataFrame) -> pd.DataFrame:
         [OUTPUT_COL_AGE_SEX_CATEGORY]
     ] = AGE_SEX_CATEGORY_ADULT_FEMALE
 
+    if MODALITY_XA:
+        data.loc[
+            data[VALID_STUDY_COLUMNS.PatientsSex] == "M",
+            [OUTPUT_COL_AGE_SEX_CATEGORY]
+        ] = AGE_SEX_CATEGORY_ADULT_MALE
+
+        data.loc[
+            data[VALID_STUDY_COLUMNS.PatientsSex] == "F",
+            [OUTPUT_COL_AGE_SEX_CATEGORY]
+        ] = AGE_SEX_CATEGORY_ADULT_FEMALE
+
     return data
 
 
