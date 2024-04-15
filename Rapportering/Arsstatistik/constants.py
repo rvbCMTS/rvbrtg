@@ -19,7 +19,7 @@ MODALITY_XA: str = "XA"
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
-    MODALITY_DX, MODALITY_XA
+    MODALITY_MG
 ]
 
 COLUMN_SELECTION_PER_MODALITY = {
