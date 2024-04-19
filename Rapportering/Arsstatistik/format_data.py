@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 
@@ -87,7 +89,7 @@ def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def _format_xa_data(data: pd.DataFrame) -> pd.DataFrame:
-    data = _categorize_by_age_and_sex(data)
+    data = _categorize_by_age_and_sex(data, modality=MODALITY_XA)
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_XA)
 
@@ -103,7 +105,7 @@ def _format_xa_data(data: pd.DataFrame) -> pd.DataFrame:
     return output
 
 
-def _categorize_by_age_and_sex(data: pd.DataFrame) -> pd.DataFrame:
+def _categorize_by_age_and_sex(data: pd.DataFrame, modality: Optional[str] = None) -> pd.DataFrame:
     """
 
     Parameters
@@ -137,7 +139,7 @@ def _categorize_by_age_and_sex(data: pd.DataFrame) -> pd.DataFrame:
         [OUTPUT_COL_AGE_SEX_CATEGORY]
     ] = AGE_SEX_CATEGORY_ADULT_FEMALE
 
-    if MODALITY_XA:
+    if modality is not None and modality == MODALITY_XA:
         data.loc[
             data[VALID_STUDY_COLUMNS.PatientsSex] == "M",
             [OUTPUT_COL_AGE_SEX_CATEGORY]
