@@ -206,6 +206,7 @@ path_clinics_parsed = (
     / "maxh01"
     / "OneDrive - Region Västerbotten"
     / "General"
+    / "Modaliteter"
     / "FTV"
     / "Nya sensorer 2022"
     / "Nya sensorer 2022 parsed"
