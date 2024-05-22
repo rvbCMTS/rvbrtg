@@ -4,4 +4,7 @@ matplotlib
 dicom_image_tools
 pandas
 plotly
-nbstripout
+hvplot
+jupyter
+pytest
+rich
