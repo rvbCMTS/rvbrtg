@@ -18,3 +18,28 @@ series_array = pd.read_csv(series_data, sep = ';')
 # Calculations / Main
 # ----------------------------------
 
+study_ID_data = study_array['Study instance UID']
+series_ID_data = series_array['Irradiation event UID']
+
+def find_indices_for_identicalUI (array1, array2):
+    
+    # If arrays are pandas.Series, convert them to NumPy arrays
+    if isinstance(array1, pd.Series):
+        array1 = array1.to_numpy()
+    if isinstance(array2, pd.Series):
+        array2 = array2.to_numpy()
+    
+    indices = np.where(array1 == array2)[0]
+    # Check if there are any matches
+    if indices.size > 0:
+        print("Identical values found at indices:", indices)
+    else:
+        print("Error: No identical values found between the two arrays.")
+
+find_indices_for_identicalUI(study_ID_data, series_ID_data)
+
+
+
+## Authors notes
+# Apperently valueerror "operands could not be broadcast together with shapes (6139,) (33427,)"
+# Error tells that the arrays are of vastly different lenghts.... and cant be compared by the script.
