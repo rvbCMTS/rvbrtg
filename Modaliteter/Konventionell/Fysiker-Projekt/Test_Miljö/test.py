@@ -10,7 +10,7 @@ series_data = r"Modaliteter\Konventionell\Fysiker-Projekt\analysis_2024-12-02_12
 study_array = pd.read_csv(study_data, sep = ';')
 series_array = pd.read_csv(series_data, sep = ';')
 
-    # Test if data is successfully loaded
+# Test if data is successfully loaded
 #print(study_array)
 #print(series_array)
 
@@ -29,8 +29,8 @@ def find_indices_for_identicalUI (array1, array2):
     if isinstance(array2, pd.Series):
         array2 = array2.to_numpy()
     
-    indices = np.where(array1 == array2)[0]
     # Check if there are any matches
+    indices = np.where(array1 == array2)[0]
     if indices.size > 0:
         print("Identical values found at indices:", indices)
     else:

@@ -24,3 +24,19 @@ if isinstance(array2, pd.Series):
 # Debugging: Print shapes
 print("Shape of array1:", array1.shape)
 print("Shape of array2:", array2.shape)
+
+# Truncate to the same length
+min_length = min(len(array1), len(array2))
+array1 = array1[:min_length]
+array2 = array2[:min_length]
+
+print("Min length", min_length)
+
+# Compare values
+indices = np.where(array1 == array2)[0]
+
+# Check if matches exist
+if indices.size > 0:
+    print("Identical values found at indices:", indices)
+else:
+    print("Error: No identical values found.")
