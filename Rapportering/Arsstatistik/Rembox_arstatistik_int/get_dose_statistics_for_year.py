@@ -3,12 +3,12 @@ from Rapportering.Arsstatistik.Rembox_arstatistik_int.src.save_as import *
 
 
 def get_int_dose_statistics_for_year(year: int = -9999):
-    '''
+    """
     Det här scriptet hämtar årsstatistik för angivet år och skriver ut en excel-fil som kan laddas upp på dosreg.
     Om inget år anges så hämtas statistik för föregående år.
 
     Året anges längst ner i det här scriptet (rad 32)
-    '''
+    """
 
     # Hämta data från rembox
     study_data, series_data = get_study_and_series_data(year)
@@ -28,5 +28,5 @@ def get_int_dose_statistics_for_year(year: int = -9999):
     print("End of script")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     get_int_dose_statistics_for_year(year=2022)

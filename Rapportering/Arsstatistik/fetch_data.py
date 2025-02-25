@@ -18,7 +18,8 @@ def get_modality_data_for_year(year: int, modality: str) -> pd.DataFrame:
         client_secret_environment_variable=CLIENT_PWD_ENV_VAR,
         token_uri=TOKEN_URI,
         api_uri=API_URI,
-        origin_uri=ORIGIN_URI
+        origin_uri=ORIGIN_URI,
+        verify_ssl_cert=False
     )
 
     rembox.filter_options.set_inclusive_tags(

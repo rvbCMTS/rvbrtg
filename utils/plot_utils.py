@@ -20,7 +20,6 @@ def _create_colorbar(
     ticklabels=None,
     title=None,
 ):
-
     axins = inset_axes(
         ax,
         width=width,
@@ -67,7 +66,6 @@ def _remove_ax_ticks(
 
 
 def _set_ax_text(ax, xlabel=None, ylabel=None, title=None):
-
     ax.set_xlabel(xlabel) if xlabel is not None else None
     ax.set_ylabel(ylabel) if ylabel is not None else None
     ax.set_title(title) if title is not None else None
@@ -83,7 +81,6 @@ def _add_label_to_ax(
     fontsize=9,
     bbox=dict(boxstyle="round", ec="black", fc="white"),
 ):
-
     ax.text(
         px,
         py,
@@ -102,7 +99,6 @@ def _set_ax_line_color(ax, color, dirs=["left", "right", "top", "bottom"]):
 
 
 def _create_subplot(ax, mat, lims, cmap, xlabel, ylabel, title):
-
     im = ax.imshow(
         mat,
         vmin=lims[0],
@@ -119,10 +115,7 @@ def _create_subplot(ax, mat, lims, cmap, xlabel, ylabel, title):
 
 
 def _set_ax_shape(ax, shape, white=True):
-
-    return ax.imshow(
-        np.ones(shape), cmap=plt.cm.gray if white else plt.cm.binary, vmin=0, vmax=1
-    )
+    return ax.imshow(np.ones(shape), cmap=plt.cm.gray if white else plt.cm.binary, vmin=0, vmax=1)
 
 
 def _plotdpi(dpi=124):
@@ -142,7 +135,6 @@ def _create_bias_image(mean_image, ref, mask=None) -> np.array:
 
 
 def _create_percentage_diff_image(image, ref, mask):
-
     res = np.zeros(mask.shape)
     res[mask] = image[mask] * (100 / ref[mask])
 
@@ -150,7 +142,6 @@ def _create_percentage_diff_image(image, ref, mask):
 
 
 def _draw_region_box(c, sx, sy):
-
     cx, cy = (c[0], c[1])
 
     trace_x = np.array(
@@ -180,7 +171,6 @@ def _draw_region_box(c, sx, sy):
 
 
 def _select_matrix_from_box(image, trace_x, trace_y, stack=False):
-
     (xmin, xmax, ymin, ymax) = (
         trace_x.min(),
         trace_x.max(),
@@ -227,7 +217,6 @@ def _padding(
     yy,
     constant_values=0,
 ):
-
     h, w = array.shape[0], array.shape[1]
     a = (xx - h) // 2
     aa = xx - a - h

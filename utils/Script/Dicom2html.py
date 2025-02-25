@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import pydicom
-from pydicom.dataset import Dataset, DataElement
+from pydicom.dataset import DataElement, Dataset
 from rich.console import Console
 
 
@@ -24,7 +24,7 @@ def data_element_to_row(data_element: DataElement, indent: int = 0) -> list[list
             data_element.VR,
             data_element.name,
             "",
-            False
+            False,
         ]
     ]
 
@@ -49,110 +49,111 @@ def get_file_content(dataset: Dataset) -> list[list]:
 
 def create_html_table(table_rows: list[list[str]], title: str = None) -> str:
     html_contents: str = (
-        '<!DOCTYPE html>'
-        '<html>'
-        '<head>'
+        "<!DOCTYPE html>"
+        "<html>"
+        "<head>"
         '<meta charset="UTF-8">'
         '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
         f'<title>{title + " - " if title else ""}DICOM file content</title>'
-        '<style>'
-        ':root {'
-        '  --clr-black: #000000;'
-        '  --clr-dark: #3c3f41;'
-        '  --clr-darker: #313335;'
-        '  --clr-darkest: #323232;'
-        '  --clr-grey: #;'
-        '  --clr-white: #ffffff;'
-        '  --clr-green: #507e34;'
-        '  --clr-blue: #5883a2;'
-        '  --clr-dark-blue: #0000d0;'
-        '  --clr-orange: #c57730;'
-        ''
-        '  --fw-regular: 500;'
-        '  --fw-bold: 700;'
-        ''
-        '  --fs-500: 1rem;'
-        '  --fs-700: 2.5rem;'
-        '  --fs-900: 3rem;'
-        ''
-        '  --fs-header1: var(--fs-900);'
-        '  --fs-table-header: var(--fs-700);'
-        '  --fs-body: var(--fs-500);'
-        ''
-        '  --clr-background: var(--clr-white);'
-        '  --clr-table-shadow: var(--clr-black);'
-        '  --clr-table-background: var(--clr-darker);'
-        '  --clr-table-odd-row: var(--clr-dark);'
-        '  --clr-font: var(--clr-black);'
-        '  --clr-font-table: var(--clr-white);'
-        '}'
-        '@media (prefers-color-scheme: dark) {'
-        '  :root {'
-        '    --clr-background: var(--clr-darkest);'
-        '    --clr-table-background: var(--clr-darkest);'
-        '    --clr-table-odd-row: var(--clr-dark);'
-        '    --clr-font: var(--clr-white);'
-        '    --clr-font-table: var(--clr-white);'
-        '  }'
-        '}'
-        'body {'
-        '  background-color: var(--clr-background);'
-        '  color: var(--clr-font);'
-        '  font-wieght: var(--fw-regular);'
-        '  font-size: var(--fs-body);'
-        '}'
-        ''
-        'h1 { font-size: var(--fs-header1); font-weight: var(--fw-bold); }'
-        ''
-        '.table-container {'
-        '  padding: 15px;'
-        '  display: flex;'
-        '  flex-direction: column;'
-        '  align-items: center;'
-        '}'
-        
-        ''
-        'table {'
-        '  color: var(--clr-font-table);'
-        '  margin: auto;'
-        '  background: var(--clr-darker);'
-        '  border-collapse: collapse;'
-        '  -moz-box-shadow: 0 0 5px var(--clr-table-shadow);'
-        '  -webkit-box-shadow: 0 0 5px var(--clr-table-shadow);'
-        '  box-shadow: 0 0 5px var(--clr-table-shadow);'
-        '  padding: 5px;'
-        '}'
-        ''
-        'th {'
-        '  font-size: var(--fs-table-header);'
-        '  font-weight: var(--fw-bold);'
-        '  padding: 10px;'
-        '  text-align: initial;'
-        '}'
-        'td {'
-        '  padding: 10px;'
-        '}'
-        'tr:nth-of-type(odd) { background-color: var(--clr-table-odd-row); }'
-        ''
-        'tr.italic { font-style: italic; }'
-        ''
-        'tr.blue { color: var(--clr-blue); }'
-        'tr.green { color: var(--clr-green); }'
-        'tr.orange { color: var(--clr-orange); }'
-        '</style>'
-        '</head>'
+        "<style>"
+        ":root {"
+        "  --clr-black: #000000;"
+        "  --clr-dark: #3c3f41;"
+        "  --clr-darker: #313335;"
+        "  --clr-darkest: #323232;"
+        "  --clr-grey: #;"
+        "  --clr-white: #ffffff;"
+        "  --clr-green: #507e34;"
+        "  --clr-blue: #5883a2;"
+        "  --clr-dark-blue: #0000d0;"
+        "  --clr-orange: #c57730;"
+        ""
+        "  --fw-regular: 500;"
+        "  --fw-bold: 700;"
+        ""
+        "  --fs-500: 1rem;"
+        "  --fs-700: 2.5rem;"
+        "  --fs-900: 3rem;"
+        ""
+        "  --fs-header1: var(--fs-900);"
+        "  --fs-table-header: var(--fs-700);"
+        "  --fs-body: var(--fs-500);"
+        ""
+        "  --clr-background: var(--clr-white);"
+        "  --clr-table-shadow: var(--clr-black);"
+        "  --clr-table-background: var(--clr-darker);"
+        "  --clr-table-odd-row: var(--clr-dark);"
+        "  --clr-font: var(--clr-black);"
+        "  --clr-font-table: var(--clr-white);"
+        "}"
+        "@media (prefers-color-scheme: dark) {"
+        "  :root {"
+        "    --clr-background: var(--clr-darkest);"
+        "    --clr-table-background: var(--clr-darkest);"
+        "    --clr-table-odd-row: var(--clr-dark);"
+        "    --clr-font: var(--clr-white);"
+        "    --clr-font-table: var(--clr-white);"
+        "  }"
+        "}"
+        "body {"
+        "  background-color: var(--clr-background);"
+        "  color: var(--clr-font);"
+        "  font-wieght: var(--fw-regular);"
+        "  font-size: var(--fs-body);"
+        "}"
+        ""
+        "h1 { font-size: var(--fs-header1); font-weight: var(--fw-bold); }"
+        ""
+        ".table-container {"
+        "  padding: 15px;"
+        "  display: flex;"
+        "  flex-direction: column;"
+        "  align-items: center;"
+        "}"
+        ""
+        "table {"
+        "  color: var(--clr-font-table);"
+        "  margin: auto;"
+        "  background: var(--clr-darker);"
+        "  border-collapse: collapse;"
+        "  -moz-box-shadow: 0 0 5px var(--clr-table-shadow);"
+        "  -webkit-box-shadow: 0 0 5px var(--clr-table-shadow);"
+        "  box-shadow: 0 0 5px var(--clr-table-shadow);"
+        "  padding: 5px;"
+        "}"
+        ""
+        "th {"
+        "  font-size: var(--fs-table-header);"
+        "  font-weight: var(--fw-bold);"
+        "  padding: 10px;"
+        "  text-align: initial;"
+        "}"
+        "td {"
+        "  padding: 10px;"
+        "}"
+        "tr:nth-of-type(odd) { background-color: var(--clr-table-odd-row); }"
+        ""
+        "tr.italic { font-style: italic; }"
+        ""
+        "tr.blue { color: var(--clr-blue); }"
+        "tr.green { color: var(--clr-green); }"
+        "tr.orange { color: var(--clr-orange); }"
+        "</style>"
+        "</head>"
         f'<body><div class="table-container">{"<h1>" + title + "</h1>" if title else ""}'
-        '<table><tr><th>Tag</th><th>VR</th><th>Name</th><th>Value</th></tr>'
+        "<table><tr><th>Tag</th><th>VR</th><th>Name</th><th>Value</th></tr>"
     )
 
     color_classes = ["regular", "orange", "green", "blue"]
 
-    html_contents += "".join([
-        f'<tr class="{color_classes[row[0] % len(color_classes)]}{" italic" if row[-1] else ""}"><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td></tr>'
-        for row in table_rows
-    ])
+    html_contents += "".join(
+        [
+            f'<tr class="{color_classes[row[0] % len(color_classes)]}{" italic" if row[-1] else ""}"><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td></tr>'
+            for row in table_rows
+        ]
+    )
 
-    html_contents += '</table></div></body></html>'
+    html_contents += "</table></div></body></html>"
 
     return html_contents
 
@@ -164,12 +165,15 @@ def get_input_arguments():
         "files", metavar="filepath", nargs="+", help="Path/-s to the DICOM-files to convert to HTML-table/-s"
     )
     parser.add_argument(
-        "-o", "--output-dir",
+        "-o",
+        "--output-dir",
         required=False,
         dest="output_dir",
         type=Path,
-        help=("The directory in which to place the HTML file/-s. If not given, the output will be placed in the same "
-              "directory as the input file.")
+        help=(
+            "The directory in which to place the HTML file/-s. If not given, the output will be placed in the same "
+            "directory as the input file."
+        ),
     )
 
     return parser.parse_args()
@@ -185,7 +189,9 @@ def main():
     try:
         input_files: list[Path] = [filepath for fp in input_args.files if (filepath := Path(fp)).exists()]
     except Exception as ex:
-        console.print(f"[red][bold]Failed to identify input path{'s' if len(input_args.files) > 1 else ''}[/bold][/red]")
+        console.print(
+            f"[red][bold]Failed to identify input path{'s' if len(input_args.files) > 1 else ''}[/bold][/red]"
+        )
         return
 
     file_count = len(input_files)
