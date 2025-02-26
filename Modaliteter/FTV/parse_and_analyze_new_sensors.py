@@ -147,7 +147,7 @@ def parse_onepix_data_for_new_clinic(
                     continue
 
                 path_res_folder = path_clinics_parsed / f"{selected_clinic.name}_parsed"
-                sub_path = Path(*kv.parts[9:])
+                sub_path = Path(*kv.parts[7:])
 
                 dcm_res_path = path_res_folder / sub_path
                 dcm_res_path.mkdir(
@@ -155,7 +155,7 @@ def parse_onepix_data_for_new_clinic(
                     exist_ok=True,
                 )
 
-                plots_path = path_clinics_parsed / "plots" / f"{selected_clinic.name}_parsed"
+                plots_path = path_res_folder / selected_lab / x_ray_tube.name / 'Kalibrering' / sensor.name / kv.name
                 plots_path.mkdir(exist_ok=True)
                 dcm_files = []  # for DICOM files
                 acq_times = []  # for acquisition times (for sorting)
@@ -191,7 +191,7 @@ def parse_onepix_data_for_new_clinic(
 
         create_calibration_plot(
             main_folder=path_clinics_parsed,
-            output_dir=plots_path,
+            output_dir=path_res_folder.parent / 'plots' / path_res_folder.name,
             sensor_ids=sensor_id_list,
         )
 
@@ -199,7 +199,8 @@ def parse_onepix_data_for_new_clinic(
 
 
 path_clinics_raw = (
-    Path("G:") / "CMTS" / "SF" / "Personal" / "Personliga mappar" / "Josef Lundman" / "FTV" / "Nya sensorer 2022 raw"
+    Path(r'V:\Enhetsytor\5-1-1-3. Strålningsfysik\Radiologi\FTV\Nya sensorer 2022 raw')
+    #Path("G:") / "CMTS" / "SF" / "Personal" / "Personliga mappar" / "Josef Lundman" / "FTV" / "Nya sensorer 2022 raw"
 )
 
 path_clinics_parsed = (
