@@ -48,6 +48,7 @@ def get_data_from_REMbox(rembox: REMboxDataQuery,
     rembox.filter_options.study_time_interval_start_date = "2023-01-01T00:00:00Z"
     rembox.filter_options.study_time_interval_end_date = "2023-12-31T00:00:00Z"
 
+
     # age below 16 years
     rembox.filter_options.patient_age_interval_start_unit = 'Y'
     rembox.filter_options.patient_age_interval_end_value = 16
