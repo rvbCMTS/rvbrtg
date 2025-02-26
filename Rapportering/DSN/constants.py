@@ -90,7 +90,15 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
         }
     },
     MODALITY_DX: {
-        EXAM_GROUPING_TYPE_STUDY_DESCRIPTION: {},
+        EXAM_GROUPING_TYPE_STUDY_DESCRIPTION: {
+            "Lungor - stående": ["Lungor"],
+            "Lungor - sängliggande": ["Lungor, liggande"],
+            "Ländrygg": ["Ländrygg"],
+            "Bäcken": ["Bäkcken", "Protesbäcken"],
+            "Höftleder":["Höfteld", "Höftled DX", "Höftled SIN", "Höftleder, barn"],
+            "Buköversikt": ["Buköversikt", "Lunga-buk nyfödd"],
+            "Skolios":["Helrygg"],
+        },
     },
     MODALITY_XA: {
         EXAM_GROUPING_TYPE_ACQUISITION_PROTOCOL: {}
