@@ -133,3 +133,4 @@ Modaliteter/FTV/analys_private_sprid_ej.py
 
 .vscode/
 .idea/
+*.whl
