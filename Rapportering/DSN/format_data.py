@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pandas as pd
 
 from Rapportering.DSN.constants import (
@@ -8,6 +10,8 @@ from Rapportering.DSN.constants import (
 
 
 def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
+    data = _sanity_check_patient_bmi(data)
+
     if modality == MODALITY_CT:
         return _format_ct_data(data)
 
@@ -29,6 +33,44 @@ def _format_ct_data(data: pd.DataFrame) -> pd.DataFrame:
         VALID_STUDY_COLUMNS.Machine,
         OUTPUT_COL_EXAM
     ]]
+
+
+def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
+    data = data[data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] > 0]  # Remove data where DAP meter broken
+
+
+def _filter_for_size_and_weight_date_intervals_relative_study_datetime(data: pd.DataFrame) -> pd.DataFrame:
+    data["SizeDateDiff"] = abs(data[VALID_STUDY_COLUMNS.PatientsSizeDate] - data[VALID_STUDY_COLUMNS.StudyDateTime])
+    data["WeightDateDiff"] = abs(data[VALID_STUDY_COLUMNS.PatientsWeightDate] - data[VALID_STUDY_COLUMNS.StudyDateTime])
+
+    data["KeepRow"] = True
+    data.KeepRow[
+        (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == "Y") &  # Filters for patients that are at least 1 years old
+        ((data["SizeDateDiff"] > timedelta(days=365)) | (data["WeightDateDiff"] > timedelta(days=365)))
+    ] = False
+
+    data.KeepRow[
+        (data[VALID_STUDY_COLUMNS.PatientAgeUnit] != "Y") &  # Filters for patients that are below 1 year
+        ((data["SizeDateDiff"] > timedelta(days=30)) | (data["WeightDateDiff"] > timedelta(days=30)))
+    ] = False
+
+    return data
+
+def _sanity_check_patient_bmi(data: pd.DataFrame) -> pd.DataFrame:
+    """Throws away data for patients with an unreasonable value for the BMI
+
+    Parameters
+    ----------
+    data
+        the REMbox data to be sanitized
+
+    Returns
+    -------
+    A copy of the original dataframe with added column for BMI and rows with unreasonable values dropped
+    """
+    data["BMI"] = data[VALID_STUDY_COLUMNS.PatientsWeight] / ((data[VALID_STUDY_COLUMNS.PatientsSize] / 100) ** 2)
+
+    return data[(data.BMI > 10) & (data.BMI < 35.0)]
 
 
 def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.DataFrame:

@@ -30,14 +30,15 @@ def get_modality_data_for_year(year: int, modality: str) -> pd.DataFrame:
         machine_types=MODALITY_FILTER_SELECTION_PER_MODALITY[modality]
     )
 
-    rembox.filter_options.patient_age_interval_start_value = 16
-    rembox.filter_options.patient_age_interval_start_unit = "Y"
+    rembox.filter_options.patient_age_interval_start_value = 0
+    rembox.filter_options.patient_age_interval_start_unit = "D"
     rembox.filter_options.patient_age_interval_end_value = 120
+    rembox.filter_options.patient_age_interval_include_nulls = True
     rembox.filter_options.patient_age_interval_start_unit = "Y"
     rembox.filter_options.patient_age_interval_include_nulls = True
 
-    rembox.filter_options.patient_weight_in_kilograms_start = 60
-    rembox.filter_options.patient_weight_in_kilograms_end = 90
+    rembox.filter_options.patient_size_in_centimeters_include_nulls = False
+    rembox.filter_options.patient_weight_in_kilograms_include_nulls = False
 
     rembox.filter_options.study_time_interval_start_date = "{}-01-01T00:00:00Z".format(year)
     rembox.filter_options.study_time_interval_end_date = "{}-01-01T00:00:00Z".format(year+1)
@@ -48,7 +49,7 @@ def get_modality_data_for_year(year: int, modality: str) -> pd.DataFrame:
 
     print(series_data.columns)
     series = pd.merge(series_data, study_data, left_on='studyId', right_on="id")
-    #series = series.drop_duplicates(ignore_index=True)
+    series = series.drop_duplicates(ignore_index=True)
 
     return series
 
