@@ -70,6 +70,7 @@ MODALITY_FILTER_SELECTION_PER_MODALITY = {
 
 REPORT_TEMPLATE_PATH_PER_MODALITY = {
     MODALITY_CT: Path(__file__).parent / "ReportTemplates/CT Mall DsnRegistrering.xlsx",
+    MODALITY_DX: Path(__file__).parent / "ReportTemplates/RTG DsnRegistrering.xlsx",
 }
 
 EXAM_GROUPING_TYPE_STUDY_DESCRIPTION = "Study Description"
