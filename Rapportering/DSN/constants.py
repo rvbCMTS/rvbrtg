@@ -26,30 +26,38 @@ MODALITY_LIST = [
 #    MODALITY_XA
 ]
 
+COLUMN_SELCTION_GENERAL = [
+    VALID_STUDY_COLUMNS.Hospital,
+    VALID_STUDY_COLUMNS.StudyDateTime,
+    VALID_STUDY_COLUMNS.Machine,
+    VALID_STUDY_COLUMNS.StudyDescription,
+    VALID_STUDY_COLUMNS.PatientAge,
+    VALID_STUDY_COLUMNS.PatientsWeight,
+    VALID_STUDY_COLUMNS.PatientsWeightDate,
+    VALID_STUDY_COLUMNS.PatientsWeightSource,
+    VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents,
+    VALID_STUDY_COLUMNS.PatientDbId,
+    VALID_STUDY_COLUMNS.PatientsSex,
+    VALID_STUDY_COLUMNS.PatientsSize,
+    VALID_STUDY_COLUMNS.PatientsSizeDate,
+    VALID_STUDY_COLUMNS.PatientsSizeSource,
+    VALID_STUDY_COLUMNS.ProcedureCode,
+    VALID_SERIES_COLUMNS.AcquisitionProtocol,
+]
+
 COLUMN_SELECTION_PER_MODALITY = {
-    MODALITY_CT: [
-            VALID_STUDY_COLUMNS.Hospital,
-            VALID_STUDY_COLUMNS.StudyDateTime,
-            VALID_STUDY_COLUMNS.Machine,
-            VALID_STUDY_COLUMNS.StudyDescription,
-            VALID_STUDY_COLUMNS.PatientAge,
-            VALID_STUDY_COLUMNS.PatientsWeight,
-            VALID_STUDY_COLUMNS.PatientsWeightDate,
-            VALID_STUDY_COLUMNS.PatientsWeightSource,
-            VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents,
-            VALID_STUDY_COLUMNS.PatientDbId,
-            VALID_STUDY_COLUMNS.DlpTotal,
-            VALID_STUDY_COLUMNS.PatientsSex,
-            VALID_STUDY_COLUMNS.PatientsSize,
-            VALID_STUDY_COLUMNS.PatientsSizeDate,
-            VALID_STUDY_COLUMNS.PatientsSizeSource,
-            VALID_STUDY_COLUMNS.ProcedureCode,
+    MODALITY_CT: COLUMN_SELCTION_GENERAL.append(        
+            VALID_STUDY_COLUMNS.DlpTotal,  
             VALID_SERIES_COLUMNS.MeanCTDIvol,
-            VALID_SERIES_COLUMNS.kVp,
-            VALID_SERIES_COLUMNS.AcquisitionProtocol,
+            VALID_SERIES_COLUMNS.kVp,       
             VALID_SERIES_COLUMNS.DlPv,
             VALID_SERIES_COLUMNS.SizeSpecificDoseEstimation,
-    ],
+    ),
+    MODALITY_DX: COLUMN_SELCTION_GENERAL.append(
+        VALID_STUDY_COLUMNS.TotalNumberOfRadiographicFrames,
+        VALID_STUDY_COLUMNS.DoseAreaProductTotal,
+    ),
+
 }
 
 MODALITY_FILTER_SELECTION_PER_MODALITY = {
