@@ -7,9 +7,9 @@ VALID_SERIES_COLUMNS = SeriesColumn()
 CLIENT_ID_ENV_VAR = "REMBOX_INT_CLIENT_ID"
 CLIENT_PWD_ENV_VAR = "REMBOX_INT_CLIENT_PWD"
 
-TOKEN_URI = "https://rembox.jll.jllad.se/dpqaauth/connect/token"
-API_URI = "https://rembox.jll.jllad.se/api"
-ORIGIN_URI = "https://rembox.jll.jllad.se"
+TOKEN_URI = "https://autoqa.vll.se/dpqaauth/connect/token"
+API_URI = "https://rembox.vll.se/api"
+ORIGIN_URI = "https://rembox.vll.se"
 
 MODALITY_CT: str = "CT"
 MODALITY_DX: str = "DX"
@@ -46,17 +46,18 @@ COLUMN_SELCTION_GENERAL = [
 ]
 
 COLUMN_SELECTION_PER_MODALITY = {
-    MODALITY_CT: COLUMN_SELCTION_GENERAL.append(        
+    MODALITY_CT: COLUMN_SELCTION_GENERAL.append([        
             VALID_STUDY_COLUMNS.DlpTotal,  
             VALID_SERIES_COLUMNS.MeanCTDIvol,
             VALID_SERIES_COLUMNS.kVp,       
             VALID_SERIES_COLUMNS.DlPv,
             VALID_SERIES_COLUMNS.SizeSpecificDoseEstimation,
-    ),
-    MODALITY_DX: COLUMN_SELCTION_GENERAL.append(
+    ]),
+    
+    MODALITY_DX: COLUMN_SELCTION_GENERAL.append([
         VALID_STUDY_COLUMNS.TotalNumberOfRadiographicFrames,
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
-    ),
+    ]),
 
 }
 
