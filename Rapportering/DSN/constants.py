@@ -32,6 +32,7 @@ COLUMN_SELCTION_GENERAL = [
     VALID_STUDY_COLUMNS.Machine,
     VALID_STUDY_COLUMNS.StudyDescription,
     VALID_STUDY_COLUMNS.PatientAge,
+    VALID_STUDY_COLUMNS.PatientAgeUnit,
     VALID_STUDY_COLUMNS.PatientsWeight,
     VALID_STUDY_COLUMNS.PatientsWeightDate,
     VALID_STUDY_COLUMNS.PatientsWeightSource,
@@ -42,7 +43,6 @@ COLUMN_SELCTION_GENERAL = [
     VALID_STUDY_COLUMNS.PatientsSizeDate,
     VALID_STUDY_COLUMNS.PatientsSizeSource,
     VALID_STUDY_COLUMNS.ProcedureCode,
-    VALID_SERIES_COLUMNS.AcquisitionProtocol,
 ]
 
 COLUMN_SELECTION_PER_MODALITY = {
@@ -52,9 +52,10 @@ COLUMN_SELECTION_PER_MODALITY = {
             VALID_SERIES_COLUMNS.kVp,       
             VALID_SERIES_COLUMNS.DlPv,
             VALID_SERIES_COLUMNS.SizeSpecificDoseEstimation,
+            VALID_SERIES_COLUMNS.AcquisitionProtocol,
     ],
     
-    MODALITY_DX: COLUMN_SELCTION_GENERAL +[
+    MODALITY_DX: COLUMN_SELCTION_GENERAL + [
         VALID_STUDY_COLUMNS.TotalNumberOfRadiographicFrames,
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
     ],
@@ -104,8 +105,8 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "Lungor - stående": ["Lungor"],
             "Lungor - sängliggande": ["Lungor, liggande"],
             "Ländrygg": ["Ländrygg"],
-            "Bäcken": ["Bäkcken", "Protesbäcken"],
-            "Höftleder":["Höfteld", "Höftled DX", "Höftled SIN", "Höftleder, barn"],
+            "Bäcken": ["Bäcken", "Protesbäcken"],
+            "Höftleder":["Höftled", "Höftled DX", "Höftled SIN", "Höftleder, barn"],
             "Buköversikt": ["Buköversikt", "Lunga-buk nyfödd"],
             "Skolios":["Helrygg"],
         },
@@ -118,4 +119,12 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
     },
 }
 
+WEIGHT_CATEGORY_0_5 = "<5 kg"
+WEIGHT_CATEGORY_5_15 = "5-<15 kg"
+WEIGHT_CATEGORY_15_30 = "15-<30 kg"
+WEIGHT_CATEGORY_30_50 = "30-<50 kg"
+WEIGHT_CATEGORY_50_70 = "50-<70 kg"
+WEIGHT_CATEGORY_70_90 = "70-<90 kg"
+
 OUTPUT_COL_EXAM = "Undersökning"
+OUTPUT_COL_WEIGTH_CATEGORY = "Viktgrupp"

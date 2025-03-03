@@ -3,13 +3,14 @@ import time
 from datetime import datetime
 from math import floor
 
-import user
+# import user
 
 from rich.console import Console
 
 
-from Rapportering.DSN.fetch_data import get_modality_data_for_year
+
 from Rapportering.DSN.constants import MODALITY_LIST
+from Rapportering.DSN.fetch_data import get_modality_data_for_year
 from Rapportering.DSN.format_data  import format_data
 from Rapportering.DSN.save_formatted_data import save_formatted_data
 
