@@ -46,18 +46,18 @@ COLUMN_SELCTION_GENERAL = [
 ]
 
 COLUMN_SELECTION_PER_MODALITY = {
-    MODALITY_CT: COLUMN_SELCTION_GENERAL.append([        
+    MODALITY_CT: COLUMN_SELCTION_GENERAL + [        
             VALID_STUDY_COLUMNS.DlpTotal,  
             VALID_SERIES_COLUMNS.MeanCTDIvol,
             VALID_SERIES_COLUMNS.kVp,       
             VALID_SERIES_COLUMNS.DlPv,
             VALID_SERIES_COLUMNS.SizeSpecificDoseEstimation,
-    ]),
+    ],
     
-    MODALITY_DX: COLUMN_SELCTION_GENERAL.append([
+    MODALITY_DX: COLUMN_SELCTION_GENERAL +[
         VALID_STUDY_COLUMNS.TotalNumberOfRadiographicFrames,
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
-    ]),
+    ],
 
 }
 
