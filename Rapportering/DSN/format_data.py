@@ -12,6 +12,7 @@ from Rapportering.DSN.constants import (
     EXAM_GROUPING_TYPE_ACQUISITION_PROTOCOL,
     OUTPUT_COL_EXAM,
     OUTPUT_COL_WEIGTH_CATEGORY,
+    OUTPUT_COL_AGE_CATEGORY,
     MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
@@ -21,7 +22,10 @@ from Rapportering.DSN.constants import (
     WEIGHT_CATEGORY_15_30,
     WEIGHT_CATEGORY_30_50,
     WEIGHT_CATEGORY_50_70,
-    WEIGHT_CATEGORY_70_90,
+    WEIGHT_CATEGORY_60_90,
+    AGE_CATEGORY_0_1,
+    AGE_CATEGORY_1_6,
+    AGE_CATEGORY_6_16,   
 )
 
 
@@ -40,6 +44,7 @@ def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
 
 
 def _format_ct_data(data: pd.DataFrame) -> pd.DataFrame:
+    
     data = _categorize_exams_according_to_ssm(data, modality=MODALITY_CT)
 
     return data[[
@@ -59,7 +64,7 @@ def _format_ct_data(data: pd.DataFrame) -> pd.DataFrame:
 def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
     data = data[data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] > 0]  # Remove data where DAP meter broken
 
-    data = _categorize_by_weight_and_age(data)
+    data = _categorize_by_weight(data)
 
     data = _categorize_exams_according_to_ssm(data, modality=MODALITY_DX)
 
@@ -75,7 +80,7 @@ def _filter_for_size_and_weight_date_intervals_relative_study_datetime(data: pd.
     data.loc[:, "SizeDateDiff"] = abs(data[VALID_STUDY_COLUMNS.PatientsSizeDate] - data[VALID_STUDY_COLUMNS.StudyDateTime])
     data.loc[:, "WeightDateDiff"] = abs(data[VALID_STUDY_COLUMNS.PatientsWeightDate] - data[VALID_STUDY_COLUMNS.StudyDateTime])
 
-    data["KeepRow"] = True
+    data.loc[:, "KeepRow"] = True
     data.loc[
         (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == "Y") &  # Filters for patients that are at least 1 years old
         ((data["SizeDateDiff"] > timedelta(days=365)) | (data["WeightDateDiff"] > timedelta(days=365))),
@@ -112,7 +117,7 @@ def _sanity_check_patient_bmi(data: pd.DataFrame) -> pd.DataFrame:
 
     return data[(data.BMI > 10) & (data.BMI < 35.0)]
 
-def _categorize_by_weight_and_age(data: pd.DataFrame) -> pd.DataFrame:
+def _categorize_by_weight(data: pd.DataFrame) -> pd.DataFrame:
     """Categories the data by weight intervalls for DSN reports
 
     Parameters
@@ -145,10 +150,10 @@ def _categorize_by_weight_and_age(data: pd.DataFrame) -> pd.DataFrame:
              (data[VALID_STUDY_COLUMNS.PatientsWeight] < 70.0) &
              (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
              (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), OUTPUT_COL_WEIGTH_CATEGORY] = WEIGHT_CATEGORY_50_70
-    data.loc[(data[VALID_STUDY_COLUMNS.PatientsWeight] >= 70.0) &
+    data.loc[(data[VALID_STUDY_COLUMNS.PatientsWeight] >= 60.0) &
              (data[VALID_STUDY_COLUMNS.PatientsWeight] < 90.0) &
              (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) &
-             (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), OUTPUT_COL_WEIGTH_CATEGORY] = WEIGHT_CATEGORY_70_90    
+             (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), OUTPUT_COL_WEIGTH_CATEGORY] = WEIGHT_CATEGORY_60_90    
 
     return data
 
