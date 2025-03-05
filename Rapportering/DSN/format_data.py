@@ -25,7 +25,8 @@ from Rapportering.DSN.constants import (
     WEIGHT_CATEGORY_60_90,
     AGE_CATEGORY_0_1,
     AGE_CATEGORY_1_6,
-    AGE_CATEGORY_6_16,   
+    AGE_CATEGORY_6_16,
+    CHILD_EXAM_PREFIX   
 )
 
 
@@ -67,11 +68,8 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
     data = _categorize_by_weight(data)
 
     data = _categorize_exams_according_to_ssm(data, modality=MODALITY_DX)
-
-    summery_data = data.groupby(by=[OUTPUT_COL_EXAM, OUTPUT_COL_WEIGTH_CATEGORY, VALID_STUDY_COLUMNS.Machine]).agg(
-        Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"),
-        DAP=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="median")
-    )
+ 
+    data = _filter_for_number_of_examinations_needed_for_DSN_report(data)
 
     return data
 
@@ -194,6 +192,36 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
         for exam_name, exam_group_values in exam_group.items():
             if not exam_group_values:
                 continue
-            data.loc[data[grouping_column].isin(exam_group_values), [OUTPUT_COL_EXAM]] = exam_name
+            if CHILD_EXAM_PREFIX in exam_name:
+                data.loc[(data[grouping_column].isin(exam_group_values)) & 
+                         (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
+                         (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), [OUTPUT_COL_EXAM]] = exam_name
+            else:
+                data.loc[(data[grouping_column].isin(exam_group_values)) & 
+                         (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) &
+                         (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), [OUTPUT_COL_EXAM]] = exam_name
 
     return data.dropna(subset=[OUTPUT_COL_EXAM, VALID_STUDY_COLUMNS.PatientsSize, VALID_STUDY_COLUMNS.PatientsWeight])
+
+
+def _filter_for_number_of_examinations_needed_for_DSN_report(data: pd.DataFrame) -> pd.DataFrame:
+    """Filter for number of examinations neeeded for DSN report: 20 for adults and 10 for children.
+
+    Parameters
+    ----------
+    data
+        the REMbox data to be filtered
+ 
+
+    Returns
+    -------
+    A filtered version of the REMbox data
+    """
+
+    filtered_data = data.groupby(by=[OUTPUT_COL_EXAM, OUTPUT_COL_WEIGTH_CATEGORY, VALID_STUDY_COLUMNS.Machine]).filter(
+        lambda x: x[VALID_STUDY_COLUMNS.DoseAreaProductTotal].count() > 10
+        if x[VALID_STUDY_COLUMNS.PatientAge].max() < 16
+        else x[VALID_STUDY_COLUMNS.DoseAreaProductTotal].count() > 20
+    )
+
+    return filtered_data

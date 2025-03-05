@@ -80,6 +80,8 @@ EXAM_GROUPING_TYPE_PROTOCOL_CODE = "Protocol Code"
 EXAM_GROUPING_TYPE_PROCEDURE_CODE = "Procedure Code"
 EXAM_GROUPING_TYPE_ACQUISITION_PROTOCOL = "Acquisition protocol"
 
+CHILD_EXAM_PREFIX = "Barn:"
+
 EXAM_GROUPING_RULES_BY_MODALITY = {
     MODALITY_CT: {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {},
@@ -106,9 +108,12 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "Lungor - sängliggande": ["Lungor, liggande"],
             "Ländrygg": ["Ländrygg"],
             "Bäcken": ["Bäcken", "Protesbäcken"],
-            "Höftleder":["Höftled", "Höftled DX", "Höftled SIN", "Höftleder, barn"],
-            "Buköversikt": ["Buköversikt", "Lunga-buk nyfödd"],
-            "Skolios":["Helrygg"],
+            "Höftleder": ["Höftled", "Höftled DX", "Höftled SIN", "Höftleder, barn"],
+            f"{CHILD_EXAM_PREFIX} Buköversikt": ["Buköversikt", "Lunga-buk nyfödd"],
+            f"{CHILD_EXAM_PREFIX} Lungor - stående": ["Lungor"],
+            f"{CHILD_EXAM_PREFIX} Lungor - liggande": ["Lungor, liggande"],
+            f"{CHILD_EXAM_PREFIX} Höftleder": ["Höftled", "Höftled DX", "Höftled SIN", "Höftleder, barn"],
+            f"{CHILD_EXAM_PREFIX} Skolios": ["Helrygg"],
         },
     },
     MODALITY_XA: {
