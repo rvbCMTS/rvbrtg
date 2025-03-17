@@ -26,6 +26,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+*.whl
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -135,3 +136,4 @@ Modaliteter/FTV/analys_private_sprid_ej.py
 .idea/
 Rapportering/Arsstatistik/Reports/*xlsx
 LocalOnly/
+
