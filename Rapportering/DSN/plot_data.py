@@ -11,11 +11,14 @@ from Rapportering.DSN.constants import (
 )
 
 def plot_data(data: pd.DataFrame, modality: str) -> None:
+  
 
-    for exam_name in data[OUTPUT_COL_EXAM].unique().tolist():
-
-        if modality == MODALITY_DX:
+    if modality == MODALITY_DX:
+        for exam_name in data[OUTPUT_COL_EXAM].unique().tolist():
             _plot_data_dx(dataframe = data, exam_name = exam_name)
+
+    else:
+        raise  NotImplementedError(f"Modality {modality} not implemented.")
         
 
 

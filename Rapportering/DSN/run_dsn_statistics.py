@@ -2,11 +2,7 @@ import logging
 import time
 from datetime import datetime
 from math import floor
-
-import user
-
 from rich.console import Console
-
 
 
 from Rapportering.DSN.constants import MODALITY_LIST
