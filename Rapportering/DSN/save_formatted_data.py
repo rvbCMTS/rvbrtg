@@ -23,19 +23,20 @@ def save_formatted_data(data: pd.DataFrame, modality: str) -> None:
     logger.info(f"Sparar rapporter i {REPORT_OUTPUT_DIR.absolute()}")
 
     for exam_name in data[OUTPUT_COL_EXAM].unique().tolist():
-        logger.debug(f"Skapar rapport för {modality} kopplade till undersökning {exam_name}")
+        for machine in data[data[OUTPUT_COL_EXAM] == exam_name][VALID_STUDY_COLUMNS.Machine].unique().tolist():
+            logger.debug(f"Skapar rapport för {modality} ({machine}) kopplade till undersökning {exam_name}")
 
-        _create_report_main(template_path=report_template, data=data, exam_name=exam_name, modality=modality)
+            _create_report_main(template_path=report_template, data=data, machine=machine, exam_name=exam_name, modality=modality)
 
     return
 
 
-def _create_report_main(template_path: Path, data: pd.DataFrame, modality:str,  exam_name:str):
-    output_path: Path = REPORT_OUTPUT_DIR / f"{modality} - {exam_name}{template_path.suffix}"
+def _create_report_main(template_path: Path, data: pd.DataFrame, modality:str, machine: str, exam_name:str):
+    output_path: Path = REPORT_OUTPUT_DIR / f"{modality} - {machine} - {exam_name}{template_path.suffix}"
 
     report_template = load_workbook(template_path)
     sheet = report_template.active
-    tmp_data = data[data[OUTPUT_COL_EXAM] == exam_name].reset_index()
+    tmp_data = data[(data[OUTPUT_COL_EXAM] == exam_name) & (data[VALID_STUDY_COLUMNS.Machine] == machine)].reset_index()
 
     if modality not in [
         MODALITY_DX, MODALITY_MG, MODALITY_XA, MODALITY_CT
