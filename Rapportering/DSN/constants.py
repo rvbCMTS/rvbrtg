@@ -16,6 +16,10 @@ MODALITY_DX: str = "DX"
 MODALITY_MG: str = "MG"
 MODALITY_XA: str = "XA"
 
+MG_COL_EXAM_INDEX = "ExamIndex"
+MG_COL_PROJECTION = "Projection"
+MG_COL_EXAM_TYPE = "ExamType"
+
 
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
