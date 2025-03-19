@@ -12,7 +12,8 @@ from Rapportering.DSN.constants import (
     MODALITY_XA,
     REPORT_OUTPUT_DIR, EXAM_GROUPING_RULES_BY_MODALITY,
     EXAM_GROUPING_TYPE_PROCEDURE_CODE, EXAM_GROUPING_TYPE_PROTOCOL_CODE,
-    OUTPUT_COL_EXAM, VALID_SERIES_COLUMNS, VALID_STUDY_COLUMNS, MG_COL_PROJECTION, MG_COL_EXAM_INDEX, MG_COL_EXAM_TYPE)
+    OUTPUT_COL_EXAM, VALID_SERIES_COLUMNS, VALID_STUDY_COLUMNS,
+    MG_COL_PROJECTION, MG_COL_EXAM_INDEX, MG_COL_EXAM_TYPE, OUTPUT_COL_WEIGTH_CATEGORY)
 
 logger = logging.getLogger("yearly_statistics")
 
@@ -24,15 +25,16 @@ def save_formatted_data(data: pd.DataFrame, modality: str) -> None:
 
     for exam_name in data[OUTPUT_COL_EXAM].unique().tolist():
         for machine in data[data[OUTPUT_COL_EXAM] == exam_name][VALID_STUDY_COLUMNS.Machine].unique().tolist():
-            logger.debug(f"Skapar rapport för {modality} ({machine}) kopplade till undersökning {exam_name}")
+            for weight in data[(data[OUTPUT_COL_EXAM] == exam_name) & (data[VALID_STUDY_COLUMNS.Machine] == machine)][OUTPUT_COL_WEIGTH_CATEGORY].unique().tolist():
+                logger.debug(f"Skapar rapport för {modality} ({machine}) kopplade till undersökning {exam_name}")
 
-            _create_report_main(template_path=report_template, data=data, machine=machine, exam_name=exam_name, modality=modality)
+                _create_report_main(template_path=report_template, data=data, machine=machine, exam_name=exam_name, weight=weight, modality=modality)
 
     return
 
 
-def _create_report_main(template_path: Path, data: pd.DataFrame, modality:str, machine: str, exam_name:str):
-    output_path: Path = REPORT_OUTPUT_DIR / f"{modality} - {machine} - {exam_name}{template_path.suffix}"
+def _create_report_main(template_path: Path, data: pd.DataFrame, modality:str, machine: str, exam_name:str, weight:str):
+    output_path: Path = REPORT_OUTPUT_DIR / f"{modality} - {machine} - {exam_name} - {weight}{template_path.suffix}"
 
     report_template = load_workbook(template_path)
     sheet = report_template.active
