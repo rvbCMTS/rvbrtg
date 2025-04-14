@@ -2,16 +2,14 @@ import logging
 import time
 from datetime import datetime
 from math import floor
-
-import user
-
 from rich.console import Console
 
 
-from Rapportering.DSN.fetch_data import get_modality_data_for_year
 from Rapportering.DSN.constants import MODALITY_LIST
+from Rapportering.DSN.fetch_data import get_modality_data_for_year
 from Rapportering.DSN.format_data  import format_data
 from Rapportering.DSN.save_formatted_data import save_formatted_data
+from Rapportering.DSN.plot_data import plot_data
 
 rprint = Console(soft_wrap=True).print
 
@@ -71,6 +69,9 @@ def main(year: int = 0):
         logger.info(f"Formaterar data för att stoppa in i rapporterna")
         formatted_data = format_data(data=study_data, modality=modality)
         logger.info(f"Data för {modality} formaterad")
+
+        logger.info(f"Plottar formaterad data för {modality}")
+        plot_data(data=formatted_data, modality=modality)
 
         logger.info(f"Sparar formaterad data för {modality}")
         save_formatted_data(data=formatted_data, modality=modality)
