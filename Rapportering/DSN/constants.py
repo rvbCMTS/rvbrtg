@@ -25,7 +25,7 @@ REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
 #    MODALITY_CT,
-    MODALITY_DX,
+#    MODALITY_DX
 #    MODALITY_MG,
     MODALITY_XA
 ]
@@ -58,33 +58,15 @@ COLUMN_SELECTION_PER_MODALITY = {
             VALID_SERIES_COLUMNS.SizeSpecificDoseEstimation,
             VALID_SERIES_COLUMNS.AcquisitionProtocol,
     ],
-    MODALITY_XA: [
-        VALID_STUDY_COLUMNS.Hospital,
-        VALID_STUDY_COLUMNS.StudyDateTime,
-        VALID_STUDY_COLUMNS.Machine,
-        VALID_STUDY_COLUMNS.StudyDescription,
-        VALID_STUDY_COLUMNS.ProtocolCode,
-        VALID_STUDY_COLUMNS.PatientAge,
-        VALID_STUDY_COLUMNS.PatientsWeight,
-        VALID_STUDY_COLUMNS.PatientsWeightDate,
-        VALID_STUDY_COLUMNS.PatientsWeightSource,
-        VALID_STUDY_COLUMNS.PatientDbId, #Vad används denna till?
-        VALID_STUDY_COLUMNS.FluoroDoseAreaProductTotal,
-        VALID_STUDY_COLUMNS.FluoroDoseRPTotal,
-        VALID_STUDY_COLUMNS.TotalFluoroTime,
-        VALID_STUDY_COLUMNS.DoseAreaProductTotal,
-        VALID_STUDY_COLUMNS.AcquisitionDoseAreaProductTotal,
-        VALID_STUDY_COLUMNS.AcquisitionDoseRPTotal,
-        VALID_STUDY_COLUMNS.TotalNumberOfRadiographicFrames, #Antal pulser (ej irradiation events) av typen "Stationary Acquisition"
-        VALID_STUDY_COLUMNS.PatientsSex,
-        VALID_STUDY_COLUMNS.PatientsSize,
-        VALID_STUDY_COLUMNS.PatientsSizeDate,
-        VALID_STUDY_COLUMNS.PatientsSizeSource,
-        VALID_STUDY_COLUMNS.ProcedureCode,
-        VALID_STUDY_COLUMNS.ProcedureCodeMeaning,
-        VALID_STUDY_COLUMNS.RequestedProcedureCodeMeaning,
-        VALID_SERIES_COLUMNS.AcquisitionProtocol,
-    ]
+    MODALITY_XA: COLUMN_SELCTION_GENERAL + [
+            VALID_STUDY_COLUMNS.FluoroDoseAreaProductTotal,
+            VALID_STUDY_COLUMNS.FluoroDoseRPTotal,
+            VALID_STUDY_COLUMNS.TotalFluoroTime,
+            VALID_STUDY_COLUMNS.DoseAreaProductTotal,
+            VALID_STUDY_COLUMNS.AcquisitionDoseAreaProductTotal,
+            VALID_STUDY_COLUMNS.AcquisitionDoseRPTotal,
+            VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents, #Antal pedaltramp (ej irradiation events) av typen "Stationary Acquisition"
+    ],
     MODALITY_DX: COLUMN_SELCTION_GENERAL + [
         VALID_STUDY_COLUMNS.TotalNumberOfRadiographicFrames,
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
@@ -102,6 +84,7 @@ MODALITY_FILTER_SELECTION_PER_MODALITY = {
 REPORT_TEMPLATE_PATH_PER_MODALITY = {
     MODALITY_CT: Path(__file__).parent / "ReportTemplates/CT Mall DsnRegistrering.xlsx",
     MODALITY_DX: Path(__file__).parent / "ReportTemplates/RTG DsnRegistrering.xlsx",
+    MODALITY_XA: Path(__file__).parent / "ReportTemplates/INT Mall DsnRegistrering.xlsx"
 }
 
 EXAM_GROUPING_TYPE_STUDY_DESCRIPTION = "Study Description"

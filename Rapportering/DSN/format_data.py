@@ -39,6 +39,9 @@ def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
 
     if modality == MODALITY_DX:
         return _format_dx_data(data)
+    
+    if modality == MODALITY_XA:
+        return _format_xa_data(data)
 
 
     raise  NotImplementedError(f"Modality {modality} not implemented.")
@@ -73,6 +76,20 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
 
     return data
 
+
+def _format_xa_data(data: pd.DataFrame) -> pd.DataFrame:
+    data = data[data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] > 0]  # Remove negative and zero DAP values
+
+    data[VALID_STUDY_COLUMNS.TotalFluoroTime] = data[VALID_STUDY_COLUMNS.TotalFluoroTime] / 60  # Convert fluoro time to minutes
+    data[VALID_STUDY_COLUMNS.TotalFluoroTime] = data[VALID_STUDY_COLUMNS.TotalFluoroTime].round(2)  # Round fluoro time to 2 decimal places
+    
+    data = _categorize_by_weight(data)
+
+    data = _categorize_exams_according_to_ssm(data, modality=MODALITY_XA)
+ 
+    data = _filter_for_number_of_examinations_needed_for_DSN_report(data)
+
+    return data
 
 def _filter_for_size_and_weight_date_intervals_relative_study_datetime(data: pd.DataFrame) -> pd.DataFrame:
     data.loc[:, "SizeDateDiff"] = abs(data[VALID_STUDY_COLUMNS.PatientsSizeDate] - data[VALID_STUDY_COLUMNS.StudyDateTime])

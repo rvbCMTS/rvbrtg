@@ -3,7 +3,8 @@ import time
 from datetime import datetime
 from math import floor
 from rich.console import Console
-
+import os
+print(os.environ.get("PYTHONPATH"))
 
 from Rapportering.DSN.constants import MODALITY_LIST
 from Rapportering.DSN.fetch_data import get_modality_data_for_year
@@ -70,8 +71,8 @@ def main(year: int = 0):
         formatted_data = format_data(data=study_data, modality=modality)
         logger.info(f"Data för {modality} formaterad")
 
-        logger.info(f"Plottar formaterad data för {modality}")
-        plot_data(data=formatted_data, modality=modality)
+       # logger.info(f"Plottar formaterad data för {modality}")
+       # plot_data(data=formatted_data, modality=modality)
 
         logger.info(f"Sparar formaterad data för {modality}")
         save_formatted_data(data=formatted_data, modality=modality)
