@@ -1,6 +1,7 @@
+import logging
 import pandas as pd
-
 import plotly.express as px
+
 from plotly.subplots import make_subplots
 
 from Rapportering.DSN.constants import (
@@ -10,6 +11,9 @@ from Rapportering.DSN.constants import (
     MODALITY_DX
 )
 
+logger = logging.getLogger("yearly_statistics")
+
+
 def plot_data(data: pd.DataFrame, modality: str) -> None:
   
 
@@ -18,7 +22,7 @@ def plot_data(data: pd.DataFrame, modality: str) -> None:
             _plot_data_dx(dataframe = data, exam_name = exam_name)
 
     else:
-        raise  NotImplementedError(f"Modality {modality} not implemented.")
+        logger.info(f"Modality {modality} not implemented.")
         
 
 

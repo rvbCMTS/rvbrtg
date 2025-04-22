@@ -110,13 +110,13 @@ def _create_report_xa(report_sheet, data: pd.DataFrame):
     ).abs()
     data.sort_values('DAPdiff', inplace=True, ignore_index=True)
 
-    for row_ind in range(20):
+    for row_ind in range(0, min(20, len(data))):
         report_sheet.cell(row=row_ind + 3, column=1).value = data[VALID_STUDY_COLUMNS.FluoroDoseAreaProductTotal][row_ind]
         report_sheet.cell(row=row_ind + 3, column=2).value = data[VALID_STUDY_COLUMNS.FluoroDoseRPTotal][row_ind]
         report_sheet.cell(row=row_ind + 3, column=3).value = data[VALID_STUDY_COLUMNS.TotalFluoroTime][row_ind]
         report_sheet.cell(row=row_ind + 3, column=4).value = data[VALID_STUDY_COLUMNS.AcquisitionDoseAreaProductTotal][row_ind]
         report_sheet.cell(row=row_ind + 3, column=5).value = data[VALID_STUDY_COLUMNS.AcquisitionDoseRPTotal][row_ind]
-        report_sheet.cell(row=row_ind + 3, column=6).value = data[VALID_STUDY_COLUMNS.TotalNumberOfRadiographicFrames][row_ind]
+        report_sheet.cell(row=row_ind + 3, column=6).value = data[VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents][row_ind]
         report_sheet.cell(row=row_ind + 3, column=7).value = data[VALID_STUDY_COLUMNS.PatientAge][row_ind]
         report_sheet.cell(row=row_ind + 3, column=8).value = data[VALID_STUDY_COLUMNS.PatientsSex][row_ind]
         report_sheet.cell(row=row_ind + 3, column=9).value = data[VALID_STUDY_COLUMNS.PatientsSize][row_ind]
@@ -146,5 +146,3 @@ def _create_report_mg(report_sheet, data: pd.DataFrame):
         report_sheet.cell(row=row_ind + 3, column=10).value = data[MG_COL_EXAM_TYPE][row_ind]
 
     return report_sheet
-
-

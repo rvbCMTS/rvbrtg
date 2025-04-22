@@ -33,7 +33,6 @@ def get_modality_data_for_year(year: int, modality: str) -> pd.DataFrame:
     rembox.filter_options.patient_age_interval_start_value = 0
     rembox.filter_options.patient_age_interval_start_unit = "D"
     rembox.filter_options.patient_age_interval_end_value = 120
-    rembox.filter_options.patient_age_interval_include_nulls = True
     rembox.filter_options.patient_age_interval_start_unit = "Y"
     rembox.filter_options.patient_age_interval_include_nulls = True
 
