@@ -1,7 +1,7 @@
-import datetime as dt
 import sys
 from pathlib import Path
 from typing import List
+import datetime as dt
 
 path_to_repo = Path(__file__).parents[2]
 sys.path.append(str(path_to_repo))
