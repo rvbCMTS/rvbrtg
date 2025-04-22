@@ -33,7 +33,7 @@ def export_flatfield_image(file, file_name, dcm_res_path):
     _create_colorbar(fig, im, ax, width="1%", bbox_to_anchor=(0.05, 0, 1, 1))
     path_export = dcm_res_path.parent / "flat_field_plots"
     path_export.mkdir(exist_ok=True)
-    plt.savefig(path_export / (file_name.split(".")[0] + ".png"))
+    plt.savefig(path_export / (file_name.split(".")[0] + ".png"), dpi=500)
     plt.close()
     pass
 
