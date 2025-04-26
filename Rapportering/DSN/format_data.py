@@ -26,13 +26,14 @@ from Rapportering.DSN.constants import (
     AGE_CATEGORY_0_1,
     AGE_CATEGORY_1_6,
     AGE_CATEGORY_6_16,
-    CHILD_EXAM_PREFIX   
+    CHILD_EXAM_PREFIX, MG_COL_PROJECTION
 )
+from Rapportering.DSN.plot_data import plot_data
 
 
 def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
-    data = _sanity_check_patient_bmi(data)
-    data = _filter_for_size_and_weight_date_intervals_relative_study_datetime(data)
+    data = _sanity_check_patient_bmi(data=data, modality=modality)
+    data = _filter_for_size_and_weight_date_intervals_relative_study_datetime(data=data, modality=modality)
 
     if modality == MODALITY_CT:
         return _format_ct_data(data)
@@ -43,6 +44,8 @@ def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
     if modality == MODALITY_XA:
         return _format_xa_data(data)
 
+    if modality == MODALITY_MG:
+        return _format_mg_data(data)
 
     raise  NotImplementedError(f"Modality {modality} not implemented.")
 
@@ -76,6 +79,20 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
 
     return data
 
+def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
+    data = data[data[VALID_SERIES_COLUMNS.AverageGlandularDose] > 0]  # Remove negative and zero AGD values
+    data = _determine_mg_projection(data=data)
+    data[VALID_SERIES_COLUMNS.AverageGlandularDose] *= 0.1  # Convert from N to daN
+    data = _categorize_exams_according_to_ssm(data, modality=MODALITY_MG)
+
+    plot_data(data=data, modality=MODALITY_MG)
+
+    data = data[
+        data[VALID_SERIES_COLUMNS.CompressionForce].astype(float).isnotnull() &
+        data[VALID_SERIES_COLUMNS.CompressionThickness].astype(float).isnotnull()
+    ]  # Remove rows that is missing either CompressionForce or CompressionThickness
+    return data
+
 
 def _format_xa_data(data: pd.DataFrame) -> pd.DataFrame:
     data = data[data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] > 0]  # Remove negative and zero DAP values
@@ -91,7 +108,10 @@ def _format_xa_data(data: pd.DataFrame) -> pd.DataFrame:
 
     return data
 
-def _filter_for_size_and_weight_date_intervals_relative_study_datetime(data: pd.DataFrame) -> pd.DataFrame:
+def _filter_for_size_and_weight_date_intervals_relative_study_datetime(data: pd.DataFrame, modality: str) -> pd.DataFrame:
+    if modality == MODALITY_MG:
+        return data
+
     data.loc[:, "SizeDateDiff"] = abs(data[VALID_STUDY_COLUMNS.PatientsSizeDate] - data[VALID_STUDY_COLUMNS.StudyDateTime])
     data.loc[:, "WeightDateDiff"] = abs(data[VALID_STUDY_COLUMNS.PatientsWeightDate] - data[VALID_STUDY_COLUMNS.StudyDateTime])
 
@@ -116,7 +136,7 @@ def _filter_for_size_and_weight_date_intervals_relative_study_datetime(data: pd.
 
     return data
 
-def _sanity_check_patient_bmi(data: pd.DataFrame) -> pd.DataFrame:
+def _sanity_check_patient_bmi(data: pd.DataFrame, modality: str) -> pd.DataFrame:
     """Throws away data for patients with an unreasonable value for the BMI
 
     Parameters
@@ -128,6 +148,9 @@ def _sanity_check_patient_bmi(data: pd.DataFrame) -> pd.DataFrame:
     -------
     A copy of the original dataframe with added column for BMI and rows with unreasonable values dropped
     """
+    if modality == MODALITY_MG:
+        return data
+
     data["BMI"] = data[VALID_STUDY_COLUMNS.PatientsWeight] / ((data[VALID_STUDY_COLUMNS.PatientsSize] / 100) ** 2)
 
     return data[(data.BMI > 10) & (data.BMI < 35.0)]
@@ -242,3 +265,47 @@ def _filter_for_number_of_examinations_needed_for_DSN_report(data: pd.DataFrame)
     )
 
     return filtered_data
+
+
+def _determine_mg_projection(data: pd.DataFrame) -> pd.DataFrame:
+    data[MG_COL_PROJECTION] = None
+    data.loc[
+        (
+            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-65, -40) |
+            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(40, 65)
+        ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Right"),
+        MG_COL_PROJECTION
+    ] = "RMLO"
+    data.loc[
+        (
+            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-65, -40) |
+            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(40, 65)
+        ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Left"),
+        MG_COL_PROJECTION
+    ] = "LMLO"
+    data.loc[
+        (
+            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-95, -85) |
+            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(85, 95)
+        ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Right"),
+        MG_COL_PROJECTION
+    ] = "RML"
+    data.loc[
+        (
+                data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-95, -85) |
+                data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(85, 95)
+        ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Left"),
+        MG_COL_PROJECTION
+    ] = "LML"
+    data.loc[
+        data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-5, 5) &
+        data[VALID_SERIES_COLUMNS.Laterality].str.contains("Right"),
+        MG_COL_PROJECTION
+    ] = "RCC"
+    data.loc[
+        data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-5, 5) &
+        data[VALID_SERIES_COLUMNS.Laterality].str.contains("Left"),
+        MG_COL_PROJECTION
+    ] = "LCC"
+
+    return data

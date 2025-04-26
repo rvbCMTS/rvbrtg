@@ -36,8 +36,8 @@ def get_modality_data_for_year(year: int, modality: str) -> pd.DataFrame:
     rembox.filter_options.patient_age_interval_start_unit = "Y"
     rembox.filter_options.patient_age_interval_include_nulls = True
 
-    rembox.filter_options.patient_size_in_centimeters_include_nulls = False
-    rembox.filter_options.patient_weight_in_kilograms_include_nulls = False
+    rembox.filter_options.patient_size_in_centimeters_include_nulls = modality in (MODALITY_MG,)
+    rembox.filter_options.patient_weight_in_kilograms_include_nulls = modality in (MODALITY_MG,)
 
     rembox.filter_options.study_time_interval_start_date = "{}-01-01T00:00:00Z".format(year)
     rembox.filter_options.study_time_interval_end_date = "{}-01-01T00:00:00Z".format(year+1)

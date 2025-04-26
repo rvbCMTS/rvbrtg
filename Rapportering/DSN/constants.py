@@ -1,6 +1,9 @@
 from pathlib import Path
 
 from rembox_integration_tools.rembox_analysis import StudyColumn, SeriesColumn
+
+from Rapportering.Arsstatistik.constants import COLUMN_SELECTION_PER_MODALITY, EXAM_GROUPING_TYPE_PROCEDURE_CODE
+
 VALID_STUDY_COLUMNS = StudyColumn()
 VALID_SERIES_COLUMNS = SeriesColumn()
 
@@ -20,17 +23,25 @@ MG_COL_EXAM_INDEX = "ExamIndex"
 MG_COL_PROJECTION = "Projection"
 MG_COL_EXAM_TYPE = "ExamType"
 
+MG_PROJ_LMLO = "LMLO"
+MG_PROJ_RMLO = "RMLO"
+MG_PROJ_LML = "LML"
+MG_PROJ_RML = "RML"
+MG_PROJ_LCC = "LCC"
+MG_PROJ_RCC = "RCC"
+
+COL_MARKER_LINE_WIDTH = "markerLineWidth"
 
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
 #    MODALITY_CT,
 #    MODALITY_DX
-#    MODALITY_MG,
-    MODALITY_XA
+    MODALITY_MG,
+#    MODALITY_XA
 ]
 
-COLUMN_SELCTION_GENERAL = [
+COLUMN_SELECTION_GENERAL = [
     VALID_STUDY_COLUMNS.Hospital,
     VALID_STUDY_COLUMNS.StudyDateTime,
     VALID_STUDY_COLUMNS.Machine,
@@ -50,7 +61,7 @@ COLUMN_SELCTION_GENERAL = [
 ]
 
 COLUMN_SELECTION_PER_MODALITY = {
-    MODALITY_CT: COLUMN_SELCTION_GENERAL + [        
+    MODALITY_CT: COLUMN_SELECTION_GENERAL + [
             VALID_STUDY_COLUMNS.DlpTotal,  
             VALID_SERIES_COLUMNS.MeanCTDIvol,
             VALID_SERIES_COLUMNS.kVp,       
@@ -58,7 +69,7 @@ COLUMN_SELECTION_PER_MODALITY = {
             VALID_SERIES_COLUMNS.SizeSpecificDoseEstimation,
             VALID_SERIES_COLUMNS.AcquisitionProtocol,
     ],
-    MODALITY_XA: COLUMN_SELCTION_GENERAL + [
+    MODALITY_XA: COLUMN_SELECTION_GENERAL + [
             VALID_STUDY_COLUMNS.FluoroDoseAreaProductTotal,
             VALID_STUDY_COLUMNS.FluoroDoseRPTotal,
             VALID_STUDY_COLUMNS.TotalFluoroTime,
@@ -67,24 +78,45 @@ COLUMN_SELECTION_PER_MODALITY = {
             VALID_STUDY_COLUMNS.AcquisitionDoseRPTotal,
             VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents, #Antal pedaltramp (ej irradiation events) av typen "Stationary Acquisition"
     ],
-    MODALITY_DX: COLUMN_SELCTION_GENERAL + [
+    MODALITY_DX: COLUMN_SELECTION_GENERAL + [
         VALID_STUDY_COLUMNS.TotalNumberOfRadiographicFrames,
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
     ],
+    MODALITY_MG: [
+        VALID_STUDY_COLUMNS.Hospital,
+        VALID_STUDY_COLUMNS.StudyDateTime,
+        VALID_STUDY_COLUMNS.Machine,
+        VALID_STUDY_COLUMNS.StudyDescription,
+        VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents,
+        VALID_STUDY_COLUMNS.PatientDbId,
+        VALID_STUDY_COLUMNS.PatientsSex,
+        VALID_STUDY_COLUMNS.ProcedureCode,
+        VALID_SERIES_COLUMNS.kVp,
+        VALID_SERIES_COLUMNS.CompressionForce,
+        VALID_SERIES_COLUMNS.CompressionThickness,
+        VALID_SERIES_COLUMNS.PositionerPrimaryAngle,
+        VALID_SERIES_COLUMNS.PositionerSecondaryAngle,
+        VALID_SERIES_COLUMNS.Exposure,
+        VALID_SERIES_COLUMNS.Laterality,
+        VALID_SERIES_COLUMNS.AverageGlandularDose,
+        VALID_SERIES_COLUMNS.AnodeTargetMaterial,
+        VALID_SERIES_COLUMNS.XrayFilterMaterial
+    ]
 }
 
 MODALITY_FILTER_SELECTION_PER_MODALITY = {
     MODALITY_CT: ["CT"],
     MODALITY_DX: ["DX"],
     MODALITY_MG: ["MG"],
-    MODALITY_XA: ["XASTAT", "XAMOB"]
+    MODALITY_XA: ["XASTAT", "XAMOB"],
 }
 
 
 REPORT_TEMPLATE_PATH_PER_MODALITY = {
     MODALITY_CT: Path(__file__).parent / "ReportTemplates/CT Mall DsnRegistrering.xlsx",
     MODALITY_DX: Path(__file__).parent / "ReportTemplates/RTG DsnRegistrering.xlsx",
-    MODALITY_XA: Path(__file__).parent / "ReportTemplates/INT Mall DsnRegistrering.xlsx"
+    MODALITY_XA: Path(__file__).parent / "ReportTemplates/INT Mall DsnRegistrering.xlsx",
+    MODALITY_MG: Path(__file__).parent / "ReportTemplates/MG Mall DsnRegistrering.xlsx",
 }
 
 EXAM_GROUPING_TYPE_STUDY_DESCRIPTION = "Study Description"
@@ -136,7 +168,11 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
         }
     },
     MODALITY_MG: {
-        EXAM_GROUPING_TYPE_ACQUISITION_PROTOCOL: {}
+        EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
+            "Screening": ["66200"],
+            "Klinisk Tomosyntes": ["66061"],
+            "Klinisk": ["66000"]
+        }
     },
 }
 
