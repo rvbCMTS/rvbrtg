@@ -1,4 +1,6 @@
 import logging
+from pathlib import Path
+
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
@@ -78,12 +80,15 @@ def _plot_data_dx(dataframe: pd.DataFrame, exam_name: str) -> None:
 
 def _plot_data_mg(data: pd.DataFrame) -> None:
     try:
+        logger.info("Plotting MG data")
+        output_dir = Path(__file__).parent.parent.parent / "LocalOnly/DSN_Plots"
+        output_dir.mkdir(parents=True, exist_ok=True)
         study_descriptions = sorted(data[OUTPUT_COL_EXAM].unique().tolist())
 
         data[COL_MARKER_LINE_WIDTH] = 0
         data.loc[
-            data[VALID_SERIES_COLUMNS.CompressionThickness].astype(float).isnotnull() &
-            data[VALID_SERIES_COLUMNS.CompressionForce].astype(float).isnotnull(),
+            data[VALID_SERIES_COLUMNS.CompressionThickness].notnull() &
+            data[VALID_SERIES_COLUMNS.CompressionForce].notnull(),
             COL_MARKER_LINE_WIDTH
         ] = 4
 
@@ -102,19 +107,21 @@ def _plot_data_mg(data: pd.DataFrame) -> None:
             for ind, machine in enumerate(machines):
                 tmp_df = data[(data[OUTPUT_COL_EXAM] == study_description) & (data[VALID_STUDY_COLUMNS.Machine] == machine)]
                 _get_mg_plot_row_for_projections(
-                    tmp_df=tmp_df, left_proj=MG_PROJ_LMLO, right_proj=MG_PROJ_RMLO, row=1, ind=ind, fig=fig)
+                    tmp_df=tmp_df, left_proj=MG_PROJ_LMLO, right_proj=MG_PROJ_RMLO, row=1, ind=ind, machine=machine, fig=fig)
                 _get_mg_plot_row_for_projections(
-                    tmp_df=tmp_df, left_proj=MG_PROJ_LML, right_proj=MG_PROJ_RML, row=2, ind=ind, fig=fig)
+                    tmp_df=tmp_df, left_proj=MG_PROJ_LML, right_proj=MG_PROJ_RML, row=2, ind=ind, machine=machine, fig=fig)
                 _get_mg_plot_row_for_projections(
-                    tmp_df=tmp_df, left_proj=MG_PROJ_LCC, right_proj=MG_PROJ_RCC, row=3, ind=ind, fig=fig)
+                    tmp_df=tmp_df, left_proj=MG_PROJ_LCC, right_proj=MG_PROJ_RCC, row=3, ind=ind, machine=machine, fig=fig)
 
             fig.update_layout(title_text=f"{study_description}")
+            logger.debug("Saving plot as HTML")
+            fig.write_html(output_dir / f"MG_{study_description}.html")
 
     except Exception as e:
         logger.error("Failed to create mammography plots", exc_info=True)
 
 
-def _get_mg_plot_row_for_projections(tmp_df: pd.DataFrame, left_proj: str, right_proj: str, row: int, ind: int, fig):
+def _get_mg_plot_row_for_projections(tmp_df: pd.DataFrame, left_proj: str, right_proj: str, row: int, ind: int, machine: str, fig):
     symbols = [
         "circle-open", "diamond-open", "square-open", "triangle-up-open", "cross-open", "x-open",
         "pentagon-open", "hexagon2-open"
@@ -134,7 +141,10 @@ def _get_mg_plot_row_for_projections(tmp_df: pd.DataFrame, left_proj: str, right
                 ),
                 symbol=symbols[ind],
                 color=colors[ind]
-            )
+            ),
+            legendgroup=f"machine{ind}",
+            showlegend=False,
+            name=machine,
         ), row=row, col=1
     )
     fig.add_trace(
@@ -148,7 +158,10 @@ def _get_mg_plot_row_for_projections(tmp_df: pd.DataFrame, left_proj: str, right
                 ),
                 symbol=symbols[ind],
                 color=colors[ind]
-            )
+            ),
+            legendgroup=f"machine{ind}",
+            showlegend=False,
+            name=machine,
         ), row=row, col=2
     )
     fig.add_trace(
@@ -162,7 +175,10 @@ def _get_mg_plot_row_for_projections(tmp_df: pd.DataFrame, left_proj: str, right
                 ),
                 symbol=symbols[ind],
                 color=colors[ind]
-            )
+            ),
+            legendgroup=f"machine{ind}",
+            showlegend=False,
+            name=machine,
         ), row=row, col=3
     )
     fig.add_trace(
@@ -176,7 +192,10 @@ def _get_mg_plot_row_for_projections(tmp_df: pd.DataFrame, left_proj: str, right
                 ),
                 symbol=symbols[ind],
                 color=colors[ind]
-            )
+            ),
+            legendgroup=f"machine{ind}",
+            showlegend=row == 1,
+            name=machine,
         ), row=row, col=4
     )
 
