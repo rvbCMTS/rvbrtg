@@ -25,10 +25,14 @@ def save_formatted_data(data: pd.DataFrame, modality: str) -> None:
 
     for exam_name in data[OUTPUT_COL_EXAM].unique().tolist():
         for machine in data[data[OUTPUT_COL_EXAM] == exam_name][VALID_STUDY_COLUMNS.Machine].unique().tolist():
-            for weight in data[(data[OUTPUT_COL_EXAM] == exam_name) & (data[VALID_STUDY_COLUMNS.Machine] == machine)][OUTPUT_COL_WEIGTH_CATEGORY].unique().tolist():
+            if modality == MODALITY_MG:
                 logger.debug(f"Skapar rapport för {modality} ({machine}) kopplade till undersökning {exam_name}")
+                _create_report_main(template_path=report_template, data=data, machine=machine, exam_name=exam_name, weight=None, modality=modality)
+            else:
+                for weight in data[(data[OUTPUT_COL_EXAM] == exam_name) & (data[VALID_STUDY_COLUMNS.Machine] == machine)][OUTPUT_COL_WEIGTH_CATEGORY].unique().tolist():
+                    logger.debug(f"Skapar rapport för {modality} ({machine}) kopplade till undersökning {exam_name}")
 
-                _create_report_main(template_path=report_template, data=data, machine=machine, exam_name=exam_name, weight=weight, modality=modality)
+                    _create_report_main(template_path=report_template, data=data, machine=machine, exam_name=exam_name, weight=weight, modality=modality)
 
     return
 
@@ -38,7 +42,10 @@ def _create_report_main(template_path: Path, data: pd.DataFrame, modality:str, m
 
     report_template = load_workbook(template_path)
     sheet = report_template.active
-    tmp_data = data[(data[OUTPUT_COL_EXAM] == exam_name) & (data[VALID_STUDY_COLUMNS.Machine] == machine) & (data[OUTPUT_COL_WEIGTH_CATEGORY] == weight)].reset_index()
+
+    tmp_data = data[(data[OUTPUT_COL_EXAM] == exam_name) & (data[VALID_STUDY_COLUMNS.Machine] == machine)].reset_index()
+    if modality != MODALITY_MG:
+        tmp_data = tmp_data[data[OUTPUT_COL_WEIGTH_CATEGORY] == weight].reset_index()
 
     if modality not in [
         MODALITY_DX, MODALITY_MG, MODALITY_XA, MODALITY_CT
@@ -126,23 +133,29 @@ def _create_report_xa(report_sheet, data: pd.DataFrame):
 
 
 def _create_report_mg(report_sheet, data: pd.DataFrame):
-    # Sort data based on their absolute diff in CDTI compared to the mean of all exams in order to report the middle
+    # Sort data based on their absolute diff in AGD compared to the mean of all exams in order to report the middle
     # interval of all exams
+    COL_AGD_SUM = "AGD_SUM"
+    data[COL_AGD_SUM] = data.groupby(VALID_STUDY_COLUMNS.Id)[VALID_SERIES_COLUMNS.AverageGlandularDose].transform("sum")
     data['AGDdiff'] = (
-            data[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts] - data.loc[:, VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts].median()
+            data[COL_AGD_SUM] - data.groupby(VALID_STUDY_COLUMNS.Id)[COL_AGD_SUM].max().median()
     ).abs()
     data.sort_values(['AGDdiff', MG_COL_EXAM_INDEX], inplace=True, ignore_index=True)
+    exam_ids = data[VALID_STUDY_COLUMNS.Id].unique().tolist()
+    row_offset = 3
+    for exam_ind in range(20):
+        tmp_data = data[data[VALID_STUDY_COLUMNS.Id] == exam_ids[exam_ind]].sort_values([MG_COL_EXAM_INDEX], ignore_index=True)
+        for row_ind in range(len(tmp_data)):
+            report_sheet.cell(row=row_ind + row_offset, column=1).value = tmp_data[MG_COL_EXAM_INDEX][row_ind]
+            report_sheet.cell(row=row_ind + row_offset, column=2).value = tmp_data[MG_COL_PROJECTION][row_ind]
+            report_sheet.cell(row=row_ind + row_offset, column=3).value = tmp_data[VALID_SERIES_COLUMNS.kVp][row_ind]
+            report_sheet.cell(row=row_ind + row_offset, column=4).value = tmp_data[VALID_SERIES_COLUMNS.Exposure][row_ind]
+            report_sheet.cell(row=row_ind + row_offset, column=5).value = tmp_data[VALID_SERIES_COLUMNS.CompressionForce][row_ind]
+            report_sheet.cell(row=row_ind + row_offset, column=6).value = tmp_data[VALID_SERIES_COLUMNS.AverageGlandularDose][row_ind]
+            report_sheet.cell(row=row_ind + row_offset, column=7).value = tmp_data[VALID_SERIES_COLUMNS.CompressionThickness][row_ind]
+            report_sheet.cell(row=row_ind + row_offset, column=8).value = tmp_data[VALID_SERIES_COLUMNS.AnodeTargetMaterial][row_ind]
+            report_sheet.cell(row=row_ind + row_offset, column=9).value = tmp_data[VALID_SERIES_COLUMNS.XrayFilterMaterial][row_ind]
 
-    for row_ind in range(20):
-        report_sheet.cell(row=row_ind + 3, column=1).value = data[MG_COL_EXAM_INDEX][row_ind]
-        report_sheet.cell(row=row_ind + 3, column=2).value = data[VALID_SERIES_COLUMNS.AverageGlandularDose][row_ind]
-        report_sheet.cell(row=row_ind + 3, column=3).value = data[MG_COL_PROJECTION][row_ind]
-        report_sheet.cell(row=row_ind + 3, column=4).value = data[VALID_SERIES_COLUMNS.kVp][row_ind]
-        report_sheet.cell(row=row_ind + 3, column=5).value = data[VALID_SERIES_COLUMNS.Exposure][row_ind]
-        report_sheet.cell(row=row_ind + 3, column=6).value = data[VALID_SERIES_COLUMNS.CompressionForce][row_ind]
-        report_sheet.cell(row=row_ind + 3, column=7).value = data[VALID_SERIES_COLUMNS.CompressionThickness][row_ind]
-        report_sheet.cell(row=row_ind + 3, column=8).value = data[VALID_SERIES_COLUMNS.AnodeTargetMaterial][row_ind]
-        report_sheet.cell(row=row_ind + 3, column=9).value = data[VALID_SERIES_COLUMNS.XrayFilterMaterial][row_ind]
-        report_sheet.cell(row=row_ind + 3, column=10).value = data[MG_COL_EXAM_TYPE][row_ind]
+            row_offset = row_offset + 1
 
     return report_sheet
