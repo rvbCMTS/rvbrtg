@@ -30,6 +30,9 @@ MG_PROJ_RML = "RML"
 MG_PROJ_LCC = "LCC"
 MG_PROJ_RCC = "RCC"
 
+MG_COMPRESSION_THICKNESS_RANGE = (40, 60)
+MG_SERIES_COUNT_FILTER = 4
+
 COL_MARKER_LINE_WIDTH = "markerLineWidth"
 
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
@@ -87,6 +90,8 @@ COLUMN_SELECTION_PER_MODALITY = {
         VALID_STUDY_COLUMNS.StudyDateTime,
         VALID_STUDY_COLUMNS.Machine,
         VALID_STUDY_COLUMNS.StudyDescription,
+        VALID_STUDY_COLUMNS.PatientAge,
+        VALID_STUDY_COLUMNS.PatientAgeUnit,
         VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents,
         VALID_STUDY_COLUMNS.PatientDbId,
         VALID_STUDY_COLUMNS.PatientsSex,

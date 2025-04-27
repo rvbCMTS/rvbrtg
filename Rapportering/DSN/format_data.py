@@ -26,7 +26,8 @@ from Rapportering.DSN.constants import (
     AGE_CATEGORY_0_1,
     AGE_CATEGORY_1_6,
     AGE_CATEGORY_6_16,
-    CHILD_EXAM_PREFIX, MG_COL_PROJECTION
+    CHILD_EXAM_PREFIX, MG_COL_PROJECTION, MG_COMPRESSION_THICKNESS_RANGE, MG_SERIES_COUNT_FILTER, MG_COL_EXAM_INDEX,
+    MG_PROJ_RMLO, MG_PROJ_LMLO, MG_PROJ_RML, MG_PROJ_LML, MG_PROJ_RCC, MG_PROJ_LCC
 )
 from Rapportering.DSN.plot_data import plot_data
 
@@ -82,15 +83,19 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
 def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
     data = data[data[VALID_SERIES_COLUMNS.AverageGlandularDose] > 0]  # Remove negative and zero AGD values
     data = _determine_mg_projection(data=data)
-    data[VALID_SERIES_COLUMNS.AverageGlandularDose] *= 0.1  # Convert from N to daN
+    data.loc[:, VALID_SERIES_COLUMNS.AverageGlandularDose] = data[VALID_SERIES_COLUMNS.AverageGlandularDose].divide(10)  # Convert from N to daN
     data = _categorize_exams_according_to_ssm(data, modality=MODALITY_MG)
 
     plot_data(data=data, modality=MODALITY_MG)
 
     data = data[
-        data[VALID_SERIES_COLUMNS.CompressionForce].astype(float).isnotnull() &
-        data[VALID_SERIES_COLUMNS.CompressionThickness].astype(float).isnotnull()
+        data[VALID_SERIES_COLUMNS.CompressionForce].notnull() &
+        data[VALID_SERIES_COLUMNS.CompressionThickness].notnull()
     ]  # Remove rows that is missing either CompressionForce or CompressionThickness
+
+    data = _filter_for_compression_thickness_limits(data)
+    data[MG_COL_EXAM_INDEX] = data.groupby(VALID_STUDY_COLUMNS.Id).cumcount() + 1
+
     return data
 
 
@@ -215,7 +220,7 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
     exam_grouping_rules = EXAM_GROUPING_RULES_BY_MODALITY[modality]
 
     data.reset_index(drop=True)
-    data.loc[:, OUTPUT_COL_EXAM] = None
+    data[OUTPUT_COL_EXAM] = pd.Series(dtype="str")
 
     for exam_grouping_type, exam_group in exam_grouping_rules.items():
         if exam_grouping_type == EXAM_GROUPING_TYPE_STUDY_DESCRIPTION:
@@ -232,7 +237,11 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
         for exam_name, exam_group_values in exam_group.items():
             if not exam_group_values:
                 continue
-            if CHILD_EXAM_PREFIX in exam_name:
+
+            if modality == MODALITY_MG:
+                data.loc[data[grouping_column].isin(exam_group_values), [OUTPUT_COL_EXAM]] = exam_name
+
+            elif CHILD_EXAM_PREFIX in exam_name:
                 data.loc[(data[grouping_column].isin(exam_group_values)) & 
                          (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
                          (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), [OUTPUT_COL_EXAM]] = exam_name
@@ -241,7 +250,12 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
                          (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) &
                          (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), [OUTPUT_COL_EXAM]] = exam_name
 
-    return data.dropna(subset=[OUTPUT_COL_EXAM, VALID_STUDY_COLUMNS.PatientsSize, VALID_STUDY_COLUMNS.PatientsWeight])
+    if modality == MODALITY_MG:
+        data = data.dropna(subset=[OUTPUT_COL_EXAM])
+    else:
+        data = data.dropna(subset=[OUTPUT_COL_EXAM, VALID_STUDY_COLUMNS.PatientsSize, VALID_STUDY_COLUMNS.PatientsWeight])
+
+    return data
 
 
 def _filter_for_number_of_examinations_needed_for_DSN_report(data: pd.DataFrame) -> pd.DataFrame:
@@ -257,7 +271,6 @@ def _filter_for_number_of_examinations_needed_for_DSN_report(data: pd.DataFrame)
     -------
     A filtered version of the REMbox data
     """
-
     filtered_data = data.groupby(by=[OUTPUT_COL_EXAM, OUTPUT_COL_WEIGTH_CATEGORY, VALID_STUDY_COLUMNS.Machine]).filter(
         lambda x: x[VALID_STUDY_COLUMNS.DoseAreaProductTotal].count() > 10
         if x[VALID_STUDY_COLUMNS.PatientAge].max() < 16
@@ -268,44 +281,53 @@ def _filter_for_number_of_examinations_needed_for_DSN_report(data: pd.DataFrame)
 
 
 def _determine_mg_projection(data: pd.DataFrame) -> pd.DataFrame:
-    data[MG_COL_PROJECTION] = None
+    data[MG_COL_PROJECTION] = pd.Series(dtype="str")
     data.loc[
         (
             data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-65, -40) |
             data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(40, 65)
         ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Right"),
         MG_COL_PROJECTION
-    ] = "RMLO"
+    ] = MG_PROJ_RMLO
     data.loc[
         (
             data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-65, -40) |
             data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(40, 65)
         ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Left"),
         MG_COL_PROJECTION
-    ] = "LMLO"
+    ] = MG_PROJ_LMLO
     data.loc[
         (
             data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-95, -85) |
             data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(85, 95)
         ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Right"),
         MG_COL_PROJECTION
-    ] = "RML"
+    ] = MG_PROJ_RML
     data.loc[
         (
                 data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-95, -85) |
                 data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(85, 95)
         ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Left"),
         MG_COL_PROJECTION
-    ] = "LML"
+    ] = MG_PROJ_LML
     data.loc[
         data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-5, 5) &
         data[VALID_SERIES_COLUMNS.Laterality].str.contains("Right"),
         MG_COL_PROJECTION
-    ] = "RCC"
+    ] = MG_PROJ_RCC
     data.loc[
         data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-5, 5) &
         data[VALID_SERIES_COLUMNS.Laterality].str.contains("Left"),
         MG_COL_PROJECTION
-    ] = "LCC"
+    ] = MG_PROJ_LCC
+
+    return data
+
+
+def _filter_for_compression_thickness_limits(data: pd.DataFrame):
+    data.loc[:, "SeriesCount"] = data.groupby(VALID_STUDY_COLUMNS.Id)[VALID_STUDY_COLUMNS.Id].transform("count")
+    data = data[
+        data[VALID_SERIES_COLUMNS.CompressionThickness].between(MG_COMPRESSION_THICKNESS_RANGE[0], MG_COMPRESSION_THICKNESS_RANGE[1])
+        & (data.SeriesCount == MG_SERIES_COUNT_FILTER)]
 
     return data

@@ -46,7 +46,6 @@ def get_modality_data_for_year(year: int, modality: str) -> pd.DataFrame:
 
     study_data, series_data = rembox.run_query()
 
-    print(series_data.columns)
     series = pd.merge(series_data, study_data, left_on='studyId', right_on="id")
     series = series.drop_duplicates(ignore_index=True)
 
