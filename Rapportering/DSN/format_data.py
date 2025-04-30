@@ -327,11 +327,10 @@ def _determine_mg_projection(data: pd.DataFrame) -> pd.DataFrame:
 def _filter_for_compression_thickness_limits(data: pd.DataFrame):
     data = data[
         data[VALID_SERIES_COLUMNS.CompressionThickness].between(MG_COMPRESSION_THICKNESS_RANGE[0],
-        MG_COMPRESSION_THICKNESS_RANGE[1])]
+                                                                MG_COMPRESSION_THICKNESS_RANGE[1])]
     data.loc[:, "SeriesCount"] = data.groupby(VALID_STUDY_COLUMNS.Id)[VALID_STUDY_COLUMNS.Id].transform("count")
     data = data[(data[OUTPUT_COL_EXAM] != "Screening") | (
-            (data.SeriesCount == MG_SERIES_COUNT_FILTER)
-            & data[VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents] == MG_SERIES_COUNT_FILTER)]
-
+        (data.SeriesCount == MG_SERIES_COUNT_FILTER) & (data[VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents] == MG_SERIES_COUNT_FILTER)
+    )]
 
     return data

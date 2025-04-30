@@ -57,7 +57,7 @@ def _create_report_main(template_path: Path, data: pd.DataFrame, modality:str, m
         if modality == MODALITY_CT else (
             _create_report_dx(report_sheet=sheet, data=tmp_data)
             if modality == MODALITY_DX else (
-                _create_report_mg(report_sheet=sheet, data=tmp_data)
+                _create_report_mg(report_sheet=sheet, data=tmp_data, machine=machine, exam_name=exam_name)
                 if modality == MODALITY_MG else (
                     _create_report_xa(report_sheet=sheet, data=tmp_data)
                 )
@@ -132,7 +132,7 @@ def _create_report_xa(report_sheet, data: pd.DataFrame):
     return report_sheet
 
 
-def _create_report_mg(report_sheet, data: pd.DataFrame):
+def _create_report_mg(report_sheet, data: pd.DataFrame, machine: str, exam_name: str):
     # Sort data based on their absolute diff in AGD compared to the mean of all exams in order to report the middle
     # interval of all exams
     COL_AGD_SUM = "AGD_SUM"
@@ -140,34 +140,24 @@ def _create_report_mg(report_sheet, data: pd.DataFrame):
     data['AGDdiff'] = (
             data[COL_AGD_SUM] - data.groupby(VALID_STUDY_COLUMNS.Id)[COL_AGD_SUM].max().median()
     ).abs()
-    #data.sort_values(['AGDdiff', MG_COL_EXAM_INDEX], inplace=True, ignore_index=True)
-    #data.sort_values(
-    #    ['AGDdiff', VALID_STUDY_COLUMNS.Id, MG_COL_EXAM_INDEX],
-    #    inplace=True,
-    #    ignore_index=True
-    #)
-
-    #exam_ids = data[VALID_STUDY_COLUMNS.Id].unique().tolist()
-
-    exam_ids = data.sort_values(
-        ['AGDdiff'],
-        inplace=False,
-        ignore_index=True
-    )[VALID_STUDY_COLUMNS.Id].unique().tolist()
-    row_offset = 3
+    exam_ids = data.sort_values(['AGDdiff'], inplace=False, ignore_index=True)[VALID_STUDY_COLUMNS.Id].unique().tolist()
+    main_row_ind = 3
+    if len(exam_ids) < 20:
+        logger.warning(f"Too few exams in category {exam_name} ({machine})")
+        return report_sheet
     for exam_ind in range(20):
         tmp_data = data[data[VALID_STUDY_COLUMNS.Id] == exam_ids[exam_ind]].sort_values([MG_COL_EXAM_INDEX], ignore_index=True)
         for row_ind in range(len(tmp_data)):
-            report_sheet.cell(row=row_ind + row_offset, column=1).value = tmp_data[MG_COL_EXAM_INDEX][row_ind]
-            report_sheet.cell(row=row_ind + row_offset, column=2).value = tmp_data[MG_COL_PROJECTION][row_ind]
-            report_sheet.cell(row=row_ind + row_offset, column=3).value = tmp_data[VALID_SERIES_COLUMNS.kVp][row_ind]
-            report_sheet.cell(row=row_ind + row_offset, column=4).value = tmp_data[VALID_SERIES_COLUMNS.Exposure][row_ind]
-            report_sheet.cell(row=row_ind + row_offset, column=5).value = tmp_data[VALID_SERIES_COLUMNS.CompressionForce][row_ind]
-            report_sheet.cell(row=row_ind + row_offset, column=6).value = tmp_data[VALID_SERIES_COLUMNS.AverageGlandularDose][row_ind]
-            report_sheet.cell(row=row_ind + row_offset, column=7).value = tmp_data[VALID_SERIES_COLUMNS.CompressionThickness][row_ind]
-            report_sheet.cell(row=row_ind + row_offset, column=8).value = tmp_data[VALID_SERIES_COLUMNS.AnodeTargetMaterial][row_ind]
-            report_sheet.cell(row=row_ind + row_offset, column=9).value = tmp_data[VALID_SERIES_COLUMNS.XrayFilterMaterial][row_ind]
+            report_sheet.cell(row=main_row_ind, column=1).value = tmp_data[MG_COL_EXAM_INDEX][row_ind]
+            report_sheet.cell(row=main_row_ind, column=2).value = tmp_data[MG_COL_PROJECTION][row_ind]
+            report_sheet.cell(row=main_row_ind, column=3).value = tmp_data[VALID_SERIES_COLUMNS.kVp][row_ind]
+            report_sheet.cell(row=main_row_ind, column=4).value = tmp_data[VALID_SERIES_COLUMNS.Exposure][row_ind]
+            report_sheet.cell(row=main_row_ind, column=5).value = tmp_data[VALID_SERIES_COLUMNS.CompressionForce][row_ind]
+            report_sheet.cell(row=main_row_ind, column=6).value = tmp_data[VALID_SERIES_COLUMNS.AverageGlandularDose][row_ind]
+            report_sheet.cell(row=main_row_ind, column=7).value = tmp_data[VALID_SERIES_COLUMNS.CompressionThickness][row_ind]
+            report_sheet.cell(row=main_row_ind, column=8).value = tmp_data[VALID_SERIES_COLUMNS.AnodeTargetMaterial][row_ind]
+            report_sheet.cell(row=main_row_ind, column=9).value = tmp_data[VALID_SERIES_COLUMNS.XrayFilterMaterial][row_ind]
 
-            row_offset = row_offset + 1
+            main_row_ind = main_row_ind + 1
 
     return report_sheet
