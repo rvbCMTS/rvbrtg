@@ -27,7 +27,7 @@ from Rapportering.DSN.constants import (
     AGE_CATEGORY_1_6,
     AGE_CATEGORY_6_16,
     CHILD_EXAM_PREFIX, MG_COL_PROJECTION, MG_COMPRESSION_THICKNESS_RANGE, MG_SERIES_COUNT_FILTER, MG_COL_EXAM_INDEX,
-    MG_PROJ_RMLO, MG_PROJ_LMLO, MG_PROJ_RML, MG_PROJ_LML, MG_PROJ_RCC, MG_PROJ_LCC
+    MG_PROJ_RMLO, MG_PROJ_LMLO, MG_PROJ_RML, MG_PROJ_LML, MG_PROJ_RCC, MG_PROJ_LCC, MG_COL_EXAM_TYPE
 )
 from Rapportering.DSN.plot_data import plot_data
 
@@ -325,9 +325,13 @@ def _determine_mg_projection(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def _filter_for_compression_thickness_limits(data: pd.DataFrame):
-    data.loc[:, "SeriesCount"] = data.groupby(VALID_STUDY_COLUMNS.Id)[VALID_STUDY_COLUMNS.Id].transform("count")
     data = data[
-        data[VALID_SERIES_COLUMNS.CompressionThickness].between(MG_COMPRESSION_THICKNESS_RANGE[0], MG_COMPRESSION_THICKNESS_RANGE[1])
-        & (data.SeriesCount == MG_SERIES_COUNT_FILTER)]
+        data[VALID_SERIES_COLUMNS.CompressionThickness].between(MG_COMPRESSION_THICKNESS_RANGE[0],
+        MG_COMPRESSION_THICKNESS_RANGE[1])]
+    data.loc[:, "SeriesCount"] = data.groupby(VALID_STUDY_COLUMNS.Id)[VALID_STUDY_COLUMNS.Id].transform("count")
+    data = data[(data[OUTPUT_COL_EXAM] != "Screening") | (
+            (data.SeriesCount == MG_SERIES_COUNT_FILTER)
+            & data[VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents] == MG_SERIES_COUNT_FILTER)]
+
 
     return data

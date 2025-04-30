@@ -2,8 +2,6 @@ from pathlib import Path
 
 from rembox_integration_tools.rembox_analysis import StudyColumn, SeriesColumn
 
-from Rapportering.Arsstatistik.constants import COLUMN_SELECTION_PER_MODALITY, EXAM_GROUPING_TYPE_PROCEDURE_CODE
-
 VALID_STUDY_COLUMNS = StudyColumn()
 VALID_SERIES_COLUMNS = SeriesColumn()
 
@@ -176,7 +174,7 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
             "Screening": ["66200"],
             "Klinisk Tomosyntes": ["66061"],
-            "Klinisk": ["66000"]
+            "Klinisk": ["66000", "66059", "66058"]
         }
     },
 }

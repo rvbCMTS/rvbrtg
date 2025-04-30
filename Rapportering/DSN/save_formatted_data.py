@@ -140,8 +140,20 @@ def _create_report_mg(report_sheet, data: pd.DataFrame):
     data['AGDdiff'] = (
             data[COL_AGD_SUM] - data.groupby(VALID_STUDY_COLUMNS.Id)[COL_AGD_SUM].max().median()
     ).abs()
-    data.sort_values(['AGDdiff', MG_COL_EXAM_INDEX], inplace=True, ignore_index=True)
-    exam_ids = data[VALID_STUDY_COLUMNS.Id].unique().tolist()
+    #data.sort_values(['AGDdiff', MG_COL_EXAM_INDEX], inplace=True, ignore_index=True)
+    #data.sort_values(
+    #    ['AGDdiff', VALID_STUDY_COLUMNS.Id, MG_COL_EXAM_INDEX],
+    #    inplace=True,
+    #    ignore_index=True
+    #)
+
+    #exam_ids = data[VALID_STUDY_COLUMNS.Id].unique().tolist()
+
+    exam_ids = data.sort_values(
+        ['AGDdiff'],
+        inplace=False,
+        ignore_index=True
+    )[VALID_STUDY_COLUMNS.Id].unique().tolist()
     row_offset = 3
     for exam_ind in range(20):
         tmp_data = data[data[VALID_STUDY_COLUMNS.Id] == exam_ids[exam_ind]].sort_values([MG_COL_EXAM_INDEX], ignore_index=True)
