@@ -33,6 +33,30 @@ def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
 
     raise NotImplementedError(f"Modality {modality} not implemented")
 
+# WIP to deal with duplicate rows in the data
+def _drop_duplicated_study_rows_by_removing_acquisition_plane(data: pd.DataFrame, modality: str) -> pd.DataFrame:
+    if modality in (MODALITY_CT, MODALITY_MG):
+        return data
+    
+    if not (duplicated_rows_exist := False):  # Check if duplicated rows exist
+        # Split data in non-duplicated and duplicated rows
+        non_duplicated_rows = data[~data.duplicated(subset=[VALID_STUDY_COLUMNS.StudyInstanceUID], keep=False)]
+        duplicated_rows = data[data.duplicated(subset=[VALID_STUDY_COLUMNS.StudyInstanceUID], keep=False)]
+        # Loop through duplicated rows and remove Plane B if machine is U104
+        for study_instance_uid in duplicated_rows[VALID_STUDY_COLUMNS.StudyInstanceUID].unique():
+            study_rows = duplicated_rows[duplicated_rows[VALID_STUDY_COLUMNS.StudyInstanceUID] == study_instance_uid]
+            if len(study_rows) > 1:
+                # Check if the machine is U104
+                if study_rows[VALID_STUDY_COLUMNS.Machine].iloc[0] == "U104":
+                    # Remove Plane B from the duplicated rows
+                    study_rows = study_rows[study_rows[VALID_STUDY_COLUMNS.AcquisitionPlane] != "B"]
+                non_duplicated_rows = pd.concat([non_duplicated_rows, study_rows])
+
+        return data
+    
+    
+
+
 
 def _format_ct_data(data: pd.DataFrame) -> pd.DataFrame:
     data = _categorize_by_age_and_sex(data)
@@ -138,17 +162,6 @@ def _categorize_by_age_and_sex(data: pd.DataFrame, modality: Optional[str] = Non
         (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
         [OUTPUT_COL_AGE_SEX_CATEGORY]
     ] = AGE_SEX_CATEGORY_ADULT_FEMALE
-
-    if modality is not None and modality == MODALITY_XA:
-        data.loc[
-            data[VALID_STUDY_COLUMNS.PatientsSex] == "M",
-            [OUTPUT_COL_AGE_SEX_CATEGORY]
-        ] = AGE_SEX_CATEGORY_ADULT_MALE
-
-        data.loc[
-            data[VALID_STUDY_COLUMNS.PatientsSex] == "F",
-            [OUTPUT_COL_AGE_SEX_CATEGORY]
-        ] = AGE_SEX_CATEGORY_ADULT_FEMALE
 
     return data
 

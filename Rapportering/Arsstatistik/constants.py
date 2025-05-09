@@ -25,6 +25,15 @@ MODALITY_LIST = [
     MODALITY_XA
 ]
 
+DROP_DUPLICATES_BY_ACQUISITION_PLANE = {
+    'keep': {
+        "default": "Plane A",
+        "machine_specific":{
+            "U104": "Plane A" # "<machine_display_name>": "<Acquisition Plane Value To Keep>"
+        }
+    }
+}
+
 COLUMN_SELECTION_PER_MODALITY = {
     MODALITY_CT: [
             VALID_STUDY_COLUMNS.Hospital,
@@ -197,7 +206,7 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "Bäcken": [],
             "Hjärna": ["17500"],
             "Pacemaker": [],
-            "PTCA": [],
+            "PTCA": ["37300"],
         }
     },
 }
