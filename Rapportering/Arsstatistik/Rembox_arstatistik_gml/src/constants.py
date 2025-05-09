@@ -34,11 +34,10 @@ machine_type_dict = {
 # Skalle (angio) börjar på 17 och emboliseringar på 19. Exempelvis "Angiografi, komb av flera skallangio" har kod 17500 och "Intracraniell trombectomi + komb av flera skallangio - i narkos" har kod 19305
 
 procedure_codes_dict = {
-    #"Antrografi": ["63135", "63935", "64235"], Finns inte i mallen längre
+    # "Antrografi": ["63135", "63935", "64235"], Finns inte i mallen längre
     # 63135 Axel, ac-led - artrografi
     # 63935 Höftled - arthrografi
     # 64235 Knäled - artrografi
-
     "Bukangiografi": ["47100", "47142", "47200", "47242", "47600", "47642"],
     # 47100 Angiografi i en bukartär
     # 47142 Angiografi i en bukartär - embolisering
@@ -46,39 +45,31 @@ procedure_codes_dict = {
     # 47242 Angiografi i två eller flera bukartärer - embolisering
     # 47600 Angiografi av lever
     # 47642 Angiografi av lever - embolisering
-
-    #"Bäckenangiografi": ["57000", "57042", "57072"], Finns inte i mallen längre
+    # "Bäckenangiografi": ["57000", "57042", "57072"], Finns inte i mallen längre
     # 57000 Angiografi, bäcken
     # 57042 Angiografi, bäcken - embolisering
     # 57072 Angiografi, bäcken - trombolys
-
-    #Cerebral angiografi hanteras inom INT-årsstatistiken
-
+    # Cerebral angiografi hanteras inom INT-årsstatistiken
     "Defekografi": ["44200"],
     # 44200 Defekografi
-
     "ERCP": ["E4900", "E4903", "E4905", "E4976"],
     # E4900 ERCP
     # E4903 ERCP - utförd operation
     # E4905 ERCP - i narkos
     # E4976 ERCP - rendez-vous
-
     "GI (bariumkontrast)": ["44000", "44036"],
     # 44000 Colon, Enkelkontrast
     # 44036 Colon, enkelkontrast - anastomoskontroll
-
     "Hals (mjukvävnad)": ["41100", "41127", "41200", "41300", "41327"],
     # 41100 Hypofarynx och esofagus
     # 41127 Hypofarynx och esofagus - terapeutisk sväljning
     # 41200 Esofagus
     # 41300 Hypofarynx
     # 41327 Hypofarynx - terapeutisk sväljning
-
     "Kolangiografi": ["49055", "45400"],
     # 49055 Cholangiografi
     # 45400 Cholangiografi post op
-
-    #"Myelografi": ["13000", "13200", "13300", "13400"], Finns inte i mallen längre
+    # "Myelografi": ["13000", "13200", "13300", "13400"], Finns inte i mallen längre
     # 13000 Myelografi lumbal -------------------- OBS! U104 som inte får patientålder
     # 13200 Myelografi thorakal
     # 13300 Myelografi cervikal
@@ -86,9 +77,20 @@ procedure_codes_dict = {
     # 63135 Axel, ac-led - artrografi
     # 63935 Höftled - arthrografi
     # 64235 Knäled - artrografi
-
-    "Perifer angiografi": ["67500", "67600", "67641", "67643", "67648", "67672",
-                           "67700", "67741", "67743", "67748", "67772", "67900"],
+    "Perifer angiografi": [
+        "67500",
+        "67600",
+        "67641",
+        "67643",
+        "67648",
+        "67672",
+        "67700",
+        "67741",
+        "67743",
+        "67748",
+        "67772",
+        "67900",
+    ],
     # 67500 Angiografi, arm
     # 67600 Angiografi, femoralis
     # 67641 Angiografi, femoralis - dilatation
@@ -101,19 +103,28 @@ procedure_codes_dict = {
     # 67748 Angiografi, aortofemoral - stentinläggning
     # 67772 Angiografi, aortofemoral - trombolys
     # 67900 Angiografi av annan extremitetsartär
-
-    #"Thoraxangiografi": Görs inte
-
-    #"Urografi": Görs inte
+    # "Thoraxangiografi": Görs inte
+    # "Urografi": Görs inte
 }
 
 # Maskiner per verksamhetsplats
 
-machines_at_hospital = {
+MACHINES_AT_HOSPITALS = {
     "Lycksele lasarett": ["L3"],
     "Skellefteå lasarett": ["S08"],
-    "Norrlands universitetssjukhus": ["U104", "U105", "U105_old", "U106", "U106_old",
-                                      "U704", "U110", "U601", "U602", "Arytmi 1", "Arytmi 2"],
+    "Norrlands universitetssjukhus": [
+        "U104",
+        "U105",
+        "U105_old",
+        "U106",
+        "U106_old",
+        "U704",
+        "U110",
+        "U601",
+        "U602",
+        "Arytmi 1",
+        "Arytmi 2",
+    ],
 }
 
 # patient_group

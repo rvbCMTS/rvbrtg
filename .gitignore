@@ -133,3 +133,5 @@ Modaliteter/FTV/analys_private_sprid_ej.py
 
 .vscode/
 .idea/
+Rapportering/Arsstatistik/Reports/*xlsx
+LocalOnly/
