@@ -83,7 +83,7 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
 def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
     data = data[data[VALID_SERIES_COLUMNS.AverageGlandularDose] > 0]  # Remove negative and zero AGD values
     data = _determine_mg_projection(data=data)
-    data.loc[:, VALID_SERIES_COLUMNS.AverageGlandularDose] = data[VALID_SERIES_COLUMNS.AverageGlandularDose].divide(10)  # Convert from N to daN
+    data.loc[:, VALID_SERIES_COLUMNS.CompressionForce] = data[VALID_SERIES_COLUMNS.CompressionForce].divide(10)  # Convert from N to daN
     data = _categorize_exams_according_to_ssm(data, modality=MODALITY_MG)
 
     plot_data(data=data, modality=MODALITY_MG)
@@ -95,6 +95,8 @@ def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
 
     data = _filter_for_compression_thickness_limits(data)
     data[MG_COL_EXAM_INDEX] = data.groupby(VALID_STUDY_COLUMNS.Id).cumcount() + 1
+    data.loc[data[VALID_SERIES_COLUMNS.XrayFilterMaterial].str.contains("Rho"), VALID_SERIES_COLUMNS.XrayFilterMaterial] = "Rh"
+    data.loc[data[VALID_SERIES_COLUMNS.AnodeTargetMaterial].str.contains("Tun"), VALID_SERIES_COLUMNS.AnodeTargetMaterial]= "W"
 
     return data
 

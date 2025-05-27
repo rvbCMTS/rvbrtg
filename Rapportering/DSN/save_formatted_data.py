@@ -148,15 +148,25 @@ def _create_report_mg(report_sheet, data: pd.DataFrame, machine: str, exam_name:
     for exam_ind in range(20):
         tmp_data = data[data[VALID_STUDY_COLUMNS.Id] == exam_ids[exam_ind]].sort_values([MG_COL_EXAM_INDEX], ignore_index=True)
         for row_ind in range(len(tmp_data)):
-            report_sheet.cell(row=main_row_ind, column=1).value = tmp_data[MG_COL_EXAM_INDEX][row_ind]
-            report_sheet.cell(row=main_row_ind, column=2).value = tmp_data[MG_COL_PROJECTION][row_ind]
-            report_sheet.cell(row=main_row_ind, column=3).value = tmp_data[VALID_SERIES_COLUMNS.kVp][row_ind]
-            report_sheet.cell(row=main_row_ind, column=4).value = tmp_data[VALID_SERIES_COLUMNS.Exposure][row_ind]
-            report_sheet.cell(row=main_row_ind, column=5).value = tmp_data[VALID_SERIES_COLUMNS.CompressionForce][row_ind]
-            report_sheet.cell(row=main_row_ind, column=6).value = tmp_data[VALID_SERIES_COLUMNS.AverageGlandularDose][row_ind]
+            report_sheet.cell(row=main_row_ind, column=1).value = exam_ind+1
+            report_sheet.cell(row=main_row_ind, column=2).value = tmp_data[VALID_SERIES_COLUMNS.AverageGlandularDose][row_ind]
+            report_sheet.cell(row=main_row_ind, column=3).value = tmp_data[MG_COL_PROJECTION][row_ind]
+            report_sheet.cell(row=main_row_ind, column=4).value = tmp_data[VALID_SERIES_COLUMNS.kVp][row_ind]
+            report_sheet.cell(row=main_row_ind, column=5).value = tmp_data[VALID_SERIES_COLUMNS.Exposure][row_ind]
+            report_sheet.cell(row=main_row_ind, column=6).value = tmp_data[VALID_SERIES_COLUMNS.CompressionForce][row_ind]
             report_sheet.cell(row=main_row_ind, column=7).value = tmp_data[VALID_SERIES_COLUMNS.CompressionThickness][row_ind]
             report_sheet.cell(row=main_row_ind, column=8).value = tmp_data[VALID_SERIES_COLUMNS.AnodeTargetMaterial][row_ind]
             report_sheet.cell(row=main_row_ind, column=9).value = tmp_data[VALID_SERIES_COLUMNS.XrayFilterMaterial][row_ind]
+
+            #report_sheet.cell(row=main_row_ind, column=1).value = tmp_data[MG_COL_EXAM_INDEX][row_ind]
+            #report_sheet.cell(row=main_row_ind, column=2).value = tmp_data[MG_COL_PROJECTION][row_ind]
+            #report_sheet.cell(row=main_row_ind, column=3).value = tmp_data[VALID_SERIES_COLUMNS.kVp][row_ind]
+            #report_sheet.cell(row=main_row_ind, column=4).value = tmp_data[VALID_SERIES_COLUMNS.Exposure][row_ind]
+            #report_sheet.cell(row=main_row_ind, column=5).value = tmp_data[VALID_SERIES_COLUMNS.CompressionForce][row_ind]
+            #report_sheet.cell(row=main_row_ind, column=6).value = tmp_data[VALID_SERIES_COLUMNS.AverageGlandularDose][row_ind]
+            #report_sheet.cell(row=main_row_ind, column=7).value = tmp_data[VALID_SERIES_COLUMNS.CompressionThickness][row_ind]
+            #report_sheet.cell(row=main_row_ind, column=8).value = tmp_data[VALID_SERIES_COLUMNS.AnodeTargetMaterial][row_ind]
+            #report_sheet.cell(row=main_row_ind, column=9).value = tmp_data[VALID_SERIES_COLUMNS.XrayFilterMaterial][row_ind]
 
             main_row_ind = main_row_ind + 1
 
