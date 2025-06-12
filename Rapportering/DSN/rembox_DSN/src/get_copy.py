@@ -1,11 +1,11 @@
 import datetime
-
-from rembox_integration_tools import REMboxDataQuery
-from rembox_integration_tools.rembox_analysis import StudyColumn, SeriesColumn
-from src import get
-import pandas as pd
 from datetime import date
+
+import pandas as pd
 import src.constants as con
+from rembox_integration_tools import REMboxDataQuery
+from rembox_integration_tools.rembox_analysis import SeriesColumn, StudyColumn
+from src import get
 
 
 def study_and_series_data():
@@ -23,18 +23,18 @@ def study_and_series_data():
     # TODO: ta bort det här när SizeSpecificDoseEstimation kan hämtas automatiskt istället
     # Lägger till kolumnen SizeSpecificDoseEstimation i series_data eftersom den av någon anledning inte skapas
     # automatiskt i get.data_from_ct
-    series_data["SizeSpecificDoseEstimation"] = ''
+    series_data["SizeSpecificDoseEstimation"] = ""
 
     # Ta bort onödiga kolumner i series_data
     series_data = series_data.loc[:, ["studyInstanceUID", "meanCTDIvol", "SizeSpecificDoseEstimation"]]
     # Sortera series_data på meanCTDIvol från hög till låg dos
-    series_data.sort_values(by='meanCTDIvol', ascending=False, inplace=True)
+    series_data.sort_values(by="meanCTDIvol", ascending=False, inplace=True)
     # För varje study, spara serien med högst meanCTDIvol och kasta resten
-    series_data.drop_duplicates('studyInstanceUID', keep='first', inplace=True)
+    series_data.drop_duplicates("studyInstanceUID", keep="first", inplace=True)
 
     # lägg till 'meanCTDIvol' i study_data genom att slå ihop study_data och series_data
     # För ihopslagningen används 'studyInstanceUID' som nyckel/index
-    study_data = study_data.merge(series_data, on='studyInstanceUID', how='left')
+    study_data = study_data.merge(series_data, on="studyInstanceUID", how="left")
 
     # Ta bort rader som saknar uppgifter om patientens vikt, längd eller ålder
     study_data = study_data.dropna(subset=["patientsWeight"])
@@ -59,12 +59,8 @@ def data_from_ct(rembox: REMboxDataQuery) -> tuple[pd.DataFrame, pd.DataFrame]:
     previous_year = current_date - datetime.timedelta(days=365)
 
     # filter time interval
-    rembox.filter_options.study_time_interval_start_date = "{}T00:00:00Z".format(
-        previous_year
-    )
-    rembox.filter_options.study_time_interval_end_date = "{}T00:00:00Z".format(
-        current_date
-    )
+    rembox.filter_options.study_time_interval_start_date = "{}T00:00:00Z".format(previous_year)
+    rembox.filter_options.study_time_interval_end_date = "{}T00:00:00Z".format(current_date)
 
     # TODO: av någon anledning hämtas inte kolumnen SizeSpecificDoseEstimation till series_data.
     rembox.add_columns(
@@ -109,14 +105,10 @@ def study_data_dictionary(study_data):
 
     # barn 4-15 år
     study_data_kids = study_data.copy()
-    study_data_kids = study_data_kids[
-        (study_data_kids["patientAge"] < 16) & (study_data_kids["patientAge"] >= 4)
-    ]
+    study_data_kids = study_data_kids[(study_data_kids["patientAge"] < 16) & (study_data_kids["patientAge"] >= 4)]
 
     study_data_young_kids = study_data.copy()
-    study_data_young_kids = study_data_young_kids[
-        study_data_young_kids["patientAge"] < 4
-    ]
+    study_data_young_kids = study_data_young_kids[study_data_young_kids["patientAge"] < 4]
 
     study_data_dict = {
         "adults": study_data_adults,
@@ -128,7 +120,6 @@ def study_data_dictionary(study_data):
 
 
 def study_data_report(study_data_dict, series_data):
-
     # Initialiserar report_dict som är en dictionary som kommer innehålla en DataFrame med undersökningar för
     # varje kombination av maskin, patiengrupp och undersökningstyp som ska rapporteras till SSM
     report_dict = {}
@@ -153,24 +144,19 @@ def study_data_report(study_data_dict, series_data):
 
         # för varje relevant undersökning i patientgruppen
         for procedure in procedure_codes:
-
             # skapa en DataFrame som endast innehåller den undersökningen
             code = str(procedure_codes[procedure])
             procedure_study_data = study_data[study_data["procedureCode"] == code]
 
             # för varje maskin
             for machine in con.machines_in_region:
-
                 # skapa en DataFrame som endast innehåller undersökningar från den maskinen
-                procedure_study_data_on_machine = procedure_study_data[
-                    procedure_study_data["machine"] == machine
-                ]
+                procedure_study_data_on_machine = procedure_study_data[procedure_study_data["machine"] == machine]
                 # räkna antal undersökningar i DataFrame
                 study_count = procedure_study_data_on_machine["patientDbId"].count()
 
                 # om antalet undersökningar i DataFrame överstiger count_criteria
                 if study_count >= count_criteria:
-
                     report_dict[(patient_group, procedure, machine)] = procedure_study_data_on_machine
 
                     # skapa en dict med patiengrupp, undersökning, labb och antal undersökningar och lägg till i
@@ -193,7 +179,6 @@ def study_data_report(study_data_dict, series_data):
 
                     list_of_temp_dicts2.append(temp_dict)
 
-
     summary_df = pd.DataFrame.from_records(list_of_temp_dicts)
     summary_df2 = pd.DataFrame.from_records(list_of_temp_dicts2)
     return summary_df, summary_df2, report_dict
@@ -207,10 +192,9 @@ def count_criteria(patient_group):
 
 
 def procedure_codes_dict(patient_group):
-
-    if patient_group == 'adults':
+    if patient_group == "adults":
         return con.procedure_codes_adults
-    elif patient_group == 'kids':
+    elif patient_group == "kids":
         return con.procedure_codes_kids
     else:
         return con.procedure_codes_young_kids

@@ -4,7 +4,6 @@ from dicom_image_tools.helpers.point import Point
 
 
 def _calculate_image_lims_exclude_cornerbox(image_array):
-
     mins = []
     maxs = []
 

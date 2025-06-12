@@ -1,5 +1,6 @@
-from Rapportering.DSN.rembox_DSN.src.get_from_rembox import *
 from src import save_as
+
+from Rapportering.DSN.rembox_DSN.src.get_from_rembox import *
 
 
 def main():
@@ -11,9 +12,7 @@ def main():
     study_data_dict = get_study_data_dictionary(study_data)
 
     # kontrollera om krav på antalet patienter uppfylls, annars ta bort "gruppen"
-    report_summary, report_summary_2, report_dict = get_study_data_report(
-        study_data_dict=study_data_dict
-    )
+    report_summary, report_summary_2, report_dict = get_study_data_report(study_data_dict=study_data_dict)
 
     # skapa rapport med CTDIvol, DLP, ålder, man/kvinna, längd och vikt.
     # Ålder ska rapporteras i månader upp till 48 månader och vuxna ska väga mellan 60-90 kg

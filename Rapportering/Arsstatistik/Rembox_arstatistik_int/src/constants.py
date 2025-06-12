@@ -34,7 +34,7 @@ machine_type_dict = {
 # Skalle (angio) börjar på 17 och emboliseringar på 19. Exempelvis "Angiografi, komb av flera skallangio" har kod 17500 och "Intracraniell trombectomi + komb av flera skallangio - i narkos" har kod 19305
 
 procedure_codes_dict = {
-    "Hjärna": ["17500"], #Skallangio - Komb fl skallangio
+    "Hjärna": ["17500"],  # Skallangio - Komb fl skallangio
     "Buk (gallvägar och urinvägar)": ["59100", "59000", "49005", "49948", "46051"],
     # 59100 - Byte av nefrostomikateter...
     # 59000 - Percutan nefrostomi...
@@ -48,8 +48,18 @@ procedure_codes_dict = {
 machines_at_hospital = {
     "Lycksele lasarett": ["L3"],
     "Skellefteå lasarett": ["S08"],
-    "Norrlands universitetssjukhus": ["U104", "U105", "U105_old", "U106", "U106_old", "U110",
-                                      "U601", "U602", "Arytmi 1", "Arytmi 2"],
+    "Norrlands universitetssjukhus": [
+        "U104",
+        "U105",
+        "U105_old",
+        "U106",
+        "U106_old",
+        "U110",
+        "U601",
+        "U602",
+        "Arytmi 1",
+        "Arytmi 2",
+    ],
 }
 
 # patient_group
@@ -59,8 +69,8 @@ patient_group = {
     "female-dap": "Kvinnor (16 år och äldre).DAP (Gy*cm2)",
     "male-studies": "Män (16 år och äldre).Antal ",
     "male-dap": "Män (16 år och äldre).DAP (Gy*cm2)",
-    #"girl-studies": "Flickor (15 år och yngre).Antal ",
-    #"girl-dap": "Flickor (15 år och yngre).DAP (Gy*cm2)",
-    #"boy-studies": "Pojkar (15 år och yngre).Antal ",
-    #"boy-dap": "Pojkar (15 år och yngre).DAP (Gy*cm2)",
+    # "girl-studies": "Flickor (15 år och yngre).Antal ",
+    # "girl-dap": "Flickor (15 år och yngre).DAP (Gy*cm2)",
+    # "boy-studies": "Pojkar (15 år och yngre).Antal ",
+    # "boy-dap": "Pojkar (15 år och yngre).DAP (Gy*cm2)",
 }

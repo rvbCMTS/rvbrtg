@@ -1,8 +1,9 @@
 import datetime
 
-from rembox_integration_tools import REMboxDataQuery
-from rembox_integration_tools.rembox_analysis import StudyColumn, SeriesColumn
 import pandas as pd
+from rembox_integration_tools import REMboxDataQuery
+from rembox_integration_tools.rembox_analysis import SeriesColumn, StudyColumn
+
 import Rapportering.DSN.rembox_DSN.src.constants as con
 
 
@@ -24,9 +25,7 @@ def get_study_and_series_data():
     series_data["SizeSpecificDoseEstimation"] = ""
 
     # Välj ut relevanta kolumner i series_data
-    series_data = series_data.loc[
-        :, ["studyInstanceUID", "meanCTDIvol", "SizeSpecificDoseEstimation"]
-    ]
+    series_data = series_data.loc[:, ["studyInstanceUID", "meanCTDIvol", "SizeSpecificDoseEstimation"]]
     # Sortera series_data på meanCTDIvol från hög till låg dos
     series_data.sort_values(by="meanCTDIvol", ascending=False, inplace=True)
     # För varje study, spara serien med högst meanCTDIvol och kasta resten
@@ -54,12 +53,8 @@ def get_data_from_ct(rembox: REMboxDataQuery) -> tuple[pd.DataFrame, pd.DataFram
     previous_year = current_date - datetime.timedelta(days=365)
     # TODO: lägg till möjlighet att välja år
     # filter time interval
-    rembox.filter_options.study_time_interval_start_date = "{}T00:00:00Z".format(
-        previous_year
-    )
-    rembox.filter_options.study_time_interval_end_date = "{}T00:00:00Z".format(
-        current_date
-    )
+    rembox.filter_options.study_time_interval_start_date = "{}T00:00:00Z".format(previous_year)
+    rembox.filter_options.study_time_interval_end_date = "{}T00:00:00Z".format(current_date)
 
     # TODO: av någon anledning hämtas inte kolumnen SizeSpecificDoseEstimation till series_data.
     rembox.add_columns(
@@ -104,14 +99,10 @@ def get_study_data_dictionary(study_data):
 
     # barn 4-15 år
     study_data_kids = study_data.copy()
-    study_data_kids = study_data_kids[
-        (study_data_kids["patientAge"] < 16) & (study_data_kids["patientAge"] >= 4)
-    ]
+    study_data_kids = study_data_kids[(study_data_kids["patientAge"] < 16) & (study_data_kids["patientAge"] >= 4)]
 
     study_data_young_kids = study_data.copy()
-    study_data_young_kids = study_data_young_kids[
-        study_data_young_kids["patientAge"] < 4
-    ]
+    study_data_young_kids = study_data_young_kids[study_data_young_kids["patientAge"] < 4]
 
     study_data_dict = {
         "adults": study_data_adults,
@@ -154,30 +145,18 @@ def get_study_data_report(study_data_dict):
             # för varje maskin
             for machine in con.machines_in_region:
                 # skapa en DataFrame som endast innehåller undersökningar från den maskinen
-                procedure_study_data_on_machine = procedure_study_data[
-                    procedure_study_data["machine"] == machine
-                ]
+                procedure_study_data_on_machine = procedure_study_data[procedure_study_data["machine"] == machine]
                 # räkna antal undersökningar i DataFrame
                 study_count = procedure_study_data_on_machine["patientDbId"].count()
 
                 # om antalet undersökningar i DataFrame överstiger count_criteria
                 if study_count >= count_criteria:
                     # Ta bort rader som saknar uppgifter om patientens vikt, längd eller ålder
-                    procedure_study_data_on_machine = (
-                        procedure_study_data_on_machine.dropna(
-                            subset=["patientsWeight"]
-                        )
-                    )
-                    procedure_study_data_on_machine = (
-                        procedure_study_data_on_machine.dropna(subset=["patientsSize"])
-                    )
-                    procedure_study_data_on_machine = (
-                        procedure_study_data_on_machine.dropna(subset=["patientAge"])
-                    )
+                    procedure_study_data_on_machine = procedure_study_data_on_machine.dropna(subset=["patientsWeight"])
+                    procedure_study_data_on_machine = procedure_study_data_on_machine.dropna(subset=["patientsSize"])
+                    procedure_study_data_on_machine = procedure_study_data_on_machine.dropna(subset=["patientAge"])
 
-                    report_dict[
-                        (patient_group, procedure, machine)
-                    ] = procedure_study_data_on_machine
+                    report_dict[(patient_group, procedure, machine)] = procedure_study_data_on_machine
 
                     # skapa en dict med patiengrupp, undersökning, labb och antal undersökningar och lägg till i
                     temp_dict = {

@@ -1,7 +1,7 @@
+import datetime as dt
 import sys
 from pathlib import Path
 from typing import List
-import datetime as dt
 
 path_to_repo = Path(__file__).parents[2]
 sys.path.append(str(path_to_repo))
@@ -46,12 +46,12 @@ def _fetch_dose_from_measurements(dcm_file, dose_measurements, lab):
 
     dose_dose_measurements_in_lab = []
     date_dose_measurements_in_lab = []
-    # fetch list of dosemeasurements from the same lab
+    # fetch list of dose measurements from the same lab
     for item in dose_measurements:
         if lab.name.replace(" ", "")[3:] in item.name:
             dose_dose_measurements_in_lab.append(item)
 
-    # create datetimes for those measuemrents
+    # create datetimes for those measurements
     for item in dose_dose_measurements_in_lab:
         date_raw = item.name.split("_")[2].replace(".xlsx", "")
 
