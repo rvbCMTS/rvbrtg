@@ -138,3 +138,5 @@ Rapportering/Arsstatistik/Reports/*xlsx
 Rapportering/DSN/Reports/*xlsx
 LocalOnly/
 
+
+*.whl
