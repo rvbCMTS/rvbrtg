@@ -96,5 +96,5 @@ def evaluate(base_dir):
 
 if __name__ == '__main__':
     evaluate(
-        base_dir=Path("C:\\slask\\Gonadskydd\\Långa ben")
+        base_dir=Path("LocalOnly\Gonadskydd\Långa ben")
     )
