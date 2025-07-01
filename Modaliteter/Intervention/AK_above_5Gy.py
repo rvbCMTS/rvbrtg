@@ -8,6 +8,19 @@ app = marimo.App(width="medium")
 
 @app.cell(hide_code=True)
 def _(mo):
+    mo.md(
+        r"""
+        ## Evaluate the need for patient follow up due to high skin doses from fluoroscopic procedures
+
+        Local follow-up limit is 5000 mGy air-kerma from a single procedure or accumulated during 6 months for the same patient. <br>
+        Import the operator name translation list ("operators_202X") to <i>rvbrtg/Data/input_data</i>.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
     mo.md(r"""## Import from REMbox""")
     return
 
@@ -16,6 +29,7 @@ def _(mo):
 def _():
     import pandas as pd 
     import plotly.express as px
+    import plotly.graph_objects as go
     from pathlib import Path
     from datetime import datetime
     from rembox_integration_tools import REMboxDataQuery
@@ -39,7 +53,12 @@ def _():
 
     valid_study_columns = StudyColumn()
     valid_series_columns = SeriesColumn()
+
+    COL_OPERATOR_NAME = "operatorName"
+    COL_RP_6M = "doseRPTotal_6m_sum"
     return (
+        COL_OPERATOR_NAME,
+        COL_RP_6M,
         Path,
         REMboxDataQuery,
         pd,
@@ -57,7 +76,7 @@ def _(REMboxDataQuery, pd, rembox, valid_series_columns, valid_study_columns):
 
 
         rembox.filter_options.set_inclusive_tags(
-            machine_types=["XASTAT"],     # CT-CT, Fluoroscopic-XASTAT, Mobile C-arm-XAMOB, Conventional-DX, Mammography-MG, Intraoral-IO, Panoramic-PX, Dental Cone Beam CT-DCBCT, PET-PET, PET/CT-PETCT, SPECT-SPECT, SPECT/CT-SPECTCT, Nuclear Medicine-NM, Mobile X-ray-DXMOB, Conventional with fluoro-DXXA
+            machine_types=["XASTAT"], # Mobile C-arm-XAMOB or is optional
             machines=["U105", "U106", "U104", "U601", "U602", "Arytmi 1", "Arytmi 2"] # INR, IR 1+2, PCI 1+2, Arytmi 1+2
         )
 
@@ -173,23 +192,35 @@ def _(mo):
 def _(series_data, study_data):
     study = study_data.copy() #Create copy of dataframe on study-level
     series = series_data.copy() #Create copy of dataframe on series-level
-    return series, study
+    return (study,)
 
 
 @app.cell
-def _(pd, series, study):
-    # Ensure studyDateTime and dateTimeStarted is in datetime format
-    study['studyDateTime'] = pd.to_datetime(study['studyDateTime'])
-    series['dateTimeStarted'] = pd.to_datetime(series['dateTimeStarted'])
-    # Add two hours to match with clinical events
-    study['studyDateTime'] = study['studyDateTime'] + pd.DateOffset(hours=2)
-    series['dateTimeStarted'] = series['dateTimeStarted'] + pd.DateOffset(hours=2)
+def _(study, valid_study_columns):
+    # Convert to Europe/Stockholm timezone
+    study[valid_study_columns.StudyDateTime] = study[valid_study_columns.StudyDateTime].dt.tz_convert('Europe/Stockholm')
     return
 
 
 @app.cell
-def _(px, study):
-    fig = px.scatter(study, x='studyDateTime', y='doseRPTotal', color='machine', hover_data=['accessionNumber', 'doseRPTotal', 'acquisitionPlane'], title='Dose in Reference point')
+def _(px, study, valid_study_columns):
+    fig = px.scatter(
+            study,
+            x=valid_study_columns.StudyDateTime,
+            y=valid_study_columns.DoseRPTotal,
+            color=valid_study_columns.Machine,
+            custom_data=[valid_study_columns.AccessionNumber, valid_study_columns.AcquisitionPlane, valid_study_columns.Machine],
+            title='Dose in Reference point'
+        )
+        # Set hovertemplate to show full datetime with hours, minutes, seconds
+    fig.update_traces(
+        hovertemplate=
+            "studyDateTime: %{x|%Y-%m-%d %H:%M:%S}<br>" +
+            "doseRPTotal: <b>%{y:.1f}</b><br>" +
+            "machine: %{customdata[2]}<br>" +
+            "accessionNumber: %{customdata[0]}<br>" +
+            "acquisitionPlane: %{customdata[1]}"
+    )
     fig.show()
     return
 
@@ -209,15 +240,15 @@ def _(mo):
 
 
 @app.cell
-def _(Path, __file__, pd, study):
+def _(COL_OPERATOR_NAME, Path, __file__, pd, study, valid_study_columns):
     # Translation from pseudo-operators to operators
     names_data_path = Path(__file__).parent.parent.parent / "Data/input_data/operators_2025.xlsx"
     names = pd.read_excel(names_data_path)
     # Format to fit study-dataframe
-    names.columns = ["performingPhysicianName", "OperatorName"]
+    names.columns = [valid_study_columns.PerformingPhysicianName, COL_OPERATOR_NAME]
     # Merge with study
-    study_names = study.merge(names, on=['performingPhysicianName'], how='left')
-    #print(study_names.OperatorName)
+    study_names = study.merge(names, on=[valid_study_columns.PerformingPhysicianName], how='left')
+    print(study_names[COL_OPERATOR_NAME])
     return (study_names,)
 
 
@@ -228,9 +259,9 @@ def _(mo):
 
 
 @app.cell
-def _(study_names):
-    study_5Gy = study_names[study_names['doseRPTotal'] > 5000]
-    study_5Gy[['accessionNumber', 'studyDateTime', 'patientDbId', 'studyDescription', 'machine', 'doseRPTotal', 'acquisitionPlane', 'OperatorName']]
+def _(COL_OPERATOR_NAME, study_names, valid_study_columns):
+    study_5Gy = study_names[study_names[valid_study_columns.DoseRPTotal] > 5000]
+    study_5Gy[[valid_study_columns.AccessionNumber, valid_study_columns.StudyDateTime, valid_study_columns.PatientDbId, valid_study_columns.StudyDescription, valid_study_columns.Machine, valid_study_columns.DoseRPTotal, valid_study_columns.AcquisitionPlane, COL_OPERATOR_NAME]]
     return
 
 
@@ -246,36 +277,36 @@ def _(mo):
 
 
 @app.cell
-def _(study_names):
+def _(COL_OPERATOR_NAME, COL_RP_6M, study_names, valid_study_columns):
     # Exclude rows with 'Plane B' in acquisitionPlane
-    study_names_filtered = study_names[study_names['acquisitionPlane'] != 'Plane B']
+    study_names_filtered = study_names[study_names[valid_study_columns.AcquisitionPlane] != 'Plane B']
 
     # Find patientIds that occur more than once
-    duplicate_patients = study_names_filtered['patientDbId'].value_counts()
+    duplicate_patients = study_names_filtered[valid_study_columns.PatientDbId].value_counts()
     duplicate_patients = duplicate_patients[duplicate_patients > 1].index
 
     # Filter only those patients
-    df_duplicates = study_names_filtered[study_names_filtered['patientDbId'].isin(duplicate_patients)].copy()
+    df_duplicates = study_names_filtered[study_names_filtered[valid_study_columns.PatientDbId].isin(duplicate_patients)].copy()
 
     # Sort by patientId and studyDateTime
-    df_duplicates = df_duplicates.sort_values(['patientDbId', 'studyDateTime'])
+    df_duplicates = df_duplicates.sort_values([valid_study_columns.PatientDbId, valid_study_columns.StudyDateTime])
 
     # For each patient, calculate rolling 6-month sum of doseRPTotal
     def rolling_6m_sum(df):
-        df = df.set_index('studyDateTime')
+        df = df.set_index(valid_study_columns.StudyDateTime)
         # Rolling window of 183 days (~6 months), right-closed
-        df['doseRPTotal_6m_sum'] = df['doseRPTotal'].rolling('183D', min_periods=1).sum()
+        df[COL_RP_6M] = df[valid_study_columns.DoseRPTotal].rolling('183D', min_periods=1).sum()
         return df.reset_index()
 
     result = (
         df_duplicates
-        .groupby('patientId', group_keys=False)
+        .groupby(valid_study_columns.PatientId, group_keys=False)
         .apply(rolling_6m_sum, include_groups=False)
     )
 
     # View the results
-    result_5Gy = result[result['doseRPTotal_6m_sum'] > 5000]
-    result_5Gy[['accessionNumber', 'studyDateTime', 'patientDbId', 'studyDescription', 'machine', 'doseRPTotal', 'doseRPTotal_6m_sum', 'acquisitionPlane', 'OperatorName']]
+    result_5Gy_6M = result[result[COL_RP_6M] > 5000]
+    result_5Gy_6M[[valid_study_columns.AccessionNumber, valid_study_columns.StudyDateTime, valid_study_columns.PatientDbId, valid_study_columns.StudyDescription, valid_study_columns.Machine, valid_study_columns.DoseRPTotal, valid_study_columns.AcquisitionPlane, COL_OPERATOR_NAME]]
     return
 
 
