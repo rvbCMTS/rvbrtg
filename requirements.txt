@@ -9,3 +9,5 @@ hvplot
 jupyter
 pytest
 rich
+hvplot
+bokeh
