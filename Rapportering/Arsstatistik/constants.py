@@ -15,6 +15,7 @@ MODALITY_CT: str = "CT"
 MODALITY_DX: str = "DX"
 MODALITY_MG: str = "MG"
 MODALITY_XA: str = "XA"
+MODALITY_DCBCT: str = "DCBCT"
 
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
@@ -111,14 +112,16 @@ MODALITY_FILTER_SELECTION_PER_MODALITY = {
     MODALITY_CT: ["CT"],
     MODALITY_DX: ["DX", "XASTAT", "XAMOB"],
     MODALITY_MG: ["MG"],
-    MODALITY_XA: ["XASTAT", "XAMOB"]
+    MODALITY_XA: ["XASTAT", "XAMOB"],
+    MODALITY_DCBCT: ["CT", "DCBCT"],
 }
 
 REPORT_TEMPLATE_PATH_PER_MODALITY = {
-    MODALITY_CT: Path(__file__).parent / "ReportTemplates/CT Mall årsredovisning DosReg.xlsx",
-    MODALITY_DX: Path(__file__).parent / "ReportTemplates/RTG Mall årsredovisning DosReg.xlsx",
-    MODALITY_MG: Path(__file__).parent / "ReportTemplates/MAM Mall årsredovisning DosReg.xlsx",
-    MODALITY_XA: Path(__file__).parent / "ReportTemplates/INT Mall årsredovisning DosReg.xlsx",
+    MODALITY_CT: Path(__file__).parent / "ReportTemplates/CT Mall årsredovisning DosReg 2025.xlsx",
+    MODALITY_DX: Path(__file__).parent / "ReportTemplates/RTG Mall årsredovisning DosReg 2025.xlsx",
+    MODALITY_MG: Path(__file__).parent / "ReportTemplates/MAM Mall årsredovisning DosReg 2025.xlsx",
+    MODALITY_XA: Path(__file__).parent / "ReportTemplates/INT Mall årsredovisning DosReg 2025.xlsx",
+    MODALITY_DCBCT: Path(__file__).parent / "ReportTemplates/Dental CBCT Mall årsredovisning DosReg 2025.xlsx",
 }
 
 EXAM_GROUPING_TYPE_STUDY_DESCRIPTION = "Study Description"
@@ -188,12 +191,39 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
     },
     MODALITY_XA: {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
-            "Buk (gallvägar och urinvägar)": ["59100", "59000", "49005", "49948", "46051"],
-            "Buk (TIPS)": [],
-            "Bäcken": [],
-            "Hjärna": ["17500"],
-            "Pacemaker": [],
-            "PTCA": [],
+            "INT01:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Huvud och hals": [],
+            "INT02:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Thorax inklusive lungor, exklusive hjärta": [],
+            "INT03:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Hjärta": [],
+            "INT04:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Buk": [],
+            "INT05:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Bäcken": [],
+            "INT06:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Extremiteter": [],
+            "INT07:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Övrig diagnostik": [],
+            "INT08:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Huvud och hals": [],
+            "INT09:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Thorax inklusive lungor, exklusive hjärta": [],
+            "INT10:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Hjärta": [],
+            "INT11:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Buk": [],
+            "INT12:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Bäcken": [],
+            "INT13:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Extremiteter": [],
+            "INT14:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Övrig behandling": [],
+            "INT15:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Huvud och hals": [],
+            "INT16:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Thorax": [],
+            "INT17:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Buk": [],
+            "INT18:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Ryggraden": [],
+            "INT19:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Bäcken, inklusive höfter/höftled": [],
+            "INT20:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Extremiteter, inklusive axlar/axelled": [],
+            "INT21:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Övrigt": [],
+            "INT22:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Huvud och hals": [],
+            "INT23:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Thorax": [],
+            "INT24:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Buk": [],
+            "INT25:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Ryggraden": [],
+            "INT26:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Bäcken": [],
+            "INT27:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Extremiteter, inklusive axlar/axelled": [],
+            "INT28:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Övrigt": [],
+        }
+    },
+    MODALITY_DCBCT: {
+        EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
+            "CBCT1:CBCT:Diagnostik:Odontologisk undersökning": [],
         }
     },
 }
