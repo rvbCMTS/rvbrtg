@@ -137,6 +137,4 @@ Modaliteter/FTV/analys_private_sprid_ej.py
 Rapportering/Arsstatistik/Reports/*xlsx
 Rapportering/DSN/Reports/*xlsx
 LocalOnly/
-
-
 *.whl
