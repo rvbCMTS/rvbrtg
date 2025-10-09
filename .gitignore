@@ -131,7 +131,7 @@ dmypy.json
 
 Data/
 Modaliteter/FTV/analys_private_sprid_ej.py
-
+LocalOnly/
 .vscode/
 .idea/
 Rapportering/Arsstatistik/Reports/*xlsx
