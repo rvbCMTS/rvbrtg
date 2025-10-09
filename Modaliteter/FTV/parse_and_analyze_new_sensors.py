@@ -200,7 +200,6 @@ def parse_onepix_data_for_new_clinic(
 
 path_clinics_raw = (
     Path(r'V:\Enhetsytor\5-1-1-3. Strålningsfysik\Radiologi\FTV\Nya sensorer 2022 raw')
-    #Path("G:") / "CMTS" / "SF" / "Personal" / "Personliga mappar" / "Josef Lundman" / "FTV" / "Nya sensorer 2022 raw"
 )
 
 path_clinics_parsed = (
@@ -228,4 +227,3 @@ parse_onepix_data_for_new_clinic(
 )
 
 
-# C:\Users\maxh01\Region Västerbotten\Strålningsfysik - Dokument\Radiologi\Modaliteter\FTV\Nya sensorer 2022\Nya sensorer 2022 parsed
