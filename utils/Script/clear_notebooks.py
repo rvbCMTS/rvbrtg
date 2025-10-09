@@ -28,9 +28,9 @@ def clean_notebook_outputs(path):
     if changed:
         with open(path, "w", encoding="utf-8") as f:
             nbformat.write(nb, f)
-        print(f"✅ Cleaned: {path}")
+        print(f"Cleaned: {path}")
     else:
-        print(f"ℹ️  No changes: {path}")
+        print(f" :No changes: {path}")
 
 def find_all_notebooks(root_dir):
     notebooks = []
