@@ -36,6 +36,7 @@ COLUMN_SELECTION_PER_MODALITY = {
             VALID_STUDY_COLUMNS.AccessionNumber,
             VALID_STUDY_COLUMNS.StudyDescription,
             VALID_STUDY_COLUMNS.PatientAge,
+            VALID_STUDY_COLUMNS.PatientAgeUnit,
             VALID_STUDY_COLUMNS.PatientsWeight,
             VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents,
             VALID_STUDY_COLUMNS.PerformingPhysicianName,
@@ -56,6 +57,7 @@ COLUMN_SELECTION_PER_MODALITY = {
         VALID_STUDY_COLUMNS.AccessionNumber,
         VALID_STUDY_COLUMNS.StudyDescription,
         VALID_STUDY_COLUMNS.PatientAge, #Finns inte för Philips
+        VALID_STUDY_COLUMNS.PatientAgeUnit,
         VALID_STUDY_COLUMNS.PatientsWeight, #Saknas ofta #Vad används denna till?
         VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents, #Vad används denna till?
         VALID_STUDY_COLUMNS.PerformingPhysicianName, #Vad används denna till?
@@ -76,6 +78,7 @@ COLUMN_SELECTION_PER_MODALITY = {
         VALID_STUDY_COLUMNS.AccessionNumber,
         VALID_STUDY_COLUMNS.StudyDescription,
         VALID_STUDY_COLUMNS.PatientAge,
+        VALID_STUDY_COLUMNS.PatientAgeUnit,
         VALID_STUDY_COLUMNS.PatientDbId,
         VALID_STUDY_COLUMNS.PatientsSex,
         VALID_SERIES_COLUMNS.AcquisitionProtocol,
@@ -93,6 +96,30 @@ COLUMN_SELECTION_PER_MODALITY = {
         VALID_STUDY_COLUMNS.AccessionNumber,
         VALID_STUDY_COLUMNS.StudyDescription,
         VALID_STUDY_COLUMNS.PatientAge, #Finns inte för Philips
+        VALID_STUDY_COLUMNS.PatientAgeUnit,
+        VALID_STUDY_COLUMNS.PatientsWeight, #Saknas ofta #Vad används denna till?
+        VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents, #Vad används denna till?
+        VALID_STUDY_COLUMNS.PerformingPhysicianName, #Vad används denna till?
+        VALID_STUDY_COLUMNS.PerformingPhysicianIdentificationSequence, #Vad används denna till?
+        VALID_STUDY_COLUMNS.PatientDbId, #Vad används denna till?
+        VALID_STUDY_COLUMNS.DoseAreaProductTotal,
+        VALID_STUDY_COLUMNS.PatientsSex,
+        VALID_SERIES_COLUMNS.AcquisitionProtocol, #Vad används denna till?
+        VALID_SERIES_COLUMNS.DateTimeStarted,
+        VALID_STUDY_COLUMNS.ProcedureCode,
+        VALID_STUDY_COLUMNS.ProcedureCodeMeaning,
+        VALID_STUDY_COLUMNS.RequestedProcedureCodeMeaning,
+    ],
+    MODALITY_DCBCT: [
+        VALID_STUDY_COLUMNS.Hospital,
+        VALID_STUDY_COLUMNS.StudyDateTime,
+        VALID_STUDY_COLUMNS.StudyInstanceUID,
+        VALID_STUDY_COLUMNS.StudyId,
+        VALID_STUDY_COLUMNS.Machine,
+        VALID_STUDY_COLUMNS.AccessionNumber,
+        VALID_STUDY_COLUMNS.StudyDescription,
+        VALID_STUDY_COLUMNS.PatientAge, #Finns inte för Philips
+        VALID_STUDY_COLUMNS.PatientAgeUnit,
         VALID_STUDY_COLUMNS.PatientsWeight, #Saknas ofta #Vad används denna till?
         VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents, #Vad används denna till?
         VALID_STUDY_COLUMNS.PerformingPhysicianName, #Vad används denna till?
@@ -230,8 +257,12 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
 
 AGE_SEX_CATEGORY_JUNIOR_MALE = "Pojkar"
 AGE_SEX_CATEGORY_JUNIOR_FEMALE = "Flickor"
-AGE_SEX_CATEGORY_ADULT_MALE = "Män"
-AGE_SEX_CATEGORY_ADULT_FEMALE = "Kvinnor"
+AGE_SEX_CATEGORY_ADULT_MALE_16_40 = "Män 16-40"
+AGE_SEX_CATEGORY_ADULT_FEMALE_16_40 = "Kvinnor 16-40"
+AGE_SEX_CATEGORY_ADULT_MALE_41_65 = "Män 41-65"
+AGE_SEX_CATEGORY_ADULT_FEMALE_41_65 = "Kvinnor 41-65"
+AGE_SEX_CATEGORY_ADULT_MALE_66plus = "Män 66+"
+AGE_SEX_CATEGORY_ADULT_FEMALE_66plus = "Kvinnor 66+"
 
 OUTPUT_COL_AGE_SEX_CATEGORY = "ageSexCategory"
 OUTPUT_COL_EXAM = "Undersökning"

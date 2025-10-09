@@ -6,8 +6,12 @@ import pandas as pd
 from Rapportering.Arsstatistik.constants import (
     AGE_SEX_CATEGORY_JUNIOR_MALE,
     AGE_SEX_CATEGORY_JUNIOR_FEMALE,
-    AGE_SEX_CATEGORY_ADULT_MALE,
-    AGE_SEX_CATEGORY_ADULT_FEMALE,
+    AGE_SEX_CATEGORY_ADULT_MALE_16_40,
+    AGE_SEX_CATEGORY_ADULT_FEMALE_16_40,
+    AGE_SEX_CATEGORY_ADULT_MALE_41_65,
+    AGE_SEX_CATEGORY_ADULT_FEMALE_41_65,
+    AGE_SEX_CATEGORY_ADULT_MALE_66plus,
+    AGE_SEX_CATEGORY_ADULT_FEMALE_66plus,
     MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
@@ -120,6 +124,11 @@ def _categorize_by_age_and_sex(data: pd.DataFrame, modality: Optional[str] = Non
     data[OUTPUT_COL_AGE_SEX_CATEGORY] = [None] * len(data)
 
     data.loc[
+        (~data[VALID_STUDY_COLUMNS.PatientAge].isna()) & (data[VALID_STUDY_COLUMNS.PatientAgeUnit] != "Y"),
+        [VALID_STUDY_COLUMNS.PatientAge]
+    ] = 0
+
+    data.loc[
         (data[VALID_STUDY_COLUMNS.PatientAge] < 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
         [OUTPUT_COL_AGE_SEX_CATEGORY]
     ] = AGE_SEX_CATEGORY_JUNIOR_MALE
@@ -130,25 +139,38 @@ def _categorize_by_age_and_sex(data: pd.DataFrame, modality: Optional[str] = Non
     ] = AGE_SEX_CATEGORY_JUNIOR_FEMALE
 
     data.loc[
-        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientAge] < 41) &
+        (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
         [OUTPUT_COL_AGE_SEX_CATEGORY]
-    ] = AGE_SEX_CATEGORY_ADULT_MALE
+    ] = AGE_SEX_CATEGORY_ADULT_MALE_16_40
 
     data.loc[
-        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientAge] < 41) &
+        (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
         [OUTPUT_COL_AGE_SEX_CATEGORY]
-    ] = AGE_SEX_CATEGORY_ADULT_FEMALE
+    ] = AGE_SEX_CATEGORY_ADULT_FEMALE_16_40
 
-    if modality is not None and modality == MODALITY_XA:
-        data.loc[
-            data[VALID_STUDY_COLUMNS.PatientsSex] == "M",
-            [OUTPUT_COL_AGE_SEX_CATEGORY]
-        ] = AGE_SEX_CATEGORY_ADULT_MALE
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 41) & (data[VALID_STUDY_COLUMNS.PatientAge] < 66) &
+        (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_MALE_41_65
 
-        data.loc[
-            data[VALID_STUDY_COLUMNS.PatientsSex] == "F",
-            [OUTPUT_COL_AGE_SEX_CATEGORY]
-        ] = AGE_SEX_CATEGORY_ADULT_FEMALE
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 41) & (data[VALID_STUDY_COLUMNS.PatientAge] < 66) &
+        (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_FEMALE_41_65
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 66) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_MALE_66plus
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 66) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_FEMALE_66plus
 
     return data
 
