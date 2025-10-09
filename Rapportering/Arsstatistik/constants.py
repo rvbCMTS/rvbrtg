@@ -179,8 +179,11 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
     },
     MODALITY_MG: {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
-            "Mammografi 2D - klinisk (ett eller två bröst)": ["66000", "66000D", "66000S"],
-            "Mammografi 2D - screening (ett eller två bröst)": ["66200"]
+            "MAM1:Mammografiutrustning (fast installerad):Diagnostik:Bröstkörtlar 2D": ["66000", "66000D", "66000S"],
+            "MAM2:Mammografiutrustning (fast installerad):Diagnostik:Bröstkörtlar tomosyntes": [],
+            "MAM3:Mammografiutrustning (fast installerad):Diagnostik:Övrigt": [],
+            "MAM4:Mammografiutrustning (fast installerad):Screening:Bröstkörtlar 2D": ["66200"],
+            "MAM5:Mammografiutrustning (fast installerad):Screening:Bröstkörtlar tomosyntes": [],
         }
     },
     MODALITY_XA: {
