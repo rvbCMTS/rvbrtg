@@ -1,7 +1,7 @@
 numpy
 pydicom
 matplotlib
-nbstripout
+nbformat
 dicom_image_tools
 pandas
 plotly
