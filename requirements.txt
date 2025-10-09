@@ -1,6 +1,7 @@
 numpy
 pydicom
 matplotlib
+nbstripout
 dicom_image_tools
 pandas
 plotly
@@ -8,3 +9,5 @@ hvplot
 jupyter
 pytest
 rich
+hvplot
+bokeh

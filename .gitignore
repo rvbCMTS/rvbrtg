@@ -26,6 +26,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+*.whl
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -130,8 +131,10 @@ dmypy.json
 
 Data/
 Modaliteter/FTV/analys_private_sprid_ej.py
-
+LocalOnly/
 .vscode/
 .idea/
 Rapportering/Arsstatistik/Reports/*xlsx
+Rapportering/DSN/Reports/*xlsx
 LocalOnly/
+*.whl

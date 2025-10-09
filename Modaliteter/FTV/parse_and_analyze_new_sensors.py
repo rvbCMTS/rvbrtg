@@ -3,14 +3,39 @@ import sys
 from pathlib import Path
 from typing import List
 
-import numpy as np
-import pydicom
+path_to_repo = Path(__file__).parents[2]
+sys.path.append(str(path_to_repo))
 
-sys.path.append("..")
+
 import shutil
+from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import pydicom
 from analys_private_sprid_ej import create_calibration_plot
+
+from utils.dit_utils import _calculate_image_lims_exclude_cornerbox
+from utils.plot_utils import _create_colorbar
+
+
+def export_flatfield_image(file, file_name, dcm_res_path):
+    a = 1
+    mat = file.pixel_array
+    cmap = plt.cm.binary
+    lims = _calculate_image_lims_exclude_cornerbox(mat)
+
+    fig, ax = plt.subplots(figsize=(20, 15))
+    im = ax.imshow(mat, cmap=cmap, vmin=lims[0], vmax=lims[1], interpolation=None)
+    ax.set_xlabel(file.DetectorID)
+
+    _create_colorbar(fig, im, ax, width="1%", bbox_to_anchor=(0.05, 0, 1, 1))
+    path_export = dcm_res_path.parent / "flat_field_plots"
+    path_export.mkdir(exist_ok=True)
+    plt.savefig(path_export / (file_name.split(".")[0] + ".png"), dpi=500)
+    plt.close()
+    pass
 
 
 def _fetch_dose_from_measurements(dcm_file, dose_measurements, lab):
@@ -60,7 +85,6 @@ def parse_onepix_data_for_new_clinic(
     ma: int,
 ) -> None:
     dose_dict = dict()
-
     # select clinic from user input
     clinics_list = []
     for item in path_clinics_raw.iterdir():
@@ -123,7 +147,7 @@ def parse_onepix_data_for_new_clinic(
                     continue
 
                 path_res_folder = path_clinics_parsed / f"{selected_clinic.name}_parsed"
-                sub_path = Path(*kv.parts[9:])
+                sub_path = Path(*kv.parts[7:])
 
                 dcm_res_path = path_res_folder / sub_path
                 dcm_res_path.mkdir(
@@ -131,7 +155,7 @@ def parse_onepix_data_for_new_clinic(
                     exist_ok=True,
                 )
 
-                plots_path = path_clinics_parsed / "plots" / f"{selected_clinic.name}_parsed"
+                plots_path = path_res_folder / selected_lab / x_ray_tube.name / 'Kalibrering' / sensor.name / kv.name
                 plots_path.mkdir(exist_ok=True)
                 dcm_files = []  # for DICOM files
                 acq_times = []  # for acquisition times (for sorting)
@@ -160,10 +184,14 @@ def parse_onepix_data_for_new_clinic(
                     parsed_file_name = f"{kv.name}_{ma}ma_{exp_times[i]}ms.dcm"
 
                     dcm_files[sort_order[i]].save_as(dcm_res_path / parsed_file_name)
+                    a = 1
+                    export_flatfield_image(
+                        file=dcm_files[sort_order[i]], file_name=parsed_file_name, dcm_res_path=dcm_res_path
+                    )
 
         create_calibration_plot(
             main_folder=path_clinics_parsed,
-            output_dir=plots_path,
+            output_dir=path_res_folder.parent / 'plots' / path_res_folder.name,
             sensor_ids=sensor_id_list,
         )
 
@@ -171,15 +199,17 @@ def parse_onepix_data_for_new_clinic(
 
 
 path_clinics_raw = (
-    Path("G:") / "CMTS" / "SF" / "Personal" / "Personliga mappar" / "Josef Lundman" / "FTV" / "Nya sensorer 2022 raw"
+    Path(r'V:\Enhetsytor\5-1-1-3. Strålningsfysik\Radiologi\FTV\Nya sensorer 2022 raw')
 )
 
 path_clinics_parsed = (
     Path("C:/")
     / "Users"
     / "maxh01"
-    / "OneDrive - Region Västerbotten"
-    / "General"
+    / "Region Västerbotten"
+    / "Strålningsfysik - Dokument"
+    / "Radiologi"
+    / "Modaliteter"
     / "FTV"
     / "Nya sensorer 2022"
     / "Nya sensorer 2022 parsed"
@@ -195,3 +225,5 @@ parse_onepix_data_for_new_clinic(
     exp_times=exp_times,
     ma=ma,
 )
+
+
