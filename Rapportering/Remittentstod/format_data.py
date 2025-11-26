@@ -13,11 +13,14 @@ from Rapportering.Remittentstod.constants import (
     OUTPUT_COL_EXAM,
     OUTPUT_COL_WEIGTH_CATEGORY,
     OUTPUT_COL_AGE_CATEGORY,
+    OUTPUT_COL_EFFECTIVE_DOSE,
     MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
     MODALITY_XA,
-    EFFECTIVE_DOSE_PER_UNIT_DAP_BODY_PART_STUDY_DESCRIPTION
+    BODY_PART_GIVEN_STUDY_DESCRIPTION,
+    EFFECTIVE_DOSE_PER_UNIT_DAP,
+
 )
 
 from Rapportering.DSN.plot_data import plot_data
@@ -65,12 +68,6 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
 
     data = _categorize_exams_according_to_ssm(data, modality=MODALITY_DX)
  
-    grouped_data = data.groupby(by=[OUTPUT_COL_EXAM]).agg(
-    Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"),
-    DAP=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="mean"),
-    
-    )
-
     return data
 
 def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
@@ -332,10 +329,22 @@ def _filter_for_compression_thickness_limits(data: pd.DataFrame):
 
 
 def _calculate_effective_dose_given_dap(data: pd.DataFrame) -> pd.DataFrame:
+    # Build a DataFrame with one row per (body part, study description), including the effective dose per unit DAP.
+    rows = []
+    for body_part, study_list in BODY_PART_GIVEN_STUDY_DESCRIPTION.items():
+        dose = EFFECTIVE_DOSE_PER_UNIT_DAP.get(body_part)
+        for study in study_list:
+            rows.append({
+                "BodyPart": body_part,
+                VALID_STUDY_COLUMNS.StudyDescription: study,
+                "EffectiveDosePerUnitDAP": dose,
+            })
+    effective_dose_per_unit_dap_body_part_study = pd.DataFrame(rows)
+
     merged_data = pd.merge(data,
-                          EFFECTIVE_DOSE_PER_UNIT_DAP_BODY_PART_STUDY_DESCRIPTION,
+                          effective_dose_per_unit_dap_body_part_study,
                           how="left",
                           left_on=VALID_STUDY_COLUMNS.StudyDescription)
-    merged_data['EffectiveDose'] = merged_data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] * merged_data['EffectiveDosePerUnitDAP']
+    merged_data[OUTPUT_COL_EFFECTIVE_DOSE] = merged_data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] * merged_data['EffectiveDosePerUnitDAP']
 
     return merged_data

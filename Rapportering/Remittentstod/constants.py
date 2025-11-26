@@ -220,6 +220,8 @@ AGE_CATEGORY_6_16 = "6-<16 år"
 OUTPUT_COL_EXAM = "Undersökning"
 OUTPUT_COL_WEIGTH_CATEGORY = "Viktgrupp"
 OUTPUT_COL_AGE_CATEGORY = "Åldersgrupp"
+OUTPUT_COL_EFFECTIVE_DOSE = "Effektiv dos"
+
 
 # Table 7, Radiation Risks from Medical X-ray Examinations as a Function of the Age and Sex of the Patient
 # mSv / Gy cm^2
@@ -257,18 +259,7 @@ BODY_PART_GIVEN_STUDY_DESCRIPTION = {
 }
 
 
-# Build a DataFrame with one row per (body part, study description), including the effective dose per unit DAP.
-rows = []
-for body_part, study_list in BODY_PART_GIVEN_STUDY_DESCRIPTION.items():
-    dose = EFFECTIVE_DOSE_PER_UNIT_DAP.get(body_part)
-    for study in study_list:
-        rows.append({
-            "BodyPart": body_part,
-            "StudyDescription": study,
-            "EffectiveDosePerUnitDAP": dose,
-        })
 
-EFFECTIVE_DOSE_PER_UNIT_DAP_BODY_PART_STUDY_DESCRIPTION = pd.DataFrame(rows)
 
 
 

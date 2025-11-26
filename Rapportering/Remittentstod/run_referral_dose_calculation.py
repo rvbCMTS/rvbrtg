@@ -6,11 +6,11 @@ from rich.console import Console
 import os
 print(os.environ.get("PYTHONPATH"))
 
-from Rapportering.DSN.constants import MODALITY_LIST
-from Rapportering.DSN.fetch_data import get_modality_data_for_year
-from Rapportering.DSN.format_data  import format_data
-from Rapportering.DSN.save_formatted_data import save_formatted_data
-from Rapportering.DSN.plot_data import plot_data
+from Rapportering.Remittentstod.constants import MODALITY_LIST
+from Rapportering.Remittentstod.fetch_data import get_modality_data_for_year
+from Rapportering.Remittentstod.format_data  import format_data
+#from Rapportering.Remittentstod.save_formatted_data import save_formatted_data
+#from Rapportering.Remittentstod.plot_data import plot_data
 
 rprint = Console(soft_wrap=True).print
 
@@ -47,7 +47,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[CustomRichHandler()]
 )
-logger = logging.getLogger("yearly_statistics")
+logger = logging.getLogger("referral_dose_calculation")
 
 
 def main(year: int = 0):
@@ -67,12 +67,9 @@ def main(year: int = 0):
         study_data = get_modality_data_for_year(year=year, modality=modality)
         logger.info(f"Hämtade {len(study_data)} study rader")
 
-        logger.info(f"Formaterar data för att stoppa in i rapporterna")
+        logger.info(f"Formaterar data och gör dosberäkningar")
         formatted_data = format_data(data=study_data, modality=modality)
         logger.info(f"Data för {modality} formaterad")
-
-       # logger.info(f"Plottar formaterad data för {modality}")
-       # plot_data(data=formatted_data, modality=modality)
 
         logger.info(f"Sparar formaterad data för {modality}")
         save_formatted_data(data=formatted_data, modality=modality)
