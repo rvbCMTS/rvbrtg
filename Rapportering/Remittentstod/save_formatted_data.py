@@ -15,7 +15,8 @@ from Rapportering.Remittentstod.constants import (
     REPORT_OUTPUT_DIR, EXAM_GROUPING_RULES_BY_MODALITY,
     EXAM_GROUPING_TYPE_PROCEDURE_CODE, EXAM_GROUPING_TYPE_PROTOCOL_CODE,
     OUTPUT_COL_EXAM, VALID_SERIES_COLUMNS, VALID_STUDY_COLUMNS,
-    MG_COL_PROJECTION, MG_COL_EXAM_INDEX, MG_COL_EXAM_TYPE, OUTPUT_COL_WEIGTH_CATEGORY)
+    MG_COL_PROJECTION, MG_COL_EXAM_INDEX, MG_COL_EXAM_TYPE, OUTPUT_COL_WEIGTH_CATEGORY,
+    OUTPUT_COL_EFFECTIVE_DOSE, OUTPUT_COL_BODY_PART)
 
 logger = logging.getLogger("yearly_statistics")
 
@@ -32,23 +33,24 @@ def save_formatted_data(data: pd.DataFrame, modality: str) -> None:
 
 
 def _create_report_main(data: pd.DataFrame, modality:str, exam_name:str):
-    output_path: Path = REPORT_OUTPUT_DIR / f"{modality} - {exam_name} .pdf"
-
     tmp_data = data[(data[OUTPUT_COL_EXAM] == exam_name)].reset_index()
 
     if modality not in [MODALITY_DX]:
         raise NotImplementedError(f"Modality '{modality}' not implemented.")
-
+    
+    output_path: Path = REPORT_OUTPUT_DIR / f"{modality} - {exam_name}.pdf"
+    if output_path.exists():
+        try:
+            output_path.unlink()
+        except Exception:
+            logger.error(f"Kunde inte ta bort befintlig rapportfil: {output_path}")
+            
     with PdfPages(output_path) as pdf:
         try:
             if modality == MODALITY_DX:
-                _create_report_dx(pdf=pdf, data=tmp_data)
-
+                _create_report_dx(pdf=pdf, data=tmp_data, exam_name=exam_name)
         except Exception:
             logger.error(f"Kunde inte skapa rapport för {modality} - {exam_name}")
-
-
-
 
 def _create_report_ct(report_sheet, data: pd.DataFrame):
     # Sort data based on their absolute diff in CDTI compared to the median of all exams in order to report the middle
@@ -72,9 +74,36 @@ def _create_report_ct(report_sheet, data: pd.DataFrame):
     return report_sheet
 
 
-def _create_report_dx(pdf, data: pd.DataFrame):
+def _create_report_dx(pdf, data: pd.DataFrame, exam_name: str):
     # Plot a histogram of effective dose and calculate basic statistics
+    agg_data = data.groupby(by=OUTPUT_COL_EXAM).agg(
+                Antal=pd.NamedAgg(column=OUTPUT_COL_EFFECTIVE_DOSE, aggfunc="count"),
+                Dose_mean=pd.NamedAgg(column=OUTPUT_COL_EFFECTIVE_DOSE, aggfunc="mean"),
+                Dose_median=pd.NamedAgg(column=OUTPUT_COL_EFFECTIVE_DOSE, aggfunc="median"),
+                Dose_95=pd.NamedAgg(column=OUTPUT_COL_EFFECTIVE_DOSE, aggfunc=lambda x: x.quantile(0.95))
+    )
 
+    fig, ax = plt.subplots(1, 1, sharey=True, tight_layout=True)
+    ax.hist(data[OUTPUT_COL_EFFECTIVE_DOSE], bins=round(len(data) ** (1/2)))
+
+    plt.text(data[OUTPUT_COL_EFFECTIVE_DOSE].max()*0.4,
+             ax.get_yticks()[1],
+             f"Body part (DAP -> mSv):\n {data[OUTPUT_COL_BODY_PART].unique().tolist()}\n" +
+             f"Study description:\n {data[VALID_STUDY_COLUMNS.StudyDescription].unique().tolist()}\n" +
+             f"Machine:\n {_list_to_multiline_string(data[VALID_STUDY_COLUMNS.Machine].unique().tolist())}\n\n" +
+             f"Antal undersökningar: {agg_data['Antal'].values[0]}\n" +
+             f"Medelvärde: {agg_data['Dose_mean'].values[0]:.2f} mSv\n" +
+             f"Median: {agg_data['Dose_median'].values[0]:.2f} mSv\n" +
+             f"95-percentil: {agg_data['Dose_95'].values[0]:.2f} mSv"
+    )
+
+    ax.set_ylabel("Antal undersökningar")
+    ax.set_xlabel("Effektiv dos (mSv)")
+    ax.set_title(f"Histogram över effektiv dos för {exam_name}")
+
+    plt.show()
+    pdf.savefig(fig)
+    plt.close(fig)
 
 
 def _create_report_xa(report_sheet, data: pd.DataFrame):
@@ -139,3 +168,7 @@ def _create_report_mg(report_sheet, data: pd.DataFrame, machine: str, exam_name:
             main_row_ind = main_row_ind + 1
 
     return report_sheet
+
+def _list_to_multiline_string(lst, per_line=5, sep=", "):
+    chunks = [sep.join(map(str, lst[i:i+per_line])) for i in range(0, len(lst), per_line)]
+    return "\n".join(chunks)

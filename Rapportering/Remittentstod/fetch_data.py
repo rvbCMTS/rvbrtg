@@ -1,7 +1,7 @@
 import pandas as pd
 from rembox_integration_tools import REMboxDataQuery
 
-from Rapportering.DSN.constants import (
+from Rapportering.Remittentstod.constants import (
     MODALITY_CT,
     MODALITY_DX,
     MODALITY_XA,

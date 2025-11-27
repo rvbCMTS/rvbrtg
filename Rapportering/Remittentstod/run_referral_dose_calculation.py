@@ -9,7 +9,7 @@ print(os.environ.get("PYTHONPATH"))
 from Rapportering.Remittentstod.constants import MODALITY_LIST
 from Rapportering.Remittentstod.fetch_data import get_modality_data_for_year
 from Rapportering.Remittentstod.format_data  import format_data
-#from Rapportering.Remittentstod.save_formatted_data import save_formatted_data
+from Rapportering.Remittentstod.save_formatted_data import save_formatted_data
 #from Rapportering.Remittentstod.plot_data import plot_data
 
 rprint = Console(soft_wrap=True).print
@@ -50,7 +50,7 @@ logging.basicConfig(
 logger = logging.getLogger("referral_dose_calculation")
 
 
-def main(year: int = 0):
+def main(year: int = 2024):
     def _valid_year(year: int) -> bool:
         return year > 2020 and year <= datetime.now().year
 

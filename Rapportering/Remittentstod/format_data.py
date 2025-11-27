@@ -14,13 +14,14 @@ from Rapportering.Remittentstod.constants import (
     OUTPUT_COL_WEIGTH_CATEGORY,
     OUTPUT_COL_AGE_CATEGORY,
     OUTPUT_COL_EFFECTIVE_DOSE,
+    OUTPUT_COL_BODY_PART,
     MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
     MODALITY_XA,
+    CHILD_EXAM_PREFIX,
     BODY_PART_GIVEN_STUDY_DESCRIPTION,
     EFFECTIVE_DOSE_PER_UNIT_DAP,
-
 )
 
 from Rapportering.DSN.plot_data import plot_data
@@ -233,19 +234,17 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
             if modality == MODALITY_MG:
                 data.loc[data[grouping_column].isin(exam_group_values), [OUTPUT_COL_EXAM]] = exam_name
 
-            elif CHILD_EXAM_PREFIX in exam_name:
-                data.loc[(data[grouping_column].isin(exam_group_values)) & 
+            data.loc[((data[grouping_column].isin(exam_group_values)) & 
                          (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
-                         (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), [OUTPUT_COL_EXAM]] = exam_name
-            else:
-                data.loc[(data[grouping_column].isin(exam_group_values)) & 
+                         (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y')) |
+                         ((data[grouping_column].isin(exam_group_values)) & 
+                          data[VALID_STUDY_COLUMNS.PatientAgeUnit].isin(['D', 'M'])), [OUTPUT_COL_EXAM]] = f"{CHILD_EXAM_PREFIX}{exam_name}"
+
+            data.loc[(data[grouping_column].isin(exam_group_values)) & 
                          (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) &
                          (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), [OUTPUT_COL_EXAM]] = exam_name
 
-    if modality == MODALITY_MG:
-        data = data.dropna(subset=[OUTPUT_COL_EXAM])
-    else:
-        data = data.dropna(subset=[OUTPUT_COL_EXAM, VALID_STUDY_COLUMNS.PatientsSize, VALID_STUDY_COLUMNS.PatientsWeight])
+    data = data.dropna(subset=[OUTPUT_COL_EXAM])
 
     return data
 
@@ -335,7 +334,7 @@ def _calculate_effective_dose_given_dap(data: pd.DataFrame) -> pd.DataFrame:
         dose = EFFECTIVE_DOSE_PER_UNIT_DAP.get(body_part)
         for study in study_list:
             rows.append({
-                "BodyPart": body_part,
+                OUTPUT_COL_BODY_PART: body_part,
                 VALID_STUDY_COLUMNS.StudyDescription: study,
                 "EffectiveDosePerUnitDAP": dose,
             })
@@ -344,7 +343,7 @@ def _calculate_effective_dose_given_dap(data: pd.DataFrame) -> pd.DataFrame:
     merged_data = pd.merge(data,
                           effective_dose_per_unit_dap_body_part_study,
                           how="left",
-                          left_on=VALID_STUDY_COLUMNS.StudyDescription)
+                          on=VALID_STUDY_COLUMNS.StudyDescription)
     merged_data[OUTPUT_COL_EFFECTIVE_DOSE] = merged_data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] * merged_data['EffectiveDosePerUnitDAP']
 
     return merged_data
