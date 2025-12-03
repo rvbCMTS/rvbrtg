@@ -146,7 +146,7 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
     },
     MODALITY_DX: {
         EXAM_GROUPING_TYPE_STUDY_DESCRIPTION: {
-            "Ansiktsskelett eller del därav": [""],
+            "Ansiktsskelett eller del därav": ["Ansiktsskelett"],
             "Armbågsled": ["Armbågsled DX", "Armbågsled SIN", "Arm, barn SIN", "Arm, barn DX"],
             "Axel, ac-led": ["Axel, AC-led DX", "Axel, AC-led SIN"],
             "Benlängdsskillnad": ["Benlängd"],
@@ -154,7 +154,7 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "Bröstryggrad": ["Bröstrygg"],
             "Buköversikt": ["Buköversikt"],
             "Bäcken": ["Bäcken"],
-            "Epifarynx/nasofraynx": [],
+            "Epifarynx/nasofraynx": [], #Skalle sidobild
             "Fot, häl, tår": ["Fot DX", "Fot SIN", "Fot belastad DX", "Fot belastad SIN"],
             "Fotled": ["Fotled DX", "Fotled SIN", "Fotled belastad DX", "Fotled belastad SIN"],
             "Halsryggrad": ["Halsrygg"],
@@ -173,10 +173,10 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "Sacroiliacaleder": ["Sacroiliacaleder"],
             "Sacrum, coccyx": ["Sacrum, coccyx"],
             "Schaphoideum": ["Scaphoideum DX", "Scaphoideum SIN"],
-            "Skalle": [""],
+            "Skalle": ["Skalle"],
             "Skelettåldersbestämning": ["Skelettålder"],
             "Skulderblad": ["Skulderblad DX", "Skulderblad SIN"],
-            "Sternoclavikularleder": [],
+            "Sternoclavikularleder": [], # Prio om till DT.
             "Sternum": ["Sternum"],
             "Tunntarm": ["Tunntarm"],
             "Underarm": ["Underarm DX", "Underarm SIN", "Arm, barn SIN", "Arm, barn DX"],
@@ -184,6 +184,7 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "Öra cochlea implantat": ["Öra cochlea DX", "Öra cochlea SIN"],
             "Överarm": ["Överarm DX", "Överarm SIN", "Arm, barn SIN", "Arm, barn DX"],
         },
+        # Helkroppsskelett: [] #metodbok säger vilka bilder.
     },
     MODALITY_XA: {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
@@ -236,7 +237,7 @@ EFFECTIVE_DOSE_PER_UNIT_DAP = {
 }
 
 BODY_PART_GIVEN_STUDY_DESCRIPTION = {
-    "Head": ["Öra cochlea DX", "Öra cochlea SIN", "Ansiktsskelett"],
+    "Head": ["Öra cochlea DX", "Öra cochlea SIN", "Ansiktsskelett", "Skalle"],
     "Cervical Spine": ["Halsrygg"],
     "Shoulder": ["Nyckelben DX", "Nyckelben SIN", "Axel, AC-led DX", "Axel, AC-led SIN"],
     "Chest": ["Lungor", "Lungor, liggande", "Lunga-buk nyfödd", "Skulderblad DX", "Skulderblad SIN", "Revben"],
@@ -252,6 +253,25 @@ BODY_PART_GIVEN_STUDY_DESCRIPTION = {
              "Arm, barn SIN", "Arm, barn DX","Ben, barn DX", "Ben, barn SIN"],
     "Foot": ["Handled DX", "Handled SIN", "Hand DX", "Hand SIN", "Fotled DX", "Fotled SIN",
              "Fotled belastad DX", "Fotled belastad SIN", "Skelettålder", "Fot DX", "Fot SIN", "Fot belastad DX", "Fot belastad SIN"],
+}
+
+# years : cm
+PATIENT_SIZE_PER_AGE = {
+    1: 76,
+    2: 88,
+    3: 96,
+    4: 104,
+    5: 112,
+    6: 118,
+    7: 124,
+    8: 130,
+    9: 136,
+    10: 140,
+    11: 146,
+    12: 152,
+    13: 160,
+    14: 166,
+    15: 172,
 }
 
 

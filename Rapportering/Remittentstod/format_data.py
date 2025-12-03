@@ -22,6 +22,7 @@ from Rapportering.Remittentstod.constants import (
     CHILD_EXAM_PREFIX,
     BODY_PART_GIVEN_STUDY_DESCRIPTION,
     EFFECTIVE_DOSE_PER_UNIT_DAP,
+    PATIENT_SIZE_PER_AGE
 )
 
 from Rapportering.DSN.plot_data import plot_data
@@ -45,21 +46,8 @@ def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
 
 
 def _format_ct_data(data: pd.DataFrame) -> pd.DataFrame:
-    
-    data = _categorize_exams_according_to_ssm(data, modality=MODALITY_CT)
+   return 
 
-    return data[[
-        VALID_SERIES_COLUMNS.MeanCTDIvol,
-        VALID_SERIES_COLUMNS.DlPv,
-        VALID_SERIES_COLUMNS.SizeSpecificDoseEstimation,
-        VALID_STUDY_COLUMNS.PatientAge,
-        VALID_STUDY_COLUMNS.PatientsSex,
-        VALID_STUDY_COLUMNS.PatientsSize,
-        VALID_STUDY_COLUMNS.PatientsWeight,
-        VALID_SERIES_COLUMNS.AcquisitionProtocol,
-        VALID_STUDY_COLUMNS.Machine,
-        OUTPUT_COL_EXAM
-    ]]
 
 
 def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
@@ -72,127 +60,13 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
-    data = data[data[VALID_SERIES_COLUMNS.AverageGlandularDose] > 0]  # Remove negative and zero AGD values
-    data = _determine_mg_projection(data=data)
-    data.loc[:, VALID_SERIES_COLUMNS.CompressionForce] = data[VALID_SERIES_COLUMNS.CompressionForce].divide(10)  # Convert from N to daN
-    data = _categorize_exams_according_to_ssm(data, modality=MODALITY_MG)
 
-    plot_data(data=data, modality=MODALITY_MG)
-
-    data = data[
-        data[VALID_SERIES_COLUMNS.CompressionForce].notnull() &
-        data[VALID_SERIES_COLUMNS.CompressionThickness].notnull()
-    ]  # Remove rows that is missing either CompressionForce or CompressionThickness
-
-    data = _filter_for_compression_thickness_limits(data)
-    data[MG_COL_EXAM_INDEX] = data.groupby(VALID_STUDY_COLUMNS.Id).cumcount() + 1
-    data.loc[data[VALID_SERIES_COLUMNS.XrayFilterMaterial].str.contains("Rho"), VALID_SERIES_COLUMNS.XrayFilterMaterial] = "Rh"
-    data.loc[data[VALID_SERIES_COLUMNS.AnodeTargetMaterial].str.contains("Tun"), VALID_SERIES_COLUMNS.AnodeTargetMaterial]= "W"
-
-    return data
+    return
 
 
 def _format_xa_data(data: pd.DataFrame) -> pd.DataFrame:
-    data = data[data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] > 0]  # Remove negative and zero DAP values
 
-    data[VALID_STUDY_COLUMNS.TotalFluoroTime] = data[VALID_STUDY_COLUMNS.TotalFluoroTime] / 60  # Convert fluoro time to minutes
-    data[VALID_STUDY_COLUMNS.TotalFluoroTime] = data[VALID_STUDY_COLUMNS.TotalFluoroTime].round(2)  # Round fluoro time to 2 decimal places
-    
-    data = _categorize_by_weight(data)
-
-    data = _categorize_exams_according_to_ssm(data, modality=MODALITY_XA)
- 
-    data = _filter_for_number_of_examinations_needed_for_DSN_report(data)
-
-    return data
-
-def _filter_for_size_and_weight_date_intervals_relative_study_datetime(data: pd.DataFrame, modality: str) -> pd.DataFrame:
-    if modality == MODALITY_MG:
-        return data
-
-    data.loc[:, "SizeDateDiff"] = abs(data[VALID_STUDY_COLUMNS.PatientsSizeDate] - data[VALID_STUDY_COLUMNS.StudyDateTime])
-    data.loc[:, "WeightDateDiff"] = abs(data[VALID_STUDY_COLUMNS.PatientsWeightDate] - data[VALID_STUDY_COLUMNS.StudyDateTime])
-
-    data.loc[:, "KeepRow"] = True
-    data.loc[
-        (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == "Y") &  # Filters for patients that are at least 1 years old
-        ((data["SizeDateDiff"] > timedelta(days=365)) | (data["WeightDateDiff"] > timedelta(days=365))),
-         "KeepRow"
-    ] = False
-
-    data.loc[
-        (data[VALID_STUDY_COLUMNS.PatientAgeUnit] != "Y") &  # Filters for patients that are below 1 year
-        ((data["SizeDateDiff"] > timedelta(days=30)) | (data["WeightDateDiff"] > timedelta(days=30))),
-        "KeepRow"
-    ] = False
-
-    # Keep only rows where "KeepRow" is True
-    data = data[data["KeepRow"]]
-
-    # Drop the "KeepRow" column as it is no longer needed
-    data = data.drop(columns=["KeepRow"])
-
-    return data
-
-def _sanity_check_patient_bmi(data: pd.DataFrame, modality: str) -> pd.DataFrame:
-    """Throws away data for patients with an unreasonable value for the BMI
-
-    Parameters
-    ----------
-    data
-        the REMbox data to be sanitized
-
-    Returns
-    -------
-    A copy of the original dataframe with added column for BMI and rows with unreasonable values dropped
-    """
-    if modality == MODALITY_MG:
-        return data
-
-    data["BMI"] = data[VALID_STUDY_COLUMNS.PatientsWeight] / ((data[VALID_STUDY_COLUMNS.PatientsSize] / 100) ** 2)
-
-    return data[(data.BMI > 10) & (data.BMI < 35.0)]
-
-def _categorize_by_weight(data: pd.DataFrame) -> pd.DataFrame:
-    """Categories the data by weight intervalls for DSN reports
-
-    Parameters
-    ----------
-    data
-        the REMbox data to be categorized into weight intervals
-
-    Returns
-    -------
-    The original dataframe with an additional column containing the weight interval
-    """
-    data.loc[:, OUTPUT_COL_WEIGTH_CATEGORY] = [None] * len(data)
-
-    data.loc[(data[VALID_STUDY_COLUMNS.PatientsWeight] < 5.0) &
-             (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
-             (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), OUTPUT_COL_WEIGTH_CATEGORY] = WEIGHT_CATEGORY_0_5
-    data.loc[(data[VALID_STUDY_COLUMNS.PatientsWeight] >= 5.0) &
-             (data[VALID_STUDY_COLUMNS.PatientsWeight] < 15.0) &
-             (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
-             (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), OUTPUT_COL_WEIGTH_CATEGORY] = WEIGHT_CATEGORY_5_15
-    data.loc[(data[VALID_STUDY_COLUMNS.PatientsWeight] >= 15.0) &
-             (data[VALID_STUDY_COLUMNS.PatientsWeight] < 30.0) &
-             (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
-             (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), OUTPUT_COL_WEIGTH_CATEGORY] = WEIGHT_CATEGORY_15_30
-    data.loc[(data[VALID_STUDY_COLUMNS.PatientsWeight] >= 30.0) &
-             (data[VALID_STUDY_COLUMNS.PatientsWeight] < 50.0) &
-             (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
-             (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), OUTPUT_COL_WEIGTH_CATEGORY] = WEIGHT_CATEGORY_30_50
-    data.loc[(data[VALID_STUDY_COLUMNS.PatientsWeight] >= 50.0) &
-             (data[VALID_STUDY_COLUMNS.PatientsWeight] < 70.0) &
-             (data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
-             (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), OUTPUT_COL_WEIGTH_CATEGORY] = WEIGHT_CATEGORY_50_70
-    data.loc[(data[VALID_STUDY_COLUMNS.PatientsWeight] >= 60.0) &
-             (data[VALID_STUDY_COLUMNS.PatientsWeight] < 90.0) &
-             (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) &
-             (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y'), OUTPUT_COL_WEIGTH_CATEGORY] = WEIGHT_CATEGORY_60_90    
-
-    return data
-
+    return
 
 def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.DataFrame:
     """Adds a column with the SSM specified exam name and populates it according to the rule setup in the
@@ -248,85 +122,6 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
 
     return data
 
-
-def _filter_for_number_of_examinations_needed_for_DSN_report(data: pd.DataFrame) -> pd.DataFrame:
-    """Filter for number of examinations neeeded for DSN report: 20 for adults and 10 for children.
-
-    Parameters
-    ----------
-    data
-        the REMbox data to be filtered
- 
-
-    Returns
-    -------
-    A filtered version of the REMbox data
-    """
-    filtered_data = data.groupby(by=[OUTPUT_COL_EXAM, OUTPUT_COL_WEIGTH_CATEGORY, VALID_STUDY_COLUMNS.Machine]).filter(
-        lambda x: x[VALID_STUDY_COLUMNS.DoseAreaProductTotal].count() > 10
-        if x[VALID_STUDY_COLUMNS.PatientAge].max() < 16
-        else x[VALID_STUDY_COLUMNS.DoseAreaProductTotal].count() > 20
-    )
-
-    return filtered_data
-
-
-def _determine_mg_projection(data: pd.DataFrame) -> pd.DataFrame:
-    data[MG_COL_PROJECTION] = pd.Series(dtype="str")
-    data.loc[
-        (
-            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-65, -40) |
-            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(40, 65)
-        ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Right"),
-        MG_COL_PROJECTION
-    ] = MG_PROJ_RMLO
-    data.loc[
-        (
-            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-65, -40) |
-            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(40, 65)
-        ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Left"),
-        MG_COL_PROJECTION
-    ] = MG_PROJ_LMLO
-    data.loc[
-        (
-            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-95, -85) |
-            data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(85, 95)
-        ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Right"),
-        MG_COL_PROJECTION
-    ] = MG_PROJ_RML
-    data.loc[
-        (
-                data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-95, -85) |
-                data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(85, 95)
-        ) & data[VALID_SERIES_COLUMNS.Laterality].str.contains("Left"),
-        MG_COL_PROJECTION
-    ] = MG_PROJ_LML
-    data.loc[
-        data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-5, 5) &
-        data[VALID_SERIES_COLUMNS.Laterality].str.contains("Right"),
-        MG_COL_PROJECTION
-    ] = MG_PROJ_RCC
-    data.loc[
-        data[VALID_SERIES_COLUMNS.PositionerPrimaryAngle].between(-5, 5) &
-        data[VALID_SERIES_COLUMNS.Laterality].str.contains("Left"),
-        MG_COL_PROJECTION
-    ] = MG_PROJ_LCC
-
-    return data
-
-
-def _filter_for_compression_thickness_limits(data: pd.DataFrame):
-    data = data[
-        data[VALID_SERIES_COLUMNS.CompressionThickness].between(MG_COMPRESSION_THICKNESS_RANGE[0],
-                                                                MG_COMPRESSION_THICKNESS_RANGE[1])]
-    data.loc[:, "SeriesCount"] = data.groupby(VALID_STUDY_COLUMNS.Id)[VALID_STUDY_COLUMNS.Id].transform("count")
-    data = data[(data[OUTPUT_COL_EXAM] != "Screening") | (
-        (data.SeriesCount == MG_SERIES_COUNT_FILTER) & (data[VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents] == MG_SERIES_COUNT_FILTER)
-    )]
-
-    return data
-
-
 def _calculate_effective_dose_given_dap(data: pd.DataFrame) -> pd.DataFrame:
     # Build a DataFrame with one row per (body part, study description), including the effective dose per unit DAP.
     rows = []
@@ -340,10 +135,30 @@ def _calculate_effective_dose_given_dap(data: pd.DataFrame) -> pd.DataFrame:
             })
     effective_dose_per_unit_dap_body_part_study = pd.DataFrame(rows)
 
-    merged_data = pd.merge(data,
-                          effective_dose_per_unit_dap_body_part_study,
-                          how="left",
-                          on=VALID_STUDY_COLUMNS.StudyDescription)
-    merged_data[OUTPUT_COL_EFFECTIVE_DOSE] = merged_data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] * merged_data['EffectiveDosePerUnitDAP']
+    data = pd.merge(data,
+                    effective_dose_per_unit_dap_body_part_study,
+                    how="left",
+                    on=VALID_STUDY_COLUMNS.StudyDescription)
+    
+    # Build a Dataframe for patient age and patient size
+    rows = []
+    for patient_age, patient_size in PATIENT_SIZE_PER_AGE.items():
+        rows.append({
+            VALID_STUDY_COLUMNS.PatientAge: patient_age,
+            "DAPFieldAreaPatientSizeCompensation": (PATIENT_SIZE_PER_AGE[15] / patient_size)**2,
+        })
+    patient_size_per_age = pd.DataFrame(rows)
 
-    return merged_data
+    data = pd.merge(data,
+                    patient_size_per_age,
+                    how="left",
+                    on=VALID_STUDY_COLUMNS.PatientAge)
+    
+    data.loc[((data[VALID_STUDY_COLUMNS.PatientAge] > 16) &
+                    (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y')), [OUTPUT_COL_EFFECTIVE_DOSE]] = data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] * data['EffectiveDosePerUnitDAP']
+    
+    data.loc[((data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
+              (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y')) |
+              (data[VALID_STUDY_COLUMNS.PatientAgeUnit].isin(['D', 'M'])), [OUTPUT_COL_EFFECTIVE_DOSE]] = data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] * data['EffectiveDosePerUnitDAP'] * data['DAPFieldAreaPatientSizeCompensation']
+ 
+    return data

@@ -10,7 +10,6 @@ from Rapportering.Remittentstod.constants import MODALITY_LIST
 from Rapportering.Remittentstod.fetch_data import get_modality_data_for_year
 from Rapportering.Remittentstod.format_data  import format_data
 from Rapportering.Remittentstod.save_formatted_data import save_formatted_data
-#from Rapportering.Remittentstod.plot_data import plot_data
 
 rprint = Console(soft_wrap=True).print
 
