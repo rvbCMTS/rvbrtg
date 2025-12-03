@@ -137,5 +137,6 @@ LocalOnly/
 Rapportering/Arsstatistik/Reports/*xlsx
 Rapportering/DSN/Reports/*xlsx
 Rapportering/Remittentstod/Reports/*pdf
+Rapportering/Remittentstod/Reports/*csv
 LocalOnly/
 *.whl
