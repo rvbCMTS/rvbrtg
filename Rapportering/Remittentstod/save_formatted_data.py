@@ -3,6 +3,8 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg") # Use a non-interactive backend
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -93,7 +95,6 @@ def _create_report_dx(pdf, data: pd.DataFrame, exam_name: str):
     ax.set_xlabel("Effektiv dos (mSv)")
     ax.set_title(f"Histogram över effektiv dos för {exam_name}")
 
-    plt.show()
     pdf.savefig(fig)
     plt.close(fig)
 

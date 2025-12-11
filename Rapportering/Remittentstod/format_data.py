@@ -154,7 +154,7 @@ def _calculate_effective_dose_given_dap(data: pd.DataFrame) -> pd.DataFrame:
                     how="left",
                     on=VALID_STUDY_COLUMNS.PatientAge)
     
-    data.loc[((data[VALID_STUDY_COLUMNS.PatientAge] > 16) &
+    data.loc[((data[VALID_STUDY_COLUMNS.PatientAge] >= 16) &
                     (data[VALID_STUDY_COLUMNS.PatientAgeUnit] == 'Y')), [OUTPUT_COL_EFFECTIVE_DOSE]] = data[VALID_STUDY_COLUMNS.DoseAreaProductTotal] * data['EffectiveDosePerUnitDAP']
     
     data.loc[((data[VALID_STUDY_COLUMNS.PatientAge] < 16) &
