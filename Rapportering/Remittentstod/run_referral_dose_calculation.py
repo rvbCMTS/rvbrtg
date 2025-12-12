@@ -56,7 +56,7 @@ def main(year: int = 2024):
     while not _valid_year(year):
         year = int(input("Enter year: "))
 
-    logger.info(f"Skapar statistikrapporter för {year}")
+    logger.info(f"Skapar dosberäkningar med data från år {year}")
 
     start_time = time.time_ns()
     for modality in MODALITY_LIST:

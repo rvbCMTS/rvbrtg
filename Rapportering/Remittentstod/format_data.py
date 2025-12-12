@@ -1,7 +1,4 @@
-from datetime import timedelta
-
 import pandas as pd
-
 from Rapportering.Remittentstod.constants import (
     VALID_STUDY_COLUMNS,
     VALID_SERIES_COLUMNS,
@@ -11,8 +8,6 @@ from Rapportering.Remittentstod.constants import (
     EXAM_GROUPING_TYPE_PROCEDURE_CODE,
     EXAM_GROUPING_TYPE_ACQUISITION_PROTOCOL,
     OUTPUT_COL_EXAM,
-    OUTPUT_COL_WEIGTH_CATEGORY,
-    OUTPUT_COL_AGE_CATEGORY,
     OUTPUT_COL_EFFECTIVE_DOSE,
     OUTPUT_COL_BODY_PART,
     MODALITY_CT,
@@ -24,8 +19,6 @@ from Rapportering.Remittentstod.constants import (
     EFFECTIVE_DOSE_PER_UNIT_DAP,
     PATIENT_SIZE_PER_AGE
 )
-
-from Rapportering.DSN.plot_data import plot_data
 
 
 def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
@@ -46,8 +39,8 @@ def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
 
 
 def _format_ct_data(data: pd.DataFrame) -> pd.DataFrame:
-   return 
-
+   # TODO: Implement CT specific formatting if needed in the future
+   return data
 
 
 def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
@@ -59,14 +52,16 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
  
     return data
 
-def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
 
-    return
+def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
+    # TODO: Implement MG specific formatting if needed in the future
+    return data
 
 
 def _format_xa_data(data: pd.DataFrame) -> pd.DataFrame:
+    # TODO: Implement XA specific formatting if needed in the future
+    return data
 
-    return
 
 def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.DataFrame:
     """Adds a column with the SSM specified exam name and populates it according to the rule setup in the
@@ -121,6 +116,7 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
     data = data.dropna(subset=[OUTPUT_COL_EXAM])
 
     return data
+
 
 def _calculate_effective_dose_given_dap(data: pd.DataFrame) -> pd.DataFrame:
     # Build a DataFrame with one row per (body part, study description), including the effective dose per unit DAP.

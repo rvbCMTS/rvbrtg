@@ -1,24 +1,19 @@
 import logging
 from pathlib import Path
-
-from openpyxl import load_workbook
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg") # Use a non-interactive backend
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-
 from Rapportering.Remittentstod.constants import (
-    REPORT_TEMPLATE_PATH_PER_MODALITY,
-    MODALITY_CT,
     MODALITY_DX,
-    MODALITY_MG,
-    MODALITY_XA,
     REPORT_OUTPUT_DIR,
-    OUTPUT_COL_EXAM, VALID_SERIES_COLUMNS, VALID_STUDY_COLUMNS,
-    OUTPUT_COL_EFFECTIVE_DOSE, OUTPUT_COL_BODY_PART)
+    OUTPUT_COL_EXAM,
+    VALID_STUDY_COLUMNS,
+    OUTPUT_COL_EFFECTIVE_DOSE,
+    OUTPUT_COL_BODY_PART)
 
-logger = logging.getLogger("yearly_statistics")
+logger = logging.getLogger("referral_dose_calculation")
 
 
 def save_formatted_data(data: pd.DataFrame, modality: str) -> None:
@@ -49,10 +44,9 @@ def _create_report_main(data: pd.DataFrame, modality:str):
         with PdfPages(output_path) as pdf:
             try:
                 if modality == MODALITY_DX:
-                    _create_report_dx(pdf=pdf, data=tmp_data, exam_name=exam_name)
+                    _create_report_dx(pdf=pdf, data=tmp_data, exam_name=exam_name, modality=modality)
             except Exception:
                 logger.error(f"Kunde inte skapa rapport för {modality} - {exam_name}")
-
 
 
 def _create_report_summery_statistics(data: pd.DataFrame, modality: str):
@@ -63,19 +57,10 @@ def _create_report_summery_statistics(data: pd.DataFrame, modality: str):
 
     return
 
-def _create_report_ct(report_sheet, data: pd.DataFrame):
 
-    return
-
-
-def _create_report_dx(pdf, data: pd.DataFrame, exam_name: str):
+def _create_report_dx(pdf, data: pd.DataFrame, exam_name: str, modality: str):
     # Plot a histogram of effective dose and calculate basic statistics
-    agg_data = data.groupby(by=OUTPUT_COL_EXAM).agg(
-                Antal=pd.NamedAgg(column=OUTPUT_COL_EFFECTIVE_DOSE, aggfunc="count"),
-                Dose_mean=pd.NamedAgg(column=OUTPUT_COL_EFFECTIVE_DOSE, aggfunc="mean"),
-                Dose_median=pd.NamedAgg(column=OUTPUT_COL_EFFECTIVE_DOSE, aggfunc="median"),
-                Dose_95=pd.NamedAgg(column=OUTPUT_COL_EFFECTIVE_DOSE, aggfunc=lambda x: x.quantile(0.95))
-    )
+    agg_data = _calculate_statistics(data=data, modality=modality)
 
     fig, ax = plt.subplots(1, 1, sharey=True, tight_layout=True)
     ax.hist(data[OUTPUT_COL_EFFECTIVE_DOSE], bins=round(len(data) ** (1/2)))
@@ -99,18 +84,10 @@ def _create_report_dx(pdf, data: pd.DataFrame, exam_name: str):
     plt.close(fig)
 
 
-def _create_report_xa(report_sheet, data: pd.DataFrame):
-
-    return
-
-
-def _create_report_mg(report_sheet, data: pd.DataFrame, machine: str, exam_name: str):
-
-    return
-
 def _list_to_multiline_string(lst, per_line=5, sep=", "):
     chunks = [sep.join(map(str, lst[i:i+per_line])) for i in range(0, len(lst), per_line)]
     return "\n".join(chunks)
+
 
 def _calculate_statistics(data: pd.DataFrame, modality: str):
     if modality == MODALITY_DX:

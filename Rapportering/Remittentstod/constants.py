@@ -1,6 +1,4 @@
 from pathlib import Path
-import pandas as pd
-
 from rembox_integration_tools.rembox_analysis import StudyColumn, SeriesColumn
 
 VALID_STUDY_COLUMNS = StudyColumn()
@@ -32,15 +30,10 @@ MG_PROJ_RCC = "RCC"
 MG_COMPRESSION_THICKNESS_RANGE = (40, 60)
 MG_SERIES_COUNT_FILTER = 4
 
-COL_MARKER_LINE_WIDTH = "markerLineWidth"
-
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
-#    MODALITY_CT,
     MODALITY_DX
-#    MODALITY_MG,
-#    MODALITY_XA
 ]
 
 COLUMN_SELECTION_GENERAL = [
@@ -109,13 +102,6 @@ MODALITY_FILTER_SELECTION_PER_MODALITY = {
     MODALITY_XA: ["XASTAT", "XAMOB"],
 }
 
-
-REPORT_TEMPLATE_PATH_PER_MODALITY = {
-    MODALITY_CT: Path(__file__).parent / "ReportTemplates/CT Mall DsnRegistrering.xlsx",
-    MODALITY_DX: Path(__file__).parent / "ReportTemplates/RTG DsnRegistrering.xlsx",
-    MODALITY_XA: Path(__file__).parent / "ReportTemplates/INT Mall DsnRegistrering.xlsx",
-    MODALITY_MG: Path(__file__).parent / "ReportTemplates/MG Mall DsnRegistrering.xlsx",
-}
 
 EXAM_GROUPING_TYPE_STUDY_DESCRIPTION = "Study Description"
 EXAM_GROUPING_TYPE_PROTOCOL_CODE = "Protocol Code"
@@ -202,16 +188,6 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
     },
 }
 
-WEIGHT_CATEGORY_0_5 = "0-5kg"
-WEIGHT_CATEGORY_5_15 = "5-15kg"
-WEIGHT_CATEGORY_15_30 = "15-30kg"
-WEIGHT_CATEGORY_30_50 = "30-50kg"
-WEIGHT_CATEGORY_50_70 = "50-70kg"
-WEIGHT_CATEGORY_60_90 = "60-90kg"
-AGE_CATEGORY_0_1 = "<1 år"
-AGE_CATEGORY_1_6 = "1-<6 år"
-AGE_CATEGORY_6_16 = "6-<16 år"
-
 OUTPUT_COL_EXAM = "Undersökning"
 OUTPUT_COL_WEIGTH_CATEGORY = "Viktgrupp"
 OUTPUT_COL_AGE_CATEGORY = "Åldersgrupp"
@@ -219,7 +195,8 @@ OUTPUT_COL_EFFECTIVE_DOSE = "EffectiveDose"
 OUTPUT_COL_BODY_PART = "BodyPart"
 
 
-# Table 7, Radiation Risks from Medical X-ray Examinations as a Function of the Age and Sex of the Patient
+# Table 7, B G Wall, R Haylock, J T M Jansen, M C Hillier, D Hart and P C Shrimpton,
+# Radiation Risks from Medical X-ray Examinations as a Function of the Age and Sex of the Patient, Health Protection Agency, 2011
 # mSv / Gy cm^2
 EFFECTIVE_DOSE_PER_UNIT_DAP = {
     "Head": 0.058,
@@ -273,27 +250,3 @@ PATIENT_SIZE_PER_AGE = {
     14: 166,
     15: 172,
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
