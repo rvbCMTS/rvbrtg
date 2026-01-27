@@ -21,7 +21,6 @@ MODALITY_DCBCT: str = "DCBCT"
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
-    MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
     MODALITY_XA
@@ -33,6 +32,7 @@ COLUMN_SELECTION_GENERAL = [
     VALID_STUDY_COLUMNS.StudyInstanceUID,
     VALID_STUDY_COLUMNS.StudyId,
     VALID_STUDY_COLUMNS.Machine,
+    VALID_STUDY_COLUMNS.MachineType,
     VALID_STUDY_COLUMNS.StudyDescription,
     VALID_STUDY_COLUMNS.AccessionNumber,
     VALID_STUDY_COLUMNS.PatientAge,
@@ -48,15 +48,12 @@ COLUMN_SELECTION_GENERAL = [
 
 COLUMN_SELECTION_PER_MODALITY = {
     MODALITY_CT: COLUMN_SELECTION_GENERAL + [
-            VALID_STUDY_COLUMNS.PerformingPhysicianName,
-            VALID_STUDY_COLUMNS.PerformingPhysicianIdentificationSequence,
             VALID_STUDY_COLUMNS.DlpTotal,
     ],
     MODALITY_DX: COLUMN_SELECTION_GENERAL + [
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
     ],
     MODALITY_MG: COLUMN_SELECTION_GENERAL + [
-        VALID_SERIES_COLUMNS.AcquisitionProtocol,
         VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts,
     ],
     MODALITY_XA: COLUMN_SELECTION_GENERAL + [
@@ -142,29 +139,23 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
                 "Överarm SIN"
             ],
             "RTG07:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Ryggraden": ["Bröstryggrad", "Halsryggrad", "Helrygg", "Ländryggrad", "Sacrum, coccyx"],
-            "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik": [
-                "Nyckelben DX",
-                "Nyckelben SIN",
-                "Revben",
-                "Shuntöversikt",
-                "Shuntkontroll",
-                "Skulderblad DX",
-                "Skulderblad SIN",
-            ],
+            "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik": [],
             "MOB1:Mobil röntgenutrustning för bildtagning:Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg": [],
             "MOB2:Mobil röntgenutrustning för bildtagning:Diagnostik:Extremiteter, inklusive axlar/axelled": [],
             "MOB3:Mobil röntgenutrustning för bildtagning:Diagnostik:Övrigt": [],
-            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Skelett": ["X621", "X622", "X623", "X626", "X630", "X631", "X633",
-                                                                                                                      "X643", "X636", "X637", "X638", "X639", "X641", "X642",
-                                                                                                                      "X642", "X645", "X646", "X648"], #Detta ska vara Procedure Code
+            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Skelett": [], # Finns under procedure code 
             "MOB5:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Övrigt": [],
             "BEN1:Bentäthetsmätare:Diagnostik:Inget specifikt": [],
         },
+        EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
+            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Skelett": ["X621", "X622", "X623", "X626", "X630", "X631", "X633",
+                                                                                                                      "X643", "X636", "X637", "X638", "X639", "X641", "X642",
+                                                                                                                      "X642", "X645", "X646", "X648"], 
     },
     MODALITY_MG: {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
             "MAM1:Mammografiutrustning (fast installerad):Diagnostik:Bröstkörtlar 2D": ["66000", "66000D", "66000S"],
-            "MAM2:Mammografiutrustning (fast installerad):Diagnostik:Bröstkörtlar tomosyntes": [],
+            "MAM2:Mammografiutrustning (fast installerad):Diagnostik:Bröstkörtlar tomosyntes": ["66061"],
             "MAM3:Mammografiutrustning (fast installerad):Diagnostik:Övrigt": [],
             "MAM4:Mammografiutrustning (fast installerad):Screening:Bröstkörtlar 2D": ["66200"],
             "MAM5:Mammografiutrustning (fast installerad):Screening:Bröstkörtlar tomosyntes": [],
@@ -240,3 +231,5 @@ OUTPUT_COL_EXAM = "Undersökning"
 
 MODALITY_DX_MACHINE_GENERAL = ["L2", "L4", "LSTORU", "LTARNA", "LVILM", "S01", "S02", "S04", "U220", "U221", "U222"]
 MODALITY_DX_MACHINE_MOBILE = ["L10", "S12", "U220", "U221", "U222"]
+MODALITY_XA_MACHINE_TREATMENT = ["U104", "U105", "U106", "U601", "U601_2025", "U602", "Arytmi 1", "Arytmi 2"]
+MODALITY_XA_MACHINE_DIAGNOSTIC = ["U110", "S08", "L3"]
