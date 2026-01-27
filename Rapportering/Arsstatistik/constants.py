@@ -10,6 +10,7 @@ CLIENT_PWD_ENV_VAR = "REMBOX_INT_CLIENT_PWD"
 TOKEN_URI = "https://autoqa.vll.se/dpqaauth/connect/token"
 API_URI = "https://rembox.vll.se/api"
 ORIGIN_URI = "https://rembox.vll.se"
+VERIFY_SSL_CERT = False
 
 MODALITY_CT: str = "CT"
 MODALITY_DX: str = "DX"
@@ -111,41 +112,45 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "RTG03:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övre buk (exklusive njurar)": [],
             "RTG04:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Nedre Buk (inklusive njurar, exklusive bäcken/höft)": ["Buköversikt", "Tunntarm"],
             "RTG05:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Bäcken höfter": ["Bäcken", "Protesbäcken", "Höftled DX", "Höftled SIN", "Sacroiliacaleder"],
-            "RTG06:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Extremitetsskelett,  inklusive axlar/axelled": ["Armbågsled DX",
-                                                                                                                                    "Armbågsled SIN",
-                                                                                                                                    "Axel, AC-led DX",
-                                                                                                                                    "Axel, AC-led SIN",
-                                                                                                                                    "Benlängd",
-                                                                                                                                    "Fot DX",
-                                                                                                                                    "Fot SIN",
-                                                                                                                                    "Fotled DX",
-                                                                                                                                    "Fotled SIN",
-                                                                                                                                    "Fotled belastad DX",
-                                                                                                                                    "Fotled belastad SIN",
-                                                                                                                                    "Hand DX",
-                                                                                                                                    "Hand SIN",
-                                                                                                                                    "Handled DX",
-                                                                                                                                    "Handled SIN",
-                                                                                                                                    "Knäled DX",
-                                                                                                                                    "Knäled SIN",
-                                                                                                                                    "Lårben DX",
-                                                                                                                                    "Lårben SIN",
-                                                                                                                                    "Scaphoideum DX",
-                                                                                                                                    "Scaphoideum SIN",
-                                                                                                                                    "Underarm DX",
-                                                                                                                                    "Underarm SIN",
-                                                                                                                                    "Underben DX",
-                                                                                                                                    "Underben SIN",
-                                                                                                                                    "Överarm DX",
-                                                                                                                                    "Överarm SIN"], 
+            "RTG06:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Extremitetsskelett,  inklusive axlar/axelled": [
+                "Armbågsled DX",
+                "Armbågsled SIN",
+                "Axel, AC-led DX",
+                "Axel, AC-led SIN",
+                "Benlängd",
+                "Fot DX",
+                "Fot SIN",
+                "Fotled DX",
+                "Fotled SIN",
+                "Fotled belastad DX",
+                "Fotled belastad SIN",
+                "Hand DX",
+                "Hand SIN",
+                "Handled DX",
+                "Handled SIN",
+                "Knäled DX",
+                "Knäled SIN",
+                "Lårben DX",
+                "Lårben SIN",
+                "Scaphoideum DX",
+                "Scaphoideum SIN",
+                "Underarm DX",
+                "Underarm SIN",
+                "Underben DX",
+                "Underben SIN",
+                "Överarm DX",
+                "Överarm SIN"
+            ],
             "RTG07:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Ryggraden": ["Bröstryggrad", "Halsryggrad", "Helrygg", "Ländryggrad", "Sacrum, coccyx"],
-            "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik": ["Nyckelben DX",
-                                                                                                        "Nyckelben SIN",
-                                                                                                        "Revben",
-                                                                                                        "Shuntöversikt",
-                                                                                                        "Shuntkontroll",
-                                                                                                        "Skulderblad DX",
-                                                                                                        "Skulderblad SIN",],
+            "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik": [
+                "Nyckelben DX",
+                "Nyckelben SIN",
+                "Revben",
+                "Shuntöversikt",
+                "Shuntkontroll",
+                "Skulderblad DX",
+                "Skulderblad SIN",
+            ],
             "MOB1:Mobil röntgenutrustning för bildtagning:Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg": [],
             "MOB2:Mobil röntgenutrustning för bildtagning:Diagnostik:Extremiteter, inklusive axlar/axelled": [],
             "MOB3:Mobil röntgenutrustning för bildtagning:Diagnostik:Övrigt": [],
@@ -224,8 +229,13 @@ AGE_SEX_CATEGORY_ADULT_MALE_41_65 = "Män 41-65"
 AGE_SEX_CATEGORY_ADULT_FEMALE_41_65 = "Kvinnor 41-65"
 AGE_SEX_CATEGORY_ADULT_MALE_66plus = "Män 66+"
 AGE_SEX_CATEGORY_ADULT_FEMALE_66plus = "Kvinnor 66+"
+AGE_SEX_CATEGORY_DOSE_BOY = "Pojkar för dosberäkning"
+AGE_SEX_CATEGORY_DOSE_GIRL = "Flickor för dosberäkning"
+AGE_SEX_CATEGORY_DOSE_MALE = "Män för dosberäkning"
+AGE_SEX_CATEGROY_DOSE_FEMALE = "Kvinnor för dosberäkning"
 
 OUTPUT_COL_AGE_SEX_CATEGORY = "ageSexCategory"
+OUTPUT_COL_AGE_SEX_CATEGORY_DOSE = "ageSexCategoryDose"
 OUTPUT_COL_EXAM = "Undersökning"
 
 MODALITY_DX_MACHINE_GENERAL = ["L2", "L4", "LSTORU", "LTARNA", "LVILM", "S01", "S02", "S04", "U220", "U221", "U222"]
