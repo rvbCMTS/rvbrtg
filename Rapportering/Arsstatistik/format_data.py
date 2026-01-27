@@ -12,11 +12,16 @@ from Rapportering.Arsstatistik.constants import (
     AGE_SEX_CATEGORY_ADULT_FEMALE_41_65,
     AGE_SEX_CATEGORY_ADULT_MALE_66plus,
     AGE_SEX_CATEGORY_ADULT_FEMALE_66plus,
+    AGE_SEX_CATEGORY_DOSE_BOY,
+    AGE_SEX_CATEGORY_DOSE_GIRL,
+    AGE_SEX_CATEGORY_DOSE_MALE,
+    AGE_SEX_CATEGROY_DOSE_FEMALE,
     MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
     MODALITY_XA,
     OUTPUT_COL_AGE_SEX_CATEGORY,
+    OUTPUT_COL_AGE_SEX_CATEGORY_DOSE,
     VALID_STUDY_COLUMNS, OUTPUT_COL_EXAM, EXAM_GROUPING_RULES_BY_MODALITY, EXAM_GROUPING_TYPE_PROTOCOL_CODE,
     EXAM_GROUPING_TYPE_STUDY_DESCRIPTION, EXAM_GROUPING_TYPE_PROCEDURE_CODE,
 )
@@ -171,6 +176,26 @@ def _categorize_by_age_and_sex(data: pd.DataFrame, modality: Optional[str] = Non
         (data[VALID_STUDY_COLUMNS.PatientAge] >= 66) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
         [OUTPUT_COL_AGE_SEX_CATEGORY]
     ] = AGE_SEX_CATEGORY_ADULT_FEMALE_66plus
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]
+    ] = AGE_SEX_CATEGROY_DOSE_FEMALE
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]
+    ] = AGE_SEX_CATEGORY_DOSE_MALE
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] < 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]
+    ] = AGE_SEX_CATEGORY_DOSE_GIRL
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] < 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]
+    ] = AGE_SEX_CATEGORY_DOSE_BOY
 
     return data
 
