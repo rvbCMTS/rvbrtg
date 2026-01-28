@@ -1,36 +1,34 @@
-
-
 import marimo
 
-__generated_with = "0.13.0"
+__generated_with = "0.18.1"
 app = marimo.App(width="medium")
 
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md(r"""## Formatera data från SCAAR så output manuellt kan föras in i DosReg""")
+    mo.md(r"""
+    ## Formatera data från SCAAR så output manuellt kan föras in i DosReg
+    """)
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md(
-        r"""
-        Gå till https://www.ucr.uu.se/swedeheart/ och logga in med Siths-kort <br>
-        Gå till **"Rapporter"**<br>
-        Välj **"Export till Excel Angio-PCI"**<br>
-        Gör följande urval:<br>
-        **Rapportdatum:** T.ex 2022-01-01 - 2023-01-01<br>
-        **Angio/PCI:** Angio och PCI i följd<br>
-        **Procedur/Segment:** Procedur<br>
-        Klicka på **"Beställ"** och ladda ner resulterande excel-fil (.xlsx) till *rvbrtg/Data/input_data*
-        """
-    )
+    mo.md(r"""
+    Gå till https://www.ucr.uu.se/swedeheart/ och logga in med Siths-kort <br>
+    Gå till **"Rapporter"**<br>
+    Välj **"Export till Excel Angio-PCI"**<br>
+    Gör följande urval:<br>
+    **Rapportdatum:** T.ex 2022-01-01 - 2023-01-01<br>
+    **Angio/PCI:** Angio och PCI i följd<br>
+    **Procedur/Segment:** Procedur<br>
+    Klicka på **"Beställ"** och ladda ner resulterande excel-fil (.xlsx) till *rvbrtg/Data/input_data*
+    """)
     return
 
 
 @app.cell
-def _(__file__):
+def _():
     import pandas as pd
     from pathlib import Path
 

@@ -1,39 +1,37 @@
-
-
 import marimo
 
-__generated_with = "0.13.0"
+__generated_with = "0.18.1"
 app = marimo.App(width="full")
 
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md(r"""## Formatera data från Svenska ICD och Pacemakerregistret så output kan föras in i DosReg""")
+    mo.md(r"""
+    ## Formatera data från Svenska ICD och Pacemakerregistret så output kan föras in i DosReg
+    """)
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md(
-        r"""
-        Gå till https://www.pacemakerregistret.se/ och logga in med Siths-kort<br>
-        Gå till **"Statistik"** och sedan **"Rapporter"**<br>
-        För att titta på t.ex. pacemakrar,  ICD:r osv. och primärimplantationer, skall du välja **"Tom rapport"**.<br>
-        Gör till urval:<br>
-        **Sjukhus:** Norrlands Universitetssjukhus<br>
-        **Patient:** Alla<br>
-        **Implantat:** Implantattyp - Pacemaker, Interventionstyp - Implantation, Orsak - Primärimplantation<br>
-        **Intervention:** Alla<br>
-        **Tidsperiod:** Fast period - T.ex. 2022-01-01 - 2023-01-01<br>
-        Välj Excelfil längst ner på sidan och spara nerladdad fil (.xlsx) till *rvbrtg/Data/input_data*<br>
-        Kontakta helena.p.karlsson@regionstockholm.se för access till registret. Måste ha godkännande från Medicinsk Chef vid Arytmi-lab.
-        """
-    )
+    mo.md(r"""
+    Gå till https://www.pacemakerregistret.se/ och logga in med Siths-kort<br>
+    Gå till **"Statistik"** och sedan **"Rapporter"**<br>
+    För att titta på t.ex. pacemakrar,  ICD:r osv. och primärimplantationer, skall du välja **"Tom rapport"**.<br>
+    Gör till urval:<br>
+    **Sjukhus:** Norrlands Universitetssjukhus<br>
+    **Patient:** Alla<br>
+    **Implantat:** Implantattyp - Pacemaker, Interventionstyp - Implantation, Orsak - Primärimplantation<br>
+    **Intervention:** Alla<br>
+    **Tidsperiod:** Fast period - T.ex. 2022-01-01 - 2023-01-01<br>
+    Välj Excelfil längst ner på sidan och spara nerladdad fil (.xlsx) till *rvbrtg/Data/input_data*<br>
+    Kontakta helena.p.karlsson@regionstockholm.se för access till registret. Måste ha godkännande från Medicinsk Chef vid Arytmi-lab.
+    """)
     return
 
 
 @app.cell
-def _(__file__):
+def _():
     import pandas as pd
     from pathlib import Path
 

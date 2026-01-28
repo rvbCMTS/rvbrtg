@@ -11,3 +11,5 @@ pytest
 rich
 hvplot
 bokeh
+marimo
+openpyxl
