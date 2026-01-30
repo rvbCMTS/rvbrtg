@@ -77,10 +77,9 @@ def find_scout_strip_indices(serie):
     return np.asarray(idx_keeps)
 
 
-# folder
-folder = Path(
-    r"V:\Enhetsytor\5-1-1-3. Strålningsfysik\Radiologi\FTV\Rapportering SSM\dcbct_årsstatistik_verksamhetsår_2025\U922"
-)
+# Enter pathlib path to dcm exports
+folder = Path()
+
 procedure_dicts = []
 
 for pat in folder.iterdir():
