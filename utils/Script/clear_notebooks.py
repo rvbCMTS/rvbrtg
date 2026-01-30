@@ -2,6 +2,8 @@ import nbformat
 import os
 import copy
 from pathlib import Path
+
+
 def clean_notebook_outputs(path):
     print(f"Checking: {path}")
     with open(path, "r", encoding="utf-8") as f:
@@ -14,7 +16,7 @@ def clean_notebook_outputs(path):
 
     # Rensa outputs från kodceller
     for cell in nb.cells:
-        if cell.cell_type == 'code':
+        if cell.cell_type == "code":
             if cell.get("outputs") or cell.get("execution_count") is not None:
                 cell["outputs"] = []
                 cell["execution_count"] = None
@@ -26,11 +28,12 @@ def clean_notebook_outputs(path):
         changed = True
 
     if changed:
-        with open(path, "w", encoding="utf-8") as f:
-            nbformat.write(nb, f)
+        with open(path, "w", encoding="utf-8") as fo:
+            nbformat.write(nb, fo)
         print(f"Cleaned: {path}")
     else:
         print(f" :No changes: {path}")
+
 
 def find_all_notebooks(root_dir):
     notebooks = []
@@ -39,6 +42,7 @@ def find_all_notebooks(root_dir):
             if file.endswith(".ipynb"):
                 notebooks.append(os.path.join(dirpath, file))
     return notebooks
+
 
 if __name__ == "__main__":
     repo_root = Path(__file__).parent.parent.parent
