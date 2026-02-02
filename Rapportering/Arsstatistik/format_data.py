@@ -53,6 +53,8 @@ def _format_ct_data(data: pd.DataFrame) -> pd.DataFrame:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_CT)
 
+    # TODO: Kolla om DT behöver justeras för specialla fall.
+
     data = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
         Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="count"),
         DLP=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="mean")
@@ -71,6 +73,8 @@ def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_DX)
 
+
+    # Övrigt kategorisering för DX och för mobil röntgen, samt C-bågar
     data.loc[
         (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin==MODALITY_DX_MACHINE_GENERAL),
         OUTPUT_COL_EXAM] = "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik"
@@ -120,6 +124,7 @@ def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_MG)
 
+    # Övrigt kategorisering för MG
     data.loc[
         (data[OUTPUT_COL_EXAM] == ""),
         OUTPUT_COL_EXAM] = "MAM3:Mammografiutrustning (fast installerad):Diagnostik:Övrigt"
@@ -139,7 +144,7 @@ def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
     )
     data_dose = data_dose.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
     output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=["DAP_mean", "DAP_median", "DAP_Q1", "DAP_Q3"])
-    #TODO: Dosvärden ska delas för antal bröst. Använd Laterality om möjligt för att avgöra hur många bröst som undersökts.
+    # TODO: Dosvärden ska delas för antal bröst. Använd Laterality om möjligt för att avgöra hur många bröst som undersökts.
 
     return output_number, output_dose
 
@@ -149,6 +154,8 @@ def _format_xa_data(data: pd.DataFrame) -> pd.DataFrame:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_XA)
 
+
+    # Övrigt kategorisering för XA. Finns många övrigt kategorier. Vi använder de här två.
     data.loc[
         (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin==MODALITY_XA_MACHINE_DIAGNOSTIC),
         OUTPUT_COL_EXAM] = "INT21:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Övrigt"

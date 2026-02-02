@@ -210,6 +210,7 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "CBCT1:CBCT:Diagnostik:Odontologisk undersökning": [],
         }
     },
+    }
 }
 
 AGE_SEX_CATEGORY_JUNIOR_MALE = "Pojkar"
