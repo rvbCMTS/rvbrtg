@@ -115,6 +115,16 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
     },
     MODALITY_DX: {
         EXAM_GROUPING_TYPE_STUDY_DESCRIPTION: {
+            "RTG01:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Huvud och hals": ['Ansiktsskelett', 'Shuntkontroll', 'Shuntöversikt', 'Skalle'],
+            "RTG02:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg": ['Lungor', 'Lungor, liggande'],
+            "RTG03:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övre buk (exklusive njurar)": [],
+            "RTG04:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Nedre Buk (inklusive njurar, exklusive bäcken/höft)": ['Buköversikt', 'Lunga-buk nyfödd', 'Tunntarm'],
+            "RTG05:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Bäcken höfter": ['Bäcken', 'Protesbäcken', 'Höftleder, barn', 'Höft stereo DX', 'Höft stereo SIN', 'Höftled DX', 'Höftled SIN'],
+            "RTG06:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Extremitetsskelett,  inklusive axlar/axelled": ['Axel, AC-led DX', 'Axel, AC-led SIN', 'Armbågsled DX', 'Armbågsled SIN', 'Benlängd', 'Benvinkel DX', 'Benvinkel SIN', 'Fot DX', 'Fot SIN', 'Fot belastad DX', 'Fot belastad SIN', 'Fotled DX', 'Fotled SIN', 'Fotled belastad DX', 'Fotled belastad SIN', 'Hand DX', 'Hand SIN', 'Handled DX', 'Handled SIN', 'Knäled DX', 'Knäled SIN', 'Knäled', 'Lårben DX', 'Lårben SIN', 'Lårben', 'Scaphoideum DX', 'Scaphoideum SIN', 'Skelettålder', 'Underarm DX', 'Underarm SIN', 'Underben DX', 'Underben SIN', 'Överarm DX', 'Överarm SIN'],
+            "RTG07:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Ryggraden": ['Halsrygg', 'Helrygg', 'Ländrygg'],
+            "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik": [],
+            "MOB1:Mobil röntgenutrustning för bildtagning:Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg": ['Lungor', 'Lungor, liggande'],
+            "MOB2:Mobil röntgenutrustning för bildtagning:Diagnostik:Extremiteter, inklusive axlar/axelled": ['Axel, AC-led DX', 'Axel, AC-led SIN', 'Armbågsled DX', 'Armbågsled SIN', 'Benlängd', 'Benvinkel DX', 'Benvinkel SIN', 'Fot DX', 'Fot SIN', 'Fot belastad DX', 'Fot belastad SIN', 'Fotled DX', 'Fotled SIN', 'Fotled belastad DX', 'Fotled belastad SIN', 'Hand DX', 'Hand SIN', 'Handled DX', 'Handled SIN', 'Knäled DX', 'Knäled SIN', 'Knäled', 'Lårben DX', 'Lårben SIN', 'Lårben', 'Scaphoideum DX', 'Scaphoideum SIN', 'Skelettålder', 'Underarm DX', 'Underarm SIN', 'Underben DX', 'Underben SIN', 'Överarm DX', 'Överarm SIN'],
             "RTG01:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Huvud och hals": ["Ansiktsskelett", "Skalle", "Öra cochlea DX", "Öra cochlea SIN"],
             "RTG02:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg": ["Lungor", "Lungor, liggande", "Sternum"],
             "RTG03:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övre buk (exklusive njurar)": [],
