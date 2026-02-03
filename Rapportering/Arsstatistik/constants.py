@@ -10,6 +10,7 @@ CLIENT_PWD_ENV_VAR = "REMBOX_INT_CLIENT_PWD"
 TOKEN_URI = "https://autoqa.vll.se/dpqaauth/connect/token"
 API_URI = "https://rembox.vll.se/api"
 ORIGIN_URI = "https://rembox.vll.se"
+VERIFY_SSL_CERT = False
 
 MODALITY_CT: str = "CT"
 MODALITY_DX: str = "DX"
@@ -26,85 +27,51 @@ MODALITY_LIST = [
     MODALITY_XA
 ]
 
+COLUMN_SELECTION_GENERAL = [
+    VALID_STUDY_COLUMNS.Hospital,
+    VALID_STUDY_COLUMNS.StudyDateTime,
+    VALID_STUDY_COLUMNS.StudyInstanceUID,
+    VALID_STUDY_COLUMNS.StudyId,
+    VALID_STUDY_COLUMNS.Machine,
+    VALID_STUDY_COLUMNS.StudyDescription,
+    VALID_STUDY_COLUMNS.AccessionNumber,
+    VALID_STUDY_COLUMNS.PatientAge,
+    VALID_STUDY_COLUMNS.PatientAgeUnit,
+    VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents,
+    VALID_STUDY_COLUMNS.PatientDbId,
+    VALID_STUDY_COLUMNS.PatientsSex,
+    VALID_STUDY_COLUMNS.PatientsSize,
+    VALID_STUDY_COLUMNS.PatientsSizeDate,
+    VALID_STUDY_COLUMNS.PatientsSizeSource,
+    VALID_STUDY_COLUMNS.ProcedureCode,
+]
+
 COLUMN_SELECTION_PER_MODALITY = {
-    MODALITY_CT: [
-            VALID_STUDY_COLUMNS.Hospital,
-            VALID_STUDY_COLUMNS.StudyDateTime,
-            VALID_STUDY_COLUMNS.StudyInstanceUID,
-            VALID_STUDY_COLUMNS.StudyId,
-            VALID_STUDY_COLUMNS.Machine,
-            VALID_STUDY_COLUMNS.AccessionNumber,
-            VALID_STUDY_COLUMNS.StudyDescription,
-            VALID_STUDY_COLUMNS.PatientAge,
-            VALID_STUDY_COLUMNS.PatientsWeight,
-            VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents,
+    MODALITY_CT: COLUMN_SELECTION_GENERAL + [
             VALID_STUDY_COLUMNS.PerformingPhysicianName,
             VALID_STUDY_COLUMNS.PerformingPhysicianIdentificationSequence,
-            VALID_STUDY_COLUMNS.PatientDbId,
             VALID_STUDY_COLUMNS.DlpTotal,
-            VALID_STUDY_COLUMNS.PatientsSex,
-            VALID_STUDY_COLUMNS.ProcedureCode,
-            VALID_STUDY_COLUMNS.ProcedureCodeMeaning,
-            VALID_STUDY_COLUMNS.RequestedProcedureCodeMeaning,
     ],
-    MODALITY_DX: [
-        VALID_STUDY_COLUMNS.Hospital,
-        VALID_STUDY_COLUMNS.StudyDateTime,
-        VALID_STUDY_COLUMNS.StudyInstanceUID,
-        VALID_STUDY_COLUMNS.StudyId,
-        VALID_STUDY_COLUMNS.Machine,
-        VALID_STUDY_COLUMNS.AccessionNumber,
-        VALID_STUDY_COLUMNS.StudyDescription,
-        VALID_STUDY_COLUMNS.PatientAge, #Finns inte för Philips
-        VALID_STUDY_COLUMNS.PatientsWeight, #Saknas ofta #Vad används denna till?
-        VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents, #Vad används denna till?
-        VALID_STUDY_COLUMNS.PerformingPhysicianName, #Vad används denna till?
-        VALID_STUDY_COLUMNS.PerformingPhysicianIdentificationSequence, #Vad används denna till?
-        VALID_STUDY_COLUMNS.PatientDbId, #Vad används denna till?
+    MODALITY_DX: COLUMN_SELECTION_GENERAL + [
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
-        VALID_STUDY_COLUMNS.PatientsSex,
-        VALID_STUDY_COLUMNS.ProcedureCode,
-        VALID_STUDY_COLUMNS.ProcedureCodeMeaning,
-        VALID_STUDY_COLUMNS.RequestedProcedureCodeMeaning,
     ],
-    MODALITY_MG: [
-        VALID_STUDY_COLUMNS.Hospital,
-        VALID_STUDY_COLUMNS.StudyDateTime,
-        VALID_STUDY_COLUMNS.StudyInstanceUID,
-        VALID_STUDY_COLUMNS.StudyId,
-        VALID_STUDY_COLUMNS.Machine,
-        VALID_STUDY_COLUMNS.AccessionNumber,
-        VALID_STUDY_COLUMNS.StudyDescription,
-        VALID_STUDY_COLUMNS.PatientAge,
-        VALID_STUDY_COLUMNS.PatientDbId,
-        VALID_STUDY_COLUMNS.PatientsSex,
+    MODALITY_MG: COLUMN_SELECTION_GENERAL + [
         VALID_SERIES_COLUMNS.AcquisitionProtocol,
-        VALID_STUDY_COLUMNS.ProcedureCode,
-        VALID_STUDY_COLUMNS.ProcedureCodeMeaning,
-        VALID_STUDY_COLUMNS.RequestedProcedureCodeMeaning,
         VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts,
     ],
-    MODALITY_XA: [
-        VALID_STUDY_COLUMNS.Hospital,
-        VALID_STUDY_COLUMNS.StudyDateTime,
-        VALID_STUDY_COLUMNS.StudyInstanceUID,
-        VALID_STUDY_COLUMNS.StudyId,
-        VALID_STUDY_COLUMNS.Machine,
-        VALID_STUDY_COLUMNS.AccessionNumber,
-        VALID_STUDY_COLUMNS.StudyDescription,
-        VALID_STUDY_COLUMNS.PatientAge, #Finns inte för Philips
-        VALID_STUDY_COLUMNS.PatientsWeight, #Saknas ofta #Vad används denna till?
-        VALID_STUDY_COLUMNS.TotalNumberOfIrradiationEvents, #Vad används denna till?
+    MODALITY_XA: COLUMN_SELECTION_GENERAL + [
         VALID_STUDY_COLUMNS.PerformingPhysicianName, #Vad används denna till?
         VALID_STUDY_COLUMNS.PerformingPhysicianIdentificationSequence, #Vad används denna till?
-        VALID_STUDY_COLUMNS.PatientDbId, #Vad används denna till?
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
-        VALID_STUDY_COLUMNS.PatientsSex,
         VALID_SERIES_COLUMNS.AcquisitionProtocol, #Vad används denna till?
         VALID_SERIES_COLUMNS.DateTimeStarted,
-        VALID_STUDY_COLUMNS.ProcedureCode,
-        VALID_STUDY_COLUMNS.ProcedureCodeMeaning,
-        VALID_STUDY_COLUMNS.RequestedProcedureCodeMeaning,
+    ],
+    MODALITY_DCBCT: COLUMN_SELECTION_GENERAL + [
+        VALID_STUDY_COLUMNS.PerformingPhysicianName, #Vad används denna till?
+        VALID_STUDY_COLUMNS.PerformingPhysicianIdentificationSequence, #Vad används denna till?
+        VALID_STUDY_COLUMNS.DoseAreaProductTotal,
+        VALID_SERIES_COLUMNS.AcquisitionProtocol, #Vad används denna till?
+        VALID_SERIES_COLUMNS.DateTimeStarted,
     ]
 }
 
@@ -158,11 +125,57 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik": [],
             "MOB1:Mobil röntgenutrustning för bildtagning:Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg": ['Lungor', 'Lungor, liggande'],
             "MOB2:Mobil röntgenutrustning för bildtagning:Diagnostik:Extremiteter, inklusive axlar/axelled": ['Axel, AC-led DX', 'Axel, AC-led SIN', 'Armbågsled DX', 'Armbågsled SIN', 'Benlängd', 'Benvinkel DX', 'Benvinkel SIN', 'Fot DX', 'Fot SIN', 'Fot belastad DX', 'Fot belastad SIN', 'Fotled DX', 'Fotled SIN', 'Fotled belastad DX', 'Fotled belastad SIN', 'Hand DX', 'Hand SIN', 'Handled DX', 'Handled SIN', 'Knäled DX', 'Knäled SIN', 'Knäled', 'Lårben DX', 'Lårben SIN', 'Lårben', 'Scaphoideum DX', 'Scaphoideum SIN', 'Skelettålder', 'Underarm DX', 'Underarm SIN', 'Underben DX', 'Underben SIN', 'Överarm DX', 'Överarm SIN'],
+            "RTG01:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Huvud och hals": ["Ansiktsskelett", "Skalle", "Öra cochlea DX", "Öra cochlea SIN"],
+            "RTG02:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg": ["Lungor", "Lungor, liggande", "Sternum"],
+            "RTG03:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övre buk (exklusive njurar)": [],
+            "RTG04:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Nedre Buk (inklusive njurar, exklusive bäcken/höft)": ["Buköversikt", "Tunntarm"],
+            "RTG05:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Bäcken höfter": ["Bäcken", "Protesbäcken", "Höftled DX", "Höftled SIN", "Sacroiliacaleder"],
+            "RTG06:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Extremitetsskelett,  inklusive axlar/axelled": [
+                "Armbågsled DX",
+                "Armbågsled SIN",
+                "Axel, AC-led DX",
+                "Axel, AC-led SIN",
+                "Benlängd",
+                "Fot DX",
+                "Fot SIN",
+                "Fotled DX",
+                "Fotled SIN",
+                "Fotled belastad DX",
+                "Fotled belastad SIN",
+                "Hand DX",
+                "Hand SIN",
+                "Handled DX",
+                "Handled SIN",
+                "Knäled DX",
+                "Knäled SIN",
+                "Lårben DX",
+                "Lårben SIN",
+                "Scaphoideum DX",
+                "Scaphoideum SIN",
+                "Underarm DX",
+                "Underarm SIN",
+                "Underben DX",
+                "Underben SIN",
+                "Överarm DX",
+                "Överarm SIN"
+            ],
+            "RTG07:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Ryggraden": ["Bröstryggrad", "Halsryggrad", "Helrygg", "Ländryggrad", "Sacrum, coccyx"],
+            "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik": [
+                "Nyckelben DX",
+                "Nyckelben SIN",
+                "Revben",
+                "Shuntöversikt",
+                "Shuntkontroll",
+                "Skulderblad DX",
+                "Skulderblad SIN",
+            ],
+            "MOB1:Mobil röntgenutrustning för bildtagning:Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg": [],
+            "MOB2:Mobil röntgenutrustning för bildtagning:Diagnostik:Extremiteter, inklusive axlar/axelled": [],
             "MOB3:Mobil röntgenutrustning för bildtagning:Diagnostik:Övrigt": [],
             "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Skelett": [],
             "MOB5:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Övrigt": [],
             "BEN1:Bentäthetsmätare:Diagnostik:Inget specifikt": [],
-        }
+        },
     },
     MODALITY_MG: {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
@@ -214,8 +227,20 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
 
 AGE_SEX_CATEGORY_JUNIOR_MALE = "Pojkar"
 AGE_SEX_CATEGORY_JUNIOR_FEMALE = "Flickor"
-AGE_SEX_CATEGORY_ADULT_MALE = "Män"
-AGE_SEX_CATEGORY_ADULT_FEMALE = "Kvinnor"
+AGE_SEX_CATEGORY_ADULT_MALE_16_40 = "Män 16-40"
+AGE_SEX_CATEGORY_ADULT_FEMALE_16_40 = "Kvinnor 16-40"
+AGE_SEX_CATEGORY_ADULT_MALE_41_65 = "Män 41-65"
+AGE_SEX_CATEGORY_ADULT_FEMALE_41_65 = "Kvinnor 41-65"
+AGE_SEX_CATEGORY_ADULT_MALE_66plus = "Män 66+"
+AGE_SEX_CATEGORY_ADULT_FEMALE_66plus = "Kvinnor 66+"
+AGE_SEX_CATEGORY_DOSE_BOY = "Pojkar för dosberäkning"
+AGE_SEX_CATEGORY_DOSE_GIRL = "Flickor för dosberäkning"
+AGE_SEX_CATEGORY_DOSE_MALE = "Män för dosberäkning"
+AGE_SEX_CATEGROY_DOSE_FEMALE = "Kvinnor för dosberäkning"
 
 OUTPUT_COL_AGE_SEX_CATEGORY = "ageSexCategory"
+OUTPUT_COL_AGE_SEX_CATEGORY_DOSE = "ageSexCategoryDose"
 OUTPUT_COL_EXAM = "Undersökning"
+
+MODALITY_DX_MACHINE_GENERAL = ["L2", "L4", "LSTORU", "LTARNA", "LVILM", "S01", "S02", "S04", "U220", "U221", "U222"]
+MODALITY_DX_MACHINE_MOBILE = ["L10", "S12", "U220", "U221", "U222"]

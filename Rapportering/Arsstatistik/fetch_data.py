@@ -9,6 +9,7 @@ from Rapportering.Arsstatistik.constants import (
     MODALITY_FILTER_SELECTION_PER_MODALITY,
     ORIGIN_URI,
     TOKEN_URI,
+    VERIFY_SSL_CERT,
 )
 
 
@@ -19,7 +20,7 @@ def get_modality_data_for_year(year: int, modality: str) -> pd.DataFrame:
         token_uri=TOKEN_URI,
         api_uri=API_URI,
         origin_uri=ORIGIN_URI,
-        verify_ssl_cert=False
+        verify_ssl_cert=VERIFY_SSL_CERT,
     )
 
     rembox.filter_options.set_inclusive_tags(
