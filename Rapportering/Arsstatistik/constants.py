@@ -21,7 +21,6 @@ MODALITY_DCBCT: str = "DCBCT"
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
-    MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
     MODALITY_XA
@@ -33,6 +32,7 @@ COLUMN_SELECTION_GENERAL = [
     VALID_STUDY_COLUMNS.StudyInstanceUID,
     VALID_STUDY_COLUMNS.StudyId,
     VALID_STUDY_COLUMNS.Machine,
+    VALID_STUDY_COLUMNS.MachineType,
     VALID_STUDY_COLUMNS.StudyDescription,
     VALID_STUDY_COLUMNS.AccessionNumber,
     VALID_STUDY_COLUMNS.PatientAge,
@@ -48,38 +48,27 @@ COLUMN_SELECTION_GENERAL = [
 
 COLUMN_SELECTION_PER_MODALITY = {
     MODALITY_CT: COLUMN_SELECTION_GENERAL + [
-            VALID_STUDY_COLUMNS.PerformingPhysicianName,
-            VALID_STUDY_COLUMNS.PerformingPhysicianIdentificationSequence,
             VALID_STUDY_COLUMNS.DlpTotal,
     ],
     MODALITY_DX: COLUMN_SELECTION_GENERAL + [
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
     ],
     MODALITY_MG: COLUMN_SELECTION_GENERAL + [
-        VALID_SERIES_COLUMNS.AcquisitionProtocol,
         VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts,
     ],
     MODALITY_XA: COLUMN_SELECTION_GENERAL + [
-        VALID_STUDY_COLUMNS.PerformingPhysicianName, #Vad används denna till?
-        VALID_STUDY_COLUMNS.PerformingPhysicianIdentificationSequence, #Vad används denna till?
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
-        VALID_SERIES_COLUMNS.AcquisitionProtocol, #Vad används denna till?
-        VALID_SERIES_COLUMNS.DateTimeStarted,
     ],
     MODALITY_DCBCT: COLUMN_SELECTION_GENERAL + [
-        VALID_STUDY_COLUMNS.PerformingPhysicianName, #Vad används denna till?
-        VALID_STUDY_COLUMNS.PerformingPhysicianIdentificationSequence, #Vad används denna till?
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
-        VALID_SERIES_COLUMNS.AcquisitionProtocol, #Vad används denna till?
-        VALID_SERIES_COLUMNS.DateTimeStarted,
     ]
 }
 
 MODALITY_FILTER_SELECTION_PER_MODALITY = {
     MODALITY_CT: ["CT"],
-    MODALITY_DX: ["DX", "XASTAT", "XAMOB"],
+    MODALITY_DX: ["DX", "XAMOB"],
     MODALITY_MG: ["MG"],
-    MODALITY_XA: ["XASTAT", "XAMOB"],
+    MODALITY_XA: ["XASTAT"],
     MODALITY_DCBCT: ["CT", "DCBCT"],
 }
 
@@ -160,27 +149,23 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
                 "Överarm SIN"
             ],
             "RTG07:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Ryggraden": ["Bröstryggrad", "Halsryggrad", "Helrygg", "Ländryggrad", "Sacrum, coccyx"],
-            "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik": [
-                "Nyckelben DX",
-                "Nyckelben SIN",
-                "Revben",
-                "Shuntöversikt",
-                "Shuntkontroll",
-                "Skulderblad DX",
-                "Skulderblad SIN",
-            ],
+            "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik": [],
             "MOB1:Mobil röntgenutrustning för bildtagning:Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg": [],
             "MOB2:Mobil röntgenutrustning för bildtagning:Diagnostik:Extremiteter, inklusive axlar/axelled": [],
             "MOB3:Mobil röntgenutrustning för bildtagning:Diagnostik:Övrigt": [],
-            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Skelett": [],
+            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Skelett": [], # Finns under procedure code 
             "MOB5:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Övrigt": [],
             "BEN1:Bentäthetsmätare:Diagnostik:Inget specifikt": [],
         },
+        EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
+            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Skelett": ["X621", "X622", "X623", "X626", "X630", "X631", "X633",
+                                                                                                                      "X643", "X636", "X637", "X638", "X639", "X641", "X642",
+                                                                                                                      "X642", "X645", "X646", "X648"], 
     },
     MODALITY_MG: {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
             "MAM1:Mammografiutrustning (fast installerad):Diagnostik:Bröstkörtlar 2D": ["66000", "66000D", "66000S"],
-            "MAM2:Mammografiutrustning (fast installerad):Diagnostik:Bröstkörtlar tomosyntes": [],
+            "MAM2:Mammografiutrustning (fast installerad):Diagnostik:Bröstkörtlar tomosyntes": ["66061"],
             "MAM3:Mammografiutrustning (fast installerad):Diagnostik:Övrigt": [],
             "MAM4:Mammografiutrustning (fast installerad):Screening:Bröstkörtlar 2D": ["66200"],
             "MAM5:Mammografiutrustning (fast installerad):Screening:Bröstkörtlar tomosyntes": [],
@@ -189,31 +174,43 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
     MODALITY_XA: {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
             "INT01:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Huvud och hals": [],
-            "INT02:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Thorax inklusive lungor, exklusive hjärta": [],
-            "INT03:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Hjärta": [],
-            "INT04:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Buk": [],
+            "INT02:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Thorax inklusive lungor, exklusive hjärta": ["38200"],
+            "INT03:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Hjärta": [], #Lämnar denna tom då coronarangiografi ej kan skiljas från PCI
+            "INT04:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Buk": ["58300"],
             "INT05:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Bäcken": [],
             "INT06:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Extremiteter": [],
             "INT07:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Övrig diagnostik": [],
-            "INT08:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Huvud och hals": [],
-            "INT09:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Thorax inklusive lungor, exklusive hjärta": [],
-            "INT10:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Hjärta": [],
-            "INT11:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Buk": [],
-            "INT12:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Bäcken": [],
-            "INT13:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Extremiteter": [],
+            "INT08:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Huvud och hals": ["11005", "11100", "17005", "17500", "17505", 
+                                                                                                                               "19000", "19005", "19100", "19305", "19900", 
+                                                                                                                               "19950", "19951"],
+            "INT09:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Thorax inklusive lungor, exklusive hjärta": ["39900", "39951", "3995A"],
+            "INT10:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Hjärta": ["32700", "32800", "33000", "33100", "33500", "36000", "36600",
+                                                                                                                       "37300", "38400", "38500", "39100", "39500", "X401", "X402"],
+            "INT11:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Buk": ["47100", "47142", "47148", "47200", "47242", "47900", "49500", 
+                                                                                                                    "49900", "49905", "49948", "49951", "59500", "59600", "59748", 
+                                                                                                                    "59800", "59900"],
+            "INT12:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Bäcken": ["57000", "57042", "57400"],
+            "INT13:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Extremiteter": ["67600", "67700", "67772", "67800", "67500"],
             "INT14:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Övrig behandling": [],
-            "INT15:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Huvud och hals": [],
-            "INT16:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Thorax": [],
-            "INT17:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Buk": [],
+            "INT15:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Huvud och hals": ["10100", "10500", "10528", "10555", "41100", 
+                                                                                                                                      "41127", "41200", "4124B", "41327",  ],
+            "INT16:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Thorax": ["32000", "32028", "41600", "42000", ],
+            "INT17:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Buk": ["45400", "43000", "43200", "44000", "44900", "45000", 
+                                                                                                                           "46128",],
             "INT18:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Ryggraden": [],
-            "INT19:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Bäcken, inklusive höfter/höftled": [],
+            "INT19:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Bäcken, inklusive höfter/höftled": ["44000", "63935", "64000"],
             "INT20:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Extremiteter, inklusive axlar/axelled": [],
             "INT21:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Övrigt": [],
             "INT22:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Huvud och hals": [],
-            "INT23:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Thorax": [],
-            "INT24:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Buk": [],
-            "INT25:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Ryggraden": [],
-            "INT26:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Bäcken": [],
+            "INT23:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Thorax": ["39051", "39348", "39900", "48451", "48452", "48455", 
+                                                                                                                              "4845A", "48551", "48552", "4855A"],
+            "INT24:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Buk": ["42051", "46028", "46052", "46055", "46136", "46151",
+                                                                                                                           "46152", "46155", "46248", "49000", "49005", "49055", 
+                                                                                                                           "49100", "49105", "49148", "49148", "49150", "49155", 
+                                                                                                                           "49200", "49205", "49300", "49600", "49928", "49960", "49961", 
+                                                                                                                           "58700", "59000", "59005", "59100", "E4976", "E4900"],
+            "INT25:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Ryggraden": ["13800", "1384A",  "17800", "17805"],
+            "INT26:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Bäcken": ["50351", "51200", "51255", "51348", "53000", "53100", "53200"],
             "INT27:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Extremiteter, inklusive axlar/axelled": [],
             "INT28:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Övrigt": [],
         }
@@ -223,6 +220,7 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "CBCT1:CBCT:Diagnostik:Odontologisk undersökning": [],
         }
     },
+    }
 }
 
 AGE_SEX_CATEGORY_JUNIOR_MALE = "Pojkar"
@@ -244,3 +242,5 @@ OUTPUT_COL_EXAM = "Undersökning"
 
 MODALITY_DX_MACHINE_GENERAL = ["L2", "L4", "LSTORU", "LTARNA", "LVILM", "S01", "S02", "S04", "U220", "U221", "U222"]
 MODALITY_DX_MACHINE_MOBILE = ["L10", "S12", "U220", "U221", "U222"]
+MODALITY_XA_MACHINE_TREATMENT = ["U104", "U105", "U106", "U601", "U601_2025", "U602", "Arytmi 1", "Arytmi 2"]
+MODALITY_XA_MACHINE_DIAGNOSTIC = ["U110", "S08", "L3"]
