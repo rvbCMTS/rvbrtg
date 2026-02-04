@@ -21,10 +21,24 @@ MODALITY_DCBCT: str = "DCBCT"
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
+    #MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
     MODALITY_XA
 ]
+
+MISC_CATEGORY_GROUP_CT = ""
+MISC_CATEGORY_GROUP_STATIONARY_DX = "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik"
+MISC_CATEGORY_GROUP_MOBILE_DX_VAL = "MOB1:Mobil röntgenutrustning för bildtagning:Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg"
+MISC_CATEGORY_GROUP_MOBILE_DX_REF = "RTG02:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg"
+MISC_CATEGORY_GROUP_MOBILE_DX_REF2 = "RTG06:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Extremitetsskelett,  inklusive axlar/axelled"
+MISC_CATEGORY_GROUP_MOBILE_DX_VAL2 = "MOB2:Mobil röntgenutrustning för bildtagning:Diagnostik:Extremiteter, inklusive axlar/axelled"
+MISC_CATEGORY_GROUP_MOBILE_DX_REF3 = MISC_CATEGORY_GROUP_STATIONARY_DX
+MISC_CATEGORY_GROUP_MOBILE_DX_VAL3 = "MOB3:Mobil röntgenutrustning för bildtagning:Diagnostik:Övrigt"
+MISC_CATEGORY_GROUP_MG = "MAM3:Mammografiutrustning (fast installerad):Diagnostik:Övrigt"
+MISC_CATEGORY_GROUP_MOBILE_XA = "MOB5:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Övrigt"
+MISC_CATEGORY_GROUP_STATIONARY_XA_DIAGNOSTIC = "INT21:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Övrigt"
+MISC_CATEGORY_GROUP_STATIONARY_XA_TREATMENT = "INT14:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Övrig behandling"
 
 COLUMN_SELECTION_GENERAL = [
     VALID_STUDY_COLUMNS.Hospital,
@@ -32,7 +46,7 @@ COLUMN_SELECTION_GENERAL = [
     VALID_STUDY_COLUMNS.StudyInstanceUID,
     VALID_STUDY_COLUMNS.StudyId,
     VALID_STUDY_COLUMNS.Machine,
-    VALID_STUDY_COLUMNS.MachineType,
+    # VALID_STUDY_COLUMNS.MachineType,
     VALID_STUDY_COLUMNS.StudyDescription,
     VALID_STUDY_COLUMNS.AccessionNumber,
     VALID_STUDY_COLUMNS.PatientAge,
@@ -160,7 +174,8 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
             "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Skelett": ["X621", "X622", "X623", "X626", "X630", "X631", "X633",
                                                                                                                       "X643", "X636", "X637", "X638", "X639", "X641", "X642",
-                                                                                                                      "X642", "X645", "X646", "X648"], 
+                                                                                                                      "X642", "X645", "X646", "X648"],
+        }
     },
     MODALITY_MG: {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
@@ -220,11 +235,12 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "CBCT1:CBCT:Diagnostik:Odontologisk undersökning": [],
         }
     },
-    }
 }
 
 AGE_SEX_CATEGORY_JUNIOR_MALE = "Pojkar"
 AGE_SEX_CATEGORY_JUNIOR_FEMALE = "Flickor"
+AGE_SEX_CATEGORY_ADULT_FEMALE = "Kvinnor (16 år och äldre)"
+AGE_SEX_CATEGORY_ADULT_MALE = "Män (16 år och äldre)"
 AGE_SEX_CATEGORY_ADULT_MALE_16_40 = "Män 16-40"
 AGE_SEX_CATEGORY_ADULT_FEMALE_16_40 = "Kvinnor 16-40"
 AGE_SEX_CATEGORY_ADULT_MALE_41_65 = "Män 41-65"
@@ -234,7 +250,20 @@ AGE_SEX_CATEGORY_ADULT_FEMALE_66plus = "Kvinnor 66+"
 AGE_SEX_CATEGORY_DOSE_BOY = "Pojkar för dosberäkning"
 AGE_SEX_CATEGORY_DOSE_GIRL = "Flickor för dosberäkning"
 AGE_SEX_CATEGORY_DOSE_MALE = "Män för dosberäkning"
-AGE_SEX_CATEGROY_DOSE_FEMALE = "Kvinnor för dosberäkning"
+AGE_SEX_CATEGORY_DOSE_FEMALE = "Kvinnor för dosberäkning"
+
+EXAMS_EXEMPT_FROM_REPORTING_DOSE = [
+    "DT10:Datortomograf (fast installerad eller mobil):Diagnostik:Övrig diagnostik",
+    "DT13:Datortomograf (fast installerad eller mobil):Behandling:Övrigt",
+    "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik",
+    "MOB3:Mobil röntgenutrustning för bildtagning:Diagnostik:Övrigt",
+    "MOB5:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning i samband med kirurgi:Övrigt",
+    "MAM3:Mammografiutrustning (fast installerad):Diagnostik:Övrigt",
+    "INT03:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Hjärta",
+    "INT14:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Övrig behandling",
+    "INT21:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Övrigt",
+    "INT27:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Extremiteter, inklusive axlar/axelled",
+]
 
 OUTPUT_COL_AGE_SEX_CATEGORY = "ageSexCategory"
 OUTPUT_COL_AGE_SEX_CATEGORY_DOSE = "ageSexCategoryDose"
@@ -244,3 +273,9 @@ MODALITY_DX_MACHINE_GENERAL = ["L2", "L4", "LSTORU", "LTARNA", "LVILM", "S01", "
 MODALITY_DX_MACHINE_MOBILE = ["L10", "S12", "U220", "U221", "U222"]
 MODALITY_XA_MACHINE_TREATMENT = ["U104", "U105", "U106", "U601", "U601_2025", "U602", "Arytmi 1", "Arytmi 2"]
 MODALITY_XA_MACHINE_DIAGNOSTIC = ["U110", "S08", "L3"]
+MODALITY_XA_MACHINE_MOBILE = [
+    "L7", "L8", "L12",
+    "SX", "S20", "S21", "S23", "S25", "S28",
+    "U703", "U704", "U707", "U708", "U711", "U713", "U719", "U720", "U721",
+    "U921"
+]

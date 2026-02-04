@@ -1,3 +1,23 @@
+[project]
+name = "rvtrtg"
+version = "26.0.0"
+requires-python = ">=3.11"
+dependencies = [
+    "bokeh>=3.8.2",
+    "hvplot>=0.12.2",
+    "jupyter>=1.1.1",
+    "marimo>=0.19.7",
+    "matplotlib>=3.10.8",
+    "nbstripout>=0.9.0",
+    "numpy>=2.4.2",
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.0",
+    "polars>=1.37.1",
+    "pydicom>=3.0.1",
+    "rembox-integration-tools",
+    "rich>=14.3.2",
+]
+
 [tool.black]
 line-length = 120 # override black's default line-length
 exclude = '''
@@ -28,3 +48,14 @@ exclude = '''
 [tool.isort]
 # make it compatible with black
 profile = "black" 
+
+[tool.uv.sources]
+rembox-integration-tools = { path = "../../Users/jolu30/Downloads/rembox_integration_tools-1.0.6-py3-none-any.whl" }
+
+[dependency-groups]
+dev = [
+    "black>=26.1.0",
+    "isort>=7.0.0",
+    "pytest>=9.0.2",
+    "ruff>=0.14.14",
+]
