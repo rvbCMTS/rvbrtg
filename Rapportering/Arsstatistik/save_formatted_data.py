@@ -20,7 +20,11 @@ from Rapportering.Arsstatistik.constants import (
     AGE_SEX_CATEGORY_ADULT_FEMALE_16_40, AGE_SEX_CATEGORY_ADULT_FEMALE_41_65, AGE_SEX_CATEGORY_ADULT_FEMALE_66plus,
     AGE_SEX_CATEGORY_DOSE_FEMALE, AGE_SEX_CATEGORY_ADULT_MALE_16_40, AGE_SEX_CATEGORY_ADULT_MALE_41_65,
     AGE_SEX_CATEGORY_ADULT_MALE_66plus, AGE_SEX_CATEGORY_DOSE_MALE, AGE_SEX_CATEGORY_DOSE_GIRL,
-    AGE_SEX_CATEGORY_DOSE_BOY, EXAMS_EXEMPT_FROM_REPORTING_DOSE
+    AGE_SEX_CATEGORY_DOSE_BOY, EXAMS_EXEMPT_FROM_REPORTING_DOSE,
+    OUTPUT_KEY_MEAN_DOSE,
+    OUTPUT_KEY_MEDIAN_DOSE,
+    OUTPUT_KEY_Q1_DOSE,
+    OUTPUT_KEY_Q3_DOSE,
 )
 
 logger = logging.getLogger("yearly_statistics")
@@ -63,7 +67,7 @@ def _get_exam_grouping_name_from_template_row(sheet, row: int) -> str | None:
     return f"{us_id}:{modality}:{aim}:{region}"
 
 
-def _create_report_main(template_path: Path, data_count: pd.DataFrame, data_dose: pd.DataFrame, hospital: str, dose_column_name: str, exam_codes: dict[str, list[str]], modality: str = "Inte mammo"):
+def _create_report_main(template_path: Path, data_count: pd.DataFrame, data_dose: pd.DataFrame, hospital: str, modality: str = "Inte mammo"):
     output_path: Path = REPORT_OUTPUT_DIR / f"{template_path.stem.split(' ')[0]} {hospital} DosReg{template_path.suffix}"
 
     report_template = load_workbook(template_path)
@@ -96,13 +100,13 @@ def _create_report_main(template_path: Path, data_count: pd.DataFrame, data_dose
 
         if exam not in EXAMS_EXEMPT_FROM_REPORTING_DOSE and AGE_SEX_CATEGORY_DOSE_FEMALE in df_row_dose.index.levels[1]:
             sheet.cell(row=row, column=8).value = val if not np.isnan(
-                (val := df_row_dose["dose_mean"][AGE_SEX_CATEGORY_DOSE_FEMALE])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_MEAN_DOSE][AGE_SEX_CATEGORY_DOSE_FEMALE])) else "-"
             sheet.cell(row=row, column=9).value = val if not np.isnan(
-                (val := df_row_dose["dose_median"][AGE_SEX_CATEGORY_DOSE_FEMALE])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_MEDIAN_DOSE][AGE_SEX_CATEGORY_DOSE_FEMALE])) else "-"
             sheet.cell(row=row, column=10).value = val if not np.isnan(
-                (val := df_row_dose["dose_Q1"][AGE_SEX_CATEGORY_DOSE_FEMALE])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_Q1_DOSE][AGE_SEX_CATEGORY_DOSE_FEMALE])) else "-"
             sheet.cell(row=row, column=11).value = val if not np.isnan(
-                (val := df_row_dose["dose_Q3"][AGE_SEX_CATEGORY_DOSE_FEMALE])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_Q3_DOSE][AGE_SEX_CATEGORY_DOSE_FEMALE])) else "-"
 
         if modality == MODALITY_MG:
             if AGE_SEX_CATEGORY_JUNIOR_FEMALE in df_row.index.levels[1]:
@@ -112,13 +116,13 @@ def _create_report_main(template_path: Path, data_count: pd.DataFrame, data_dose
             if exam not in EXAMS_EXEMPT_FROM_REPORTING_DOSE and AGE_SEX_CATEGORY_DOSE_GIRL in df_row_dose.index.levels[
                 1]:
                 sheet.cell(row=row, column=13).value = val if not np.isnan(
-                    (val := df_row_dose["dose_mean"][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
+                    (val := df_row_dose[OUTPUT_KEY_MEAN_DOSE][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
                 sheet.cell(row=row, column=14).value = val if not np.isnan(
-                    (val := df_row_dose["dose_median"][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
+                    (val := df_row_dose[OUTPUT_KEY_MEDIAN_DOSE][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
                 sheet.cell(row=row, column=15).value = val if not np.isnan(
-                    (val := df_row_dose["dose_Q1"][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
+                    (val := df_row_dose[OUTPUT_KEY_Q1_DOSE][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
                 sheet.cell(row=row, column=16).value = val if not np.isnan(
-                    (val := df_row_dose["dose_Q3"][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
+                    (val := df_row_dose[OUTPUT_KEY_Q3_DOSE][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
             continue
 
 
@@ -136,13 +140,13 @@ def _create_report_main(template_path: Path, data_count: pd.DataFrame, data_dose
 
         if exam not in EXAMS_EXEMPT_FROM_REPORTING_DOSE and AGE_SEX_CATEGORY_DOSE_MALE in df_row_dose.index.levels[1]:
             sheet.cell(row=row, column=15).value = val if not np.isnan(
-                (val := df_row_dose["dose_mean"][AGE_SEX_CATEGORY_DOSE_MALE])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_MEAN_DOSE][AGE_SEX_CATEGORY_DOSE_MALE])) else "-"
             sheet.cell(row=row, column=16).value = val if not np.isnan(
-                (val := df_row_dose["dose_median"][AGE_SEX_CATEGORY_DOSE_MALE])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_MEDIAN_DOSE][AGE_SEX_CATEGORY_DOSE_MALE])) else "-"
             sheet.cell(row=row, column=17).value = val if not np.isnan(
-                (val := df_row_dose["dose_Q1"][AGE_SEX_CATEGORY_DOSE_MALE])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_Q1_DOSE][AGE_SEX_CATEGORY_DOSE_MALE])) else "-"
             sheet.cell(row=row, column=18).value = val if not np.isnan(
-                (val := df_row_dose["dose_Q3"][AGE_SEX_CATEGORY_DOSE_MALE])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_Q3_DOSE][AGE_SEX_CATEGORY_DOSE_MALE])) else "-"
 
         if AGE_SEX_CATEGORY_JUNIOR_FEMALE in df_row.index.levels[1]:
             sheet.cell(row=row, column=19).value = val if not np.isnan(
@@ -150,13 +154,13 @@ def _create_report_main(template_path: Path, data_count: pd.DataFrame, data_dose
 
         if exam not in EXAMS_EXEMPT_FROM_REPORTING_DOSE and AGE_SEX_CATEGORY_DOSE_GIRL in df_row_dose.index.levels[1]:
             sheet.cell(row=row, column=20).value = val if not np.isnan(
-                (val := df_row_dose["dose_mean"][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_MEAN_DOSE][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
             sheet.cell(row=row, column=21).value = val if not np.isnan(
-                (val := df_row_dose["dose_median"][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_MEDIAN_DOSE][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
             sheet.cell(row=row, column=22).value = val if not np.isnan(
-                (val := df_row_dose["dose_Q1"][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_Q1_DOSE][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
             sheet.cell(row=row, column=23).value = val if not np.isnan(
-                (val := df_row_dose["dose_Q3"][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_Q3_DOSE][AGE_SEX_CATEGORY_DOSE_GIRL])) else "-"
 
         if AGE_SEX_CATEGORY_JUNIOR_MALE in df_row.index.levels[1]:
             sheet.cell(row=row, column=24).value = val if not np.isnan(
@@ -164,13 +168,13 @@ def _create_report_main(template_path: Path, data_count: pd.DataFrame, data_dose
 
         if exam not in EXAMS_EXEMPT_FROM_REPORTING_DOSE and AGE_SEX_CATEGORY_DOSE_BOY in df_row_dose.index.levels[1]:
             sheet.cell(row=row, column=25).value = val if not np.isnan(
-                (val := df_row_dose["dose_mean"][AGE_SEX_CATEGORY_DOSE_BOY])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_MEAN_DOSE][AGE_SEX_CATEGORY_DOSE_BOY])) else "-"
             sheet.cell(row=row, column=26).value = val if not np.isnan(
-                (val := df_row_dose["dose_median"][AGE_SEX_CATEGORY_DOSE_BOY])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_MEDIAN_DOSE][AGE_SEX_CATEGORY_DOSE_BOY])) else "-"
             sheet.cell(row=row, column=27).value = val if not np.isnan(
-                (val := df_row_dose["dose_Q1"][AGE_SEX_CATEGORY_DOSE_BOY])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_Q1_DOSE][AGE_SEX_CATEGORY_DOSE_BOY])) else "-"
             sheet.cell(row=row, column=28).value = val if not np.isnan(
-                (val := df_row_dose["dose_Q3"][AGE_SEX_CATEGORY_DOSE_BOY])) else "-"
+                (val := df_row_dose[OUTPUT_KEY_Q3_DOSE][AGE_SEX_CATEGORY_DOSE_BOY])) else "-"
 
     report_template.save(output_path)
     report_template.close()
@@ -197,12 +201,12 @@ def _get_exam_codes_for_modality(modality: str) -> dict[str, list[str]]:
 
 def _create_report_file_ct(template_path: Path, data_count: pd.DataFrame, data_dose: pd.DataFrame, hospital: str) -> None:
     exam_codes = _get_exam_codes_for_modality(modality=MODALITY_CT)
-    _create_report_main(template_path=template_path, data_count=data_count, data_dose=data_dose, hospital=hospital, dose_column_name="DLP", exam_codes=exam_codes)
+    _create_report_main(template_path=template_path, data_count=data_count, data_dose=data_dose, hospital=hospital)
 
 
 def _create_report_file_dx(template_path: Path, data_count: pd.DataFrame, data_dose: pd.DataFrame, hospital: str) -> None:
     exam_codes = _get_exam_codes_for_modality(modality=MODALITY_DX)
-    _create_report_main(template_path=template_path, data_count=data_count, data_dose=data_dose, hospital=hospital, dose_column_name="DAP", exam_codes=exam_codes)
+    _create_report_main(template_path=template_path, data_count=data_count, data_dose=data_dose, hospital=hospital)
 
 
 def _create_report_file_mg(template_path: Path, data_count: pd.DataFrame, data_dose: pd.DataFrame, hospital: str) -> None:
@@ -212,12 +216,10 @@ def _create_report_file_mg(template_path: Path, data_count: pd.DataFrame, data_d
         data_count=data_count,
         data_dose=data_dose,
         hospital=hospital,
-        dose_column_name="AGD",
-        exam_codes=exam_codes,
         modality=MODALITY_MG
     )
 
 
 def _create_report_file_xa(template_path: Path, data_count: pd.DataFrame, data_dose: pd.DataFrame, hospital: str) -> None:
     exam_codes = _get_exam_codes_for_modality(modality=MODALITY_XA)
-    _create_report_main(template_path=template_path, data_count=data_count, data_dose=data_dose, hospital=hospital, dose_column_name="DAP", exam_codes=exam_codes)
+    _create_report_main(template_path=template_path, data_count=data_count, data_dose=data_dose, hospital=hospital)
