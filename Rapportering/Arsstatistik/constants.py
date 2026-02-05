@@ -21,13 +21,13 @@ MODALITY_DCBCT: str = "DCBCT"
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
-    #MODALITY_CT,
+    MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
     MODALITY_XA
 ]
 
-MISC_CATEGORY_GROUP_CT = ""
+MISC_CATEGORY_GROUP_CT = "DT10:Datortomograf (fast installerad eller mobil):Diagnostik:Övrig diagnostik"
 MISC_CATEGORY_GROUP_STATIONARY_DX = "RTG08:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Övrig diagnostik"
 MISC_CATEGORY_GROUP_MOBILE_DX_VAL = "MOB1:Mobil röntgenutrustning för bildtagning:Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg"
 MISC_CATEGORY_GROUP_MOBILE_DX_REF = "RTG02:Konventionella röntgenutrustningar (fast installerad):Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg"
@@ -69,6 +69,8 @@ COLUMN_SELECTION_PER_MODALITY = {
     ],
     MODALITY_MG: COLUMN_SELECTION_GENERAL + [
         VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts,
+        VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseLeftBreast,
+        VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseRightBreast
     ],
     MODALITY_XA: COLUMN_SELECTION_GENERAL + [
         VALID_STUDY_COLUMNS.DoseAreaProductTotal,
@@ -268,6 +270,10 @@ EXAMS_EXEMPT_FROM_REPORTING_DOSE = [
 OUTPUT_COL_AGE_SEX_CATEGORY = "ageSexCategory"
 OUTPUT_COL_AGE_SEX_CATEGORY_DOSE = "ageSexCategoryDose"
 OUTPUT_COL_EXAM = "Undersökning"
+OUTPUT_KEY_MEAN_DOSE = "dose_mean"
+OUTPUT_KEY_MEDIAN_DOSE = "dose_median"
+OUTPUT_KEY_Q1_DOSE = "dose_Q1"
+OUTPUT_KEY_Q3_DOSE = "dose_Q3"
 
 MODALITY_DX_MACHINE_GENERAL = ["L2", "L4", "LSTORU", "LTARNA", "LVILM", "S01", "S02", "S04", "U220", "U221", "U222"]
 MODALITY_DX_MACHINE_MOBILE = ["L10", "S12", "U220", "U221", "U222"]

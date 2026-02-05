@@ -32,6 +32,7 @@ from Rapportering.Arsstatistik.constants import (
     MODALITY_DX_MACHINE_MOBILE,
     MODALITY_XA_MACHINE_DIAGNOSTIC,
     MODALITY_XA_MACHINE_TREATMENT,
+    MISC_CATEGORY_GROUP_CT,
     MISC_CATEGORY_GROUP_STATIONARY_DX,
     MISC_CATEGORY_GROUP_MOBILE_XA,
     MISC_CATEGORY_GROUP_MOBILE_DX_REF2,
@@ -44,7 +45,10 @@ from Rapportering.Arsstatistik.constants import (
     MISC_CATEGORY_GROUP_STATIONARY_XA_DIAGNOSTIC,
     MISC_CATEGORY_GROUP_STATIONARY_XA_TREATMENT,
     MODALITY_XA_MACHINE_MOBILE,
-
+    OUTPUT_KEY_MEAN_DOSE,
+    OUTPUT_KEY_MEDIAN_DOSE,
+    OUTPUT_KEY_Q1_DOSE,
+    OUTPUT_KEY_Q3_DOSE,
 )
 
 
@@ -70,6 +74,8 @@ def _format_ct_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_CT)
 
     # TODO: Kolla om DT behöver justeras för specialla fall.
+    data.loc[(data[OUTPUT_COL_EXAM] == ""), OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_CT
+
     data_number = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
         Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="count"),
     )
@@ -84,7 +90,7 @@ def _format_ct_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     )
     data_dose = data_dose.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
     output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE,
-                                  values=["dose_mean", "dose_median", "dose_Q1", "dose_Q3"])
+                                  values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
 
     return output_number, output_dose
 
@@ -96,7 +102,7 @@ def _format_dx_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_DX)
 
-    #Categorize into miscellaneous categories for exams not fitting anywhere else
+    # Categorize into miscellaneous categories for exams not fitting anywhere else
     data.loc[
         (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin==MODALITY_DX_MACHINE_GENERAL),
         OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_DX
@@ -133,7 +139,7 @@ def _format_dx_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         dose_Q3=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc=lambda x: np.percentile(x, 75)),
     )
     data_dose = data_dose.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
-    output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=["dose_mean", "dose_median", "dose_Q1", "dose_Q3"])
+    output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
 
     return output_number, output_dose
 
@@ -156,15 +162,18 @@ def _format_mg_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     data_number = data_number.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
     output_number = data_number.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
 
-    data_dose = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
-        dose_mean=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc="mean"),
-        dose_median=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc="median"),
-        dose_Q1=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc=lambda x: np.percentile(x, 25)),
-        dose_Q3=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc=lambda x: np.percentile(x, 75)),
+    data_dose = data.copy()
+    data_dose["mgdose"] = (data_dose[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseLeftBreast] + data_dose[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseRightBreast]) / 2.0
+    data_dose = data_dose.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
+        dose_mean=pd.NamedAgg(column="mgdose", aggfunc="mean"),
+        dose_median=pd.NamedAgg(column="mgdose", aggfunc="median"),
+        dose_Q1=pd.NamedAgg(column="mgdose", aggfunc=lambda x: np.percentile(x, 25)),
+        dose_Q3=pd.NamedAgg(column="mgdose", aggfunc=lambda x: np.percentile(x, 75)),
     )
     data_dose = data_dose.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
-    output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=["dose_mean", "dose_median", "dose_Q1", "dose_Q3"])
-    # TODO: Dosvärden ska delas för antal bröst. Använd Laterality om möjligt för att avgöra hur många bröst som undersökts.
+    output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
+    # TODO: Se över dosberäkningen så att den stämmer överens med SSMs definitioner, förhoppningsvis på ett rimligare
+    #  sätt än överensstämmelsen som faktiskt finns redan nu!
 
     return output_number, output_dose
 
@@ -197,7 +206,7 @@ def _format_xa_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         dose_Q3=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc=lambda x: np.percentile(x, 75)),
     )
     data_dose = data_dose.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
-    output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=["dose_mean", "dose_median", "dose_Q1", "dose_Q3"])
+    output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
 
     return output_number, output_dose
 
