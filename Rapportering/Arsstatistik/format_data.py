@@ -104,7 +104,7 @@ def _format_dx_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     # Categorize into miscellaneous categories for exams not fitting anywhere else
     data.loc[
-        (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin==MODALITY_DX_MACHINE_GENERAL),
+        (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_GENERAL)),
         OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_DX
 
     data.loc[
@@ -113,17 +113,26 @@ def _format_dx_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     
     data.loc[
         (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF) &
-        (data[VALID_STUDY_COLUMNS.Machine].isin==MODALITY_DX_MACHINE_MOBILE),
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
         OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL
     
     data.loc[
         (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF2) &
-        (data[VALID_STUDY_COLUMNS.Machine].isin==MODALITY_DX_MACHINE_MOBILE),
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
         OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL2
     
     data.loc[
         (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF3) &
-        (data[VALID_STUDY_COLUMNS.Machine].isin==MODALITY_DX_MACHINE_MOBILE),
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL3
+
+    data = data.drop_duplicates(subset=[VALID_STUDY_COLUMNS.AccessionNumber, VALID_STUDY_COLUMNS.StudyInstanceUID])
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)) &
+        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL) &
+        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL2) &
+        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL3),
         OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL3
 
     data_number = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
@@ -186,11 +195,11 @@ def _format_xa_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     # Categorize into preset miscellaneous category
     data.loc[
-        (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin==MODALITY_XA_MACHINE_DIAGNOSTIC),
+        (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_DIAGNOSTIC)),
         OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_XA_DIAGNOSTIC
     
     data.loc[
-        (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin==MODALITY_XA_MACHINE_TREATMENT),
+        (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_TREATMENT)),
         OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_XA_TREATMENT
 
     data_number = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
