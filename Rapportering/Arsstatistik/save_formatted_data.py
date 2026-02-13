@@ -64,7 +64,7 @@ def _get_exam_grouping_name_from_template_row(sheet, row: int) -> str | None:
     aim = sheet.cell(row=row, column=3).value
     region = sheet.cell(row=row, column=4).value
 
-    return f"{us_id}:{modality}:{aim}:{region}"
+    return f"{us_id.strip()}:{modality.strip()}:{aim.strip()}:{region.strip()}"
 
 
 def _create_report_main(template_path: Path, data_count: pd.DataFrame, data_dose: pd.DataFrame, hospital: str, modality: str = "Inte mammo"):
