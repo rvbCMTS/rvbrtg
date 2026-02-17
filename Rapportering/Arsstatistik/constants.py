@@ -21,9 +21,10 @@ MODALITY_DCBCT: str = "DCBCT"
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
-
+    # MODALITY_CT
     MODALITY_DX,
-
+    # MODALITY_MG,
+    # MODALITY_XA
 ]
 
 MISC_CATEGORY_GROUP_CT = "DT10:Datortomograf (fast installerad eller mobil):Diagnostik:Övrig diagnostik"
@@ -35,7 +36,7 @@ MISC_CATEGORY_GROUP_MOBILE_DX_VAL2 = "MOB2:Mobil röntgenutrustning för bildtag
 MISC_CATEGORY_GROUP_MOBILE_DX_REF3 = MISC_CATEGORY_GROUP_STATIONARY_DX
 MISC_CATEGORY_GROUP_MOBILE_DX_VAL3 = "MOB3:Mobil röntgenutrustning för bildtagning:Diagnostik:Övrigt"
 MISC_CATEGORY_GROUP_MG = "MAM3:Mammografiutrustning (fast installerad):Diagnostik:Övrigt"
-MISC_CATEGORY_GROUP_MOBILE_XA = "MOB5:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Övrigt"
+MISC_CATEGORY_GROUP_MOBILE_XA = "MOB5:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning i samband med kirurgi:Övrigt"
 MISC_CATEGORY_GROUP_STATIONARY_XA_DIAGNOSTIC = "INT21:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Övrigt"
 MISC_CATEGORY_GROUP_STATIONARY_XA_TREATMENT = "INT14:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Övrig behandling"
 
@@ -137,10 +138,10 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "BEN1:Bentäthetsmätare:Diagnostik:Inget specifikt": [],
         },
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
-            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Skelett": ["X621", "X622", "X623", "X626", "X630", "X631", "X633",
+            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning i samband med kirurgi:Skelett": ["X621", "X622", "X623", "X626", "X630", "X631", "X633",
                                                                                                                       "X643", "X636", "X637", "X638", "X639", "X641", "X642",
                                                                                                                       "X642", "X645", "X646", "X648"],
-            "MOB5:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning:i samband med kirurgi	Övrigt": [],
+            "MOB5:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning i samband med kirurgi:Övrigt": [],
         }
     },
     MODALITY_MG: {

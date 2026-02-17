@@ -82,6 +82,7 @@ def _format_ct_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     data_number = data_number.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
     output_number = data_number.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
 
+    data = data.dropna(subset=[VALID_STUDY_COLUMNS.DlpTotal])
     data_dose = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
         dose_mean=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="mean"),
         dose_median=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="median"),
@@ -102,45 +103,13 @@ def _format_dx_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_DX)
 
-    # Categorize into miscellaneous categories for exams not fitting anywhere else
-    data.loc[
-        (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_GENERAL)),
-        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_DX
-
-    data.loc[
-        (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_MOBILE)),
-        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_XA
-    
-    data.loc[
-        (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF) &
-        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
-        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL
-    
-    data.loc[
-        (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF2) &
-        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
-        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL2
-    
-    data.loc[
-        (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF3) &
-        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
-        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL3
-
-    data = data.drop_duplicates(subset=[VALID_STUDY_COLUMNS.AccessionNumber, VALID_STUDY_COLUMNS.StudyInstanceUID])
-
-    data.loc[
-        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)) &
-        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL) &
-        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL2) &
-        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL3),
-        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL3
-
     data_number = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
         Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"),
     )
     data_number = data_number.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
     output_number = data_number.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
 
+    data = data.dropna(subset=[VALID_STUDY_COLUMNS.DoseAreaProductTotal])
     data_dose = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
         dose_mean=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="mean"),
         dose_median=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="median"),
@@ -160,11 +129,6 @@ def _format_mg_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_MG)
 
-    # Övrigt kategorisering för MG
-    data.loc[
-        (data[OUTPUT_COL_EXAM] == ""),
-        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MG
-
     data_number = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
         Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc="count"),
     )
@@ -173,6 +137,7 @@ def _format_mg_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     data_dose = data.copy()
     data_dose["mgdose"] = (data_dose[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseLeftBreast] + data_dose[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseRightBreast]) / 2.0
+    data_dose = data_dose.dropna(subset=["mgdose"])
     data_dose = data_dose.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
         dose_mean=pd.NamedAgg(column="mgdose", aggfunc="mean"),
         dose_median=pd.NamedAgg(column="mgdose", aggfunc="median"),
@@ -192,22 +157,13 @@ def _format_xa_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_XA)
 
-
-    # Categorize into preset miscellaneous category
-    data.loc[
-        (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_DIAGNOSTIC)),
-        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_XA_DIAGNOSTIC
-    
-    data.loc[
-        (data[OUTPUT_COL_EXAM] == "") & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_TREATMENT)),
-        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_XA_TREATMENT
-
     data_number = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
         Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"),
     )
     data_number = data_number.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
     output_number = data_number.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
 
+    data = data.dropna(subset=[VALID_STUDY_COLUMNS.DoseAreaProductTotal])
     data_dose = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
         dose_mean=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="mean"),
         dose_median=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="median"),
@@ -342,4 +298,71 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
                 continue
             data.loc[data[grouping_column].isin(exam_group_values), [OUTPUT_COL_EXAM]] = exam_name
 
+    if modality == MODALITY_DX:
+        data = _categorize_dx_misc_exams(data)
+    elif modality == MODALITY_MG:
+        data = _categorize_mg_misc_exams(data)
+    elif modality == MODALITY_XA:
+        data = _categorize_xa_misc_exams(data)
+
     return data.dropna(subset=[OUTPUT_COL_EXAM])
+
+
+def _categorize_ct_misc_exams(data: pd.DataFrame) -> pd.DataFrame:
+    # TODO: Add misc categorization code here from CT when merged with changes made
+    return data
+
+
+def _categorize_dx_misc_exams(data: pd.DataFrame) -> pd.DataFrame:
+    data.loc[
+        (data[OUTPUT_COL_EXAM].isnull()) & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_GENERAL)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_DX
+
+    data.loc[
+        (data[OUTPUT_COL_EXAM].isnull()) & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_MOBILE)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_XA
+
+    data.loc[
+        (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF) &
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL
+
+    data.loc[
+        (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF2) &
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL2
+
+    data.loc[
+        (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF3) &
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL3
+
+    data = data.drop_duplicates(subset=[VALID_STUDY_COLUMNS.AccessionNumber, VALID_STUDY_COLUMNS.StudyInstanceUID])
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)) &
+        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL) &
+        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL2) &
+        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL3),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL3
+
+    return data
+
+
+def _categorize_mg_misc_exams(data: pd.DataFrame) -> pd.DataFrame:
+    data.loc[
+        (data[OUTPUT_COL_EXAM].isnull()),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MG
+    return data
+
+
+def _categorize_xa_misc_exams(data: pd.DataFrame) -> pd.DataFrame:
+    data.loc[
+        (data[OUTPUT_COL_EXAM].isnull()) & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_DIAGNOSTIC)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_XA_DIAGNOSTIC
+
+    data.loc[
+        (data[OUTPUT_COL_EXAM].isnull()) & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_TREATMENT)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_XA_TREATMENT
+
+    return data
