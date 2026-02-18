@@ -23,8 +23,8 @@ REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 MODALITY_LIST = [
     # MODALITY_CT
     MODALITY_DX,
-    # MODALITY_MG,
-    # MODALITY_XA
+    MODALITY_MG,
+    MODALITY_XA
 ]
 
 MISC_CATEGORY_GROUP_CT = "DT10:Datortomograf (fast installerad eller mobil):Diagnostik:Övrig diagnostik"
@@ -131,10 +131,11 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "MOB1:Mobil röntgenutrustning för bildtagning:Diagnostik:Thorax inkl lunga/hjärta, Bröstkorg": [],
             "MOB2:Mobil röntgenutrustning för bildtagning:Diagnostik:Extremiteter, inklusive axlar/axelled": [],
             "MOB3:Mobil röntgenutrustning för bildtagning:Diagnostik:Övrigt": [],
+            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning i samband med kirurgi:Skelett": ['Ortopedi'],
             "BEN1:Bentäthetsmätare:Diagnostik:Inget specifikt": [],
         },
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
-            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning i samband med kirurgi:Skelett": ["X621", "X622", "X623", "X626", "X630", "X631", "X633",
+            "MOB4:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning i samband med kirurgi:Skelett": ["X621", "X622", "X623", "X626", "X630", "X631", "X633", "X634", 
                                                                                                                       "X643", "X636", "X637", "X638", "X639", "X641", "X642",
                                                                                                                       "X642", "X645", "X646", "X648"],
             "MOB5:Mobil röntgenutrustning för genomlysning (C-bågar etc.):Vägledning i samband med kirurgi:Övrigt": [],
@@ -150,6 +151,10 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
         }
     },
     MODALITY_XA: {
+        EXAM_GROUPING_TYPE_STUDY_DESCRIPTION: {
+           "INT10:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Hjärta": ["Biosense Carto EP", "Implantat - externt bokad", 
+                                                                                                                      "Lungvensablation - externt bokad", "Ordinär ablation - externt bokad"],
+        },
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
             "INT01:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Huvud och hals": [],
             "INT02:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Diagnostik:Thorax inklusive lungor, exklusive hjärta": ["38200"],
@@ -161,34 +166,34 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
             "INT08:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Huvud och hals": ["11005", "11100", "17005", "17500", "17505", 
                                                                                                                                "19000", "19005", "19100", "19305", "19900", 
                                                                                                                                "19950", "19951"],
-            "INT09:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Thorax inklusive lungor, exklusive hjärta": ["39900", "39951", "3995A"],
+            "INT09:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Thorax inklusive lungor, exklusive hjärta": ["39900", "39948", "39951", "3995A"],
             "INT10:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Hjärta": ["32700", "32800", "33000", "33100", "33500", "36000", "36600",
-                                                                                                                       "37300", "38400", "38500", "39100", "39500", "X401", "X402"],
+                                                                                                                       "37728", "37300", "38400", "38500", "39100", "39500", "X401", "X402"],
             "INT11:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Buk": ["47100", "47142", "47148", "47200", "47242", "47900", "49500", 
                                                                                                                     "49900", "49905", "49948", "49951", "59500", "59600", "59748", 
                                                                                                                     "59800", "59900"],
             "INT12:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Bäcken": ["57000", "57042", "57400"],
-            "INT13:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Extremiteter": ["67600", "67700", "67772", "67800", "67500"],
+            "INT13:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Extremiteter": ["67600", "67672", "67700", "67772", "67800", "67500"],
             "INT14:Genomlysningsutrustning (användning för hjärta och blodkärl, fast installerad):Behandling:Övrig behandling": [],
             "INT15:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Huvud och hals": ["10100", "10500", "10528", "10555", "41100", 
                                                                                                                                       "41127", "41200", "4124B", "41327",  ],
-            "INT16:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Thorax": ["32000", "32028", "41600", "42000", ],
+            "INT16:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Thorax": ["32000", "32028", "32500", "41600", "42000", ],
             "INT17:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Buk": ["45400", "43000", "43200", "44000", "44900", "45000", 
                                                                                                                            "46128",],
             "INT18:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Ryggraden": [],
             "INT19:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Bäcken, inklusive höfter/höftled": ["44000", "63935", "64000"],
-            "INT20:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Extremiteter, inklusive axlar/axelled": [],
+            "INT20:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Extremiteter, inklusive axlar/axelled": ["63135"],
             "INT21:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Diagnostik:Övrigt": [],
             "INT22:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Huvud och hals": [],
             "INT23:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Thorax": ["39051", "39348", "39900", "48451", "48452", "48455", 
                                                                                                                               "4845A", "48551", "48552", "4855A"],
-            "INT24:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Buk": ["42051", "46028", "46052", "46055", "46136", "46151",
+            "INT24:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Buk": ["42051", "46028", "46051", "46052", "46055", "46136", "46151",
                                                                                                                            "46152", "46155", "46248", "49000", "49005", "49055", 
                                                                                                                            "49100", "49105", "49148", "49148", "49150", "49155", 
                                                                                                                            "49200", "49205", "49300", "49600", "49928", "49960", "49961", 
-                                                                                                                           "58700", "59000", "59005", "59100", "E4976", "E4900"],
-            "INT25:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Ryggraden": ["13800", "1384A",  "17800", "17805"],
-            "INT26:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Bäcken": ["50351", "51200", "51255", "51348", "53000", "53100", "53200"],
+                                                                                                                           "58700", "59000", "59005", "59100", "E4976", "E4900", "E4905"],
+            "INT25:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Ryggraden": ["13000", "13200", "13400", "13800", "1384A",  "17800", "17805"],
+            "INT26:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Bäcken": ["44200","50351", "51200", "51255", "51348", "53000", "53100", "53200"],
             "INT27:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Extremiteter, inklusive axlar/axelled": [],
             "INT28:Genomlysningsutrustning (övrig användning inte hjärta och blodkärl, fast installerad):Behandling:Övrigt": [],
         }
