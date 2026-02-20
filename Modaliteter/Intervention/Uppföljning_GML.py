@@ -73,10 +73,10 @@ def _(REMboxDataQuery, pd, rembox, valid_series_columns, valid_study_columns):
 
         rembox.filter_options.patient_age_interval_include_nulls = True
 
-        rembox.filter_options.study_time_interval_start_date = "2025-01-01T00:00:00Z"
-        rembox.filter_options.study_time_interval_end_date = "2025-12-31T00:00:00Z"
+        rembox.filter_options.study_time_interval_start_date = "2024-01-01T00:00:00Z"
+        rembox.filter_options.study_time_interval_end_date = "2026-02-19T00:00:00Z"
 
-        rembox.deanonymize_performing_physician = True
+        rembox.deanonymize_performing_physician = False
 
         rembox.add_columns(
             columns=[
@@ -267,7 +267,7 @@ def _(mo):
 
 @app.cell
 def _(series_data, study_data):
-    study = study_data.copy() #skapa kopia av dataframe på study-nivå för att kunna behålla orginalet
+    study = study_data[study_data['convFluoroClassifier'] != 'C'].copy() #skapa kopia av dataframe på study-nivå för att kunna behålla orginalet. Ta bort 'C' för att secondary captures hanteras fel och blir dubletter
     series = series_data.copy() #skapa kopia av dataframe på serie-nivå för att kunna behålla orginalet
 
     #TODO: Fixa detta för aktuella testpatienter.
@@ -311,19 +311,21 @@ def _(mo):
 
 @app.cell
 def _(pd, study):
-    names_data_path = 'C:/Projekt/GIT/rvbrtg/Data/input_data/operators_2025.xlsx'
+    names_data_path = 'C:/Projekt/GIT/rvbrtg/Data/input_data/operators_2026.xlsx'
     names = pd.read_excel(names_data_path)
     # Rename according to the file's columns: PseudoValue -> performingPhysicianName, OriginalValue -> operatorName
     names.columns = ['performingPhysicianName', 'operatorName']
     # Build mapping and add operatorName column without reassigning the study dataframe
     operator_dict = names.set_index('performingPhysicianName')['operatorName'].to_dict()
     study['operatorName'] = study['performingPhysicianName'].map(operator_dict)
+    # Skapa en kolumn i study med huvudoperatörens namn. Detta identifieras genom att det är det första namnet operatorName-kolumnen separerade med \
+    study['mainOperatorName'] = study['operatorName'].str.split('\\').str[0]
     return
 
 
 @app.cell
 def _():
-    #study.to_csv('C:/Projekt/GIT/rvbrtg/Data/output_data/Operators_missing_GML_2025.csv')
+    #study.to_csv('C:/Projekt/GIT/rvbrtg/Data/output_data/Operators_missing_GML_2026.csv')
     return
 
 
@@ -335,11 +337,47 @@ def _(px, study):
 
 
 @app.cell
-def _(px, series):
-    fig_kVp = px.scatter(series[series['kVp'] > 0], x='dateTimeStarted', y='kVp', color='acquisitionProtocol', hover_data=['accessionNumber'])
-    fig_kVp.show()
+def _(go, make_subplots, study):
+    unique_citys = study['city'].unique()
+    num_city = len(unique_citys)
+    fig_citys = make_subplots(rows=num_city, cols=1, shared_xaxes=True, vertical_spacing=0.02, subplot_titles=[f'City {city}' for city in unique_citys])
+    for idx, city in enumerate(unique_citys):
+        row = idx + 1
+        col = 1
+        city_data = study[study['city'] == unique_citys[idx]]
+        values = city_data['doseAreaProductTotal']
+        fig_citys.add_trace(go.Scatter(x=city_data['studyDateTime'], y=values, name=f'City {city}', mode = 'markers'), row=row, col=col)
+    fig_citys.update_layout(height=500 * num_city, title_text='DAP Distribution for All Cities', showlegend=True)
+    fig_citys.show()
+    return
 
-    #TODO: Gör analysen mer detaljerad för att urskilja vilka protokoll som systematiskt har högre kVp och undersök om sysemet maxas ut. Kanske plotta någon slags medel-kVp?
+
+@app.cell
+def _(px, study):
+    fig_Skellefteå = px.scatter(study[study['city'] == 'Skellefteå'], x='studyDateTime', y='doseAreaProductTotal', color='procedureCodeMeaning', hover_data=['accessionNumber'])
+    #fig_Skellefteå.write_html("C:/Projekt/GIT/rvbrtg/Data/output_data/Skellefteå.html")
+    fig_Skellefteå.show()
+    return
+
+
+@app.cell
+def _(px, study):
+    nefrobyten = study[study['procedureCode'] == '59100']
+    fig_nefrobyten = px.scatter(nefrobyten, x='studyDateTime', y='doseAreaProductTotal', color='mainOperatorName', hover_data=['accessionNumber', 'machine'])
+    #fig_Skellefteå.write_html("C:/Projekt/GIT/rvbrtg/Data/output_data/Nefrobyten.html")
+    fig_nefrobyten.show()
+    return (nefrobyten,)
+
+
+@app.cell
+def _(nefrobyten, px):
+    nefrobyten_2025 = nefrobyten[nefrobyten['studyDateTime'] >= '2025-01-01']
+    fig_nefrobyten_gml = px.scatter(nefrobyten_2025, x='totalFluoroTime', y='fluoroDoseAreaProductTotal', color='mainOperatorName', hover_data=['accessionNumber', 'machine'])
+    #fig_Skellefteå.write_html("C:/Projekt/GIT/rvbrtg/Data/output_data/Nefrobyten.html")
+    fig_nefrobyten_gml.update_layout(height=700)
+    fig_nefrobyten_gml.show()
+
+    # TODO: Fixa detta för ST respektive Specialiter
     return
 
 
