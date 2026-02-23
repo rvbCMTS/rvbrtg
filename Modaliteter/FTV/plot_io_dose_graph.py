@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
+from plotly.subplots import make_subplots
 
 
-def plot_io_dose_graph(dp):
+def plot_io_dose_graph(dp, kvs=('60kv', '70kv')):
 
     data = dict()
 
@@ -22,44 +23,71 @@ def plot_io_dose_graph(dp):
             data[lab] = dict()
 
         data[lab][date] = dict()
-        meas = pd.read_excel(item)
+        for kv in kvs:
+            data[lab][date][kv] = dict()
+            meas = pd.read_excel(item, sheet_name=kv)
 
-        for param in ("exposure_time_ms", "dose_mGy"):
-            data[lab][date][param] = np.array(meas[param])
+            for param in ("exposure_time_ms", "dose_mGy"):
+                data[lab][date][kv][param] = np.array(meas[param])
 
     for lab in data:
         for date in data[lab]:
-            for param in ("exposure_time_ms", "dose_mGy"):
-                nanmask = np.isnan(data[lab][date][param])
-                data[lab][date][param] = data[lab][date][param][~nanmask]
+            for kv in kvs:
+                for param in ("exposure_time_ms", "dose_mGy"):
+                    nanmask = np.isnan(data[lab][date][kv][param])
+                    data[lab][date][kv][param] = data[lab][date][kv][param][~nanmask]
+
 
     import plotly.graph_objects as go
 
-    fig = go.Figure()
+
+    fig = make_subplots(
+        rows=1, cols=2,
+        subplot_titles=("60 kV", "70 kV"),
+        shared_xaxes=False
+    )
 
     for lab in data:
         for date in data[lab]:
+
+            # --- 60 kV ---
             fig.add_trace(
                 go.Scatter(
-                    x=data[lab][date]["exposure_time_ms"],
-                    y=data[lab][date]["dose_mGy"],
-                    mode="lines+markers",  # punkter + linjer
-                    line=dict(dash="dash"),  # streckade linjer
+                    x=data[lab][date]["60kv"]["exposure_time_ms"],
+                    y=data[lab][date]["60kv"]["dose_mGy"],
+                    mode="lines+markers",
+                    line=dict(dash="dash"),
                     marker=dict(size=6),
-                    name=f"lab: {lab}, date: {date}",
-                )
+                    name=f"{lab}, {date} (60 kV)"
+                ),
+                row=1, col=1
             )
 
+            # --- 70 kV ---
+            fig.add_trace(
+                go.Scatter(
+                    x=data[lab][date]["70kv"]["exposure_time_ms"],
+                    y=data[lab][date]["70kv"]["dose_mGy"],
+                    mode="lines+markers",
+                    line=dict(dash="dash"),
+                    marker=dict(size=6),
+                    name=f"{lab}, {date} (70 kV)"
+                ),
+                row=1, col=2
+            )
+
+    # Layout
     fig.update_layout(
+        height=800,
         xaxis_title="Exposure time (ms)",
         yaxis_title="Dose (mGy)",
-        legend_title="Measurement",
         template="plotly_white",
+        legend_title="Measurement"
     )
 
     fig.show()
 
 
-dp = Path(r"V:\Enhetsytor\5-1-1-3. Strålningsfysik\Radiologi\FTV\Nya sensorer 2022 raw\dosmätningar")
-
+# enter path
+dp = Path("")
 plot_io_dose_graph(dp=dp)
