@@ -245,11 +245,10 @@ def plot_parameter(df, parameter='mAs',
 
 def plot_statistic(
     df,
-    parameter='mAs',
     imaging_modes=('Std', 'Hi-Fi', 'Hi-Res', 'Hi-Speed', 'no match'),
     scan_modes=(180, 360),
     export_to_browser=False,
-    shade_y_regions=None,              
+    shade_y_regions=None,
     shade_labels=None,
     shade_fillcolors=None,
     shade_line_colors=None,
@@ -259,11 +258,24 @@ def plot_statistic(
     reference_dash=None,
     dark_mode=False
 ):
+    #
+    # ----------- Dropdown parameters -----------
+    #
+    parameter_list = [
+        "DAP (mGycm2)",
+        "kV",
+        "mA",
+        "Scan time",
+        "mAs",
+        "Patient age",
+    ]
+
+    default_index = 0   # DAP (mGycm2) default
+
     df = df[(df["Imaging"].isin(imaging_modes)) &
             (df["Scan"].isin(scan_modes))].copy()
 
     df = df.reset_index(drop=False)
-
     cols = df.columns.tolist()
 
     hover_lines = [f"{col}: %{{customdata[{i}]}}" for i, col in enumerate(cols)]
@@ -271,6 +283,9 @@ def plot_statistic(
 
     fig = go.Figure()
 
+    #
+    # ----------- Shaded regions -----------
+    #
     if shade_y_regions is not None and len(shade_y_regions) > 0:
 
         n = len(shade_y_regions)
@@ -297,20 +312,22 @@ def plot_statistic(
         ):
             y0, y1 = (low, high) if low <= high else (high, low)
 
-            x_poly = [x_min, x_max, x_max, x_min]
-            y_poly = [y0, y0, y1, y1]
-
             fig.add_trace(go.Scatter(
-                x=x_poly, y=y_poly,
+                x=[x_min, x_max, x_max, x_min],
+                y=[y0, y0, y1, y1],
                 name=label,
                 mode="none",
                 fill="toself",
                 fillcolor=fillc,
                 line=dict(color=linec),
                 hoverinfo="skip",
-                showlegend=True
+                showlegend=True,
+                visible=True,  # always visible
             ))
 
+    #
+    # ----------- Reference lines -----------
+    #
     if reference_levels is not None and len(reference_levels) > 0:
 
         n = len(reference_levels)
@@ -322,15 +339,15 @@ def plot_statistic(
         if reference_dash is None:
             reference_dash = ["dash"] * n
 
+        x_min = df["index"].min()
+        x_max = df["index"].max()
+
         while len(reference_labels) < n:
             reference_labels.append(f"Ref {len(reference_labels)+1}")
         while len(reference_colors) < n:
             reference_colors.append("black")
         while len(reference_dash) < n:
             reference_dash.append("dash")
-
-        x_min = df["index"].min()
-        x_max = df["index"].max()
 
         for y, label, col, dash in zip(
             reference_levels, reference_labels, reference_colors, reference_dash
@@ -342,41 +359,91 @@ def plot_statistic(
                 name=label,
                 line=dict(color=col, width=2, dash=dash),
                 hoverinfo="skip",
-                showlegend=True
+                showlegend=True,
+                visible=True,
             ))
 
-
+    #
+    # ----------- Create traces for all parameters -----------
+    #
     groups = [(scan, im) for scan in scan_modes for im in imaging_modes]
 
-    for scan, im in groups:
-        tdf = df[(df["Scan"] == scan) & (df["Imaging"] == im)]
-        if tdf.empty:
-            continue
+    trace_groups = []   # list of trace index lists per parameter
 
-        customdata = tdf[cols].values
+    for param in parameter_list:
+        param_traces = []
 
-        fig.add_trace(go.Scatter(
-            x=tdf["index"],
-            y=tdf[parameter],
-            mode="markers",
-            marker=dict(
-                size=10,
-                color=color_for(scan, im),
-                line=dict(color="black" if not dark_mode else 'white', width=0.4)
-            ),
-            name=f"{scan}, {im}",
-            customdata=customdata,
-            hovertemplate=hovertemplate
+        for scan, im in groups:
+            tdf = df[(df["Scan"] == scan) & (df["Imaging"] == im)]
+            if tdf.empty:
+                continue
+
+            customdata = tdf[cols].values
+
+            fig.add_trace(go.Scatter(
+                x=tdf["index"],
+                y=tdf[param],
+                mode="markers",
+                marker=dict(
+                    size=10,
+                    color=color_for(scan, im),
+                    line=dict(color="black" if not dark_mode else 'white', width=0.4)
+                ),
+                name=f"{scan}, {im}",
+                customdata=customdata,
+                hovertemplate=hovertemplate,
+                visible=False,   # will enable later
+            ))
+
+            param_traces.append(len(fig.data) - 1)
+
+        trace_groups.append(param_traces)
+
+    #
+    # ----------- Make default parameter visible -----------
+    #
+    for t in trace_groups[default_index]:
+        fig.data[t].visible = True
+
+    #
+    # ----------- Dropdown menu -----------
+    #
+    buttons = []
+    n_total = len(fig.data)
+
+    for idx, param in enumerate(parameter_list):
+        vis = [True if fig.data[i].hoverinfo == "skip" else False for i in range(n_total)]
+        # Reference & shading traces remain True
+
+        for t in trace_groups[idx]:
+            vis[t] = True
+
+        buttons.append(dict(
+            label=param,
+            method="update",
+            args=[{"visible": vis},
+                  {"title": f"<b>Statistics plot</b> — {param}"}]
         ))
 
+    fig.update_layout(
+        updatemenus=[dict(
+            buttons=buttons,
+            direction="down",
+            x=1.05,
+            y=1.05
+        )]
+    )
 
+    #
+    # ----------- Layout and theming -----------
+    #
     template_name = "plotly_dark" if dark_mode else "plotly_white"
     font_color = "white" if dark_mode else "black"
 
     fig.update_layout(
-        title=f"<b>Statistics plot</b> — {parameter}",
+        title=f"<b>Statistics plot</b> — {parameter_list[default_index]}",
         xaxis_title="Index (original dataframe order)",
-        yaxis_title=parameter,
+        # yaxis_title=parameter_list[default_index],
         template=template_name,
         hovermode="closest",
         legend_title_text="Scan, Imaging",
@@ -390,15 +457,53 @@ def plot_statistic(
         fig.show()
 
 
+
 def plot_summary_statistics(
     df,
     export_to_browser=False,
     age_bin_width=10,
-    age_range=None,
     n_rows=4,
     n_cols=3,
     dark_mode=False,
 ):
+
+    # ---------- Automatic smart bin width for age ----------
+    def auto_bin_width(amin, amax):
+        span = amax - amin
+        if span <= 10:
+            return 1
+        elif span <= 20:
+            return 2
+        elif span <= 40:
+            return 5
+        else:
+            return 10
+
+    # ---------- Correct age histogram with fixed bounds ----------
+    def age_hist(series: pd.Series, bin_width=10, amin=None, amax=None):
+        s = pd.to_numeric(series, errors="coerce").dropna()
+        if len(s) == 0:
+            return [], [], []
+
+        if amin is None or amax is None:
+            # fallback – should not happen in this workflow
+            amin = float(s.min())
+            amax = float(s.max())
+
+        # build edges manually to avoid rounding
+        edges = list(np.arange(amin, amax, bin_width))
+        if edges[-1] != amax:
+            edges.append(amax)
+
+        edges = np.array(edges)
+
+        counts, edges = np.histogram(s, bins=edges)
+        percent = (counts / counts.sum() * 100).round(1)
+
+        labels = [f"{int(edges[i])}-{int(edges[i + 1])}" for i in range(len(edges) - 1)]
+        return labels, counts.tolist(), percent.tolist()
+
+    # ---------- Helper Functions ----------
     def clean_value(v):
         if isinstance(v, (int, np.integer)):
             return str(v)
@@ -410,16 +515,14 @@ def plot_summary_statistics(
         s = series.dropna()
         if len(s) == 0:
             return [], [], []
-
         cleaned = s.apply(clean_value)
         counts = cleaned.value_counts()
         idx_list = list(counts.index)
 
         def _is_float(x: str):
             try:
-                float(x)
-                return True
-            except Exception:
+                float(x); return True
+            except:
                 return False
 
         if all(_is_float(x) for x in idx_list):
@@ -435,99 +538,149 @@ def plot_summary_statistics(
         s = pd.to_datetime(series, errors="coerce").dropna()
         if len(s) == 0:
             return [], [], []
-
         months = s.dt.to_period("M")
         counts = months.value_counts().sort_index()
         labels = [p.strftime(month_fmt) for p in counts.index.to_timestamp()]
         percent = (counts / counts.sum() * 100).round(1)
         return labels, counts.values.tolist(), percent.values.tolist()
 
-    def age_hist(series: pd.Series, bin_width=10, rng=None):
-        s = pd.to_numeric(series, errors="coerce").dropna()
-        if len(s) == 0:
-            return [], [], []
+    # ---------- Subplot definitions ----------
+    plot_specs = [
+        ("Date", lambda d: date_hist(d["DateTime"])),
+        ("Patient age", None),  # handled manually
+        ("Patient sex", lambda d: categorical_hist(d["Patient Sex"])),
+        ("kV", lambda d: categorical_hist(d["kV"])),
+        ("mA", lambda d: categorical_hist(d["mA"])),
+        ("Scan time", lambda d: categorical_hist(d["Scan time"])),
+        ("Imaging", lambda d: categorical_hist(d["Imaging"])),
+        ("Scan (deg)", lambda d: categorical_hist(d["Scan"].astype(str))),
+        ("FOV", lambda d: categorical_hist(d["FOV"])),
+        ("DAP (mGycm2)", lambda d: categorical_hist(d["DAP (mGycm2)"])),
+        ("mAs", lambda d: categorical_hist(d["mAs"])),
+        ("Model Name", lambda d: categorical_hist(d["Model Name"])),
+    ]
 
-        if rng is None:
-            vmin, vmax = float(s.min()), float(s.max())
-        else:
-            vmin, vmax = float(rng[0]), float(rng[1])
+    # ---------- Age ranges for dropdown ----------
+    age_ranges = [
+        ("All ages (0-100)", (0, 100)),
+        ("Children (0-17)", (0, 17)),
+        ("Teens (13-19)", (13, 19)),
+        ("Adults (18-100)", (18, 100)),
+        ("0-10", (0, 10)),
+        ("10-20", (10, 20)),
+        ("20-30", (20, 30)),
+        ("30-40", (30, 40)),
+        ("40-50", (40, 50)),
+        ("50-60", (50, 60)),
+        ("60-70", (60, 70)),
+        ("70-80", (70, 80)),
+        ("80-90", (80, 90)),
+        ("90-100", (90, 100)),
+    ]
 
-        start = np.floor(vmin / bin_width) * bin_width
-        end = np.ceil(vmax / bin_width) * bin_width
-        if end <= start:
-            end = start + bin_width
-
-        edges = np.arange(start, end + bin_width, bin_width)
-        counts, edges = np.histogram(s, bins=edges)
-        percent = (counts / counts.sum() * 100).round(1)
-
-        labels = [f"{int(edges[i])}-{int(edges[i + 1])}" for i in range(len(edges) - 1)]
-        return labels, counts.tolist(), percent.tolist()
-
-    def add_bar_from_series(title: str, series: pd.Series, mode: str, row: int, col: int):
-        if mode == "age":
-            x, y, perc = age_hist(series, bin_width=age_bin_width, rng=age_range)
-        elif mode == "date":
-            x, y, perc = date_hist(series)
-        else:
-            x, y, perc = categorical_hist(series)
-
-        custom = np.c_[perc] if len(perc) else np.empty((0, 1))
-        fig.add_trace(
-            go.Bar(
-                x=x,
-                y=y,
-                customdata=custom,
-                hovertemplate="Value: %{x}<br>Number: %{y} (%{customdata:.1f}%)<extra></extra>",
-            ),
-            row=row,
-            col=col,
-        )
-        fig.update_xaxes(title_text=title, row=row, col=col, type="category")
-
-    # --- Create subplots ---
+    # ---------- Create subplot frame ----------
     fig = make_subplots(
-        rows=n_rows,
-        cols=n_cols,
-        shared_xaxes=False,
+        rows=n_rows, cols=n_cols,
         horizontal_spacing=0.08,
         vertical_spacing=0.12,
     )
 
-    plots = [
-        ("Date", df["DateTime"], "date"),
-        ("kV", df["kV"], "cat"),
-        ("mA", df["mA"], "cat"),
-        ("Scan time", df["Scan time"], "cat"),
-        ("Imaging", df["Imaging"], "cat"),
-        ("Scan (deg)", df["Scan"].astype(str), "cat"),
-        ("FOV", df["FOV"], "cat"),
-        ("DAP (mGycm2)", df["DAP (mGycm2)"], "cat"),
-        ("mAs", df["mAs"], "cat"),
-        ("Model Name", df["Model Name"], "cat"),
-        ("Patient age", df["Patient age"], "age"),
-        ("Patient sex", df["Patient Sex"], "cat"),
-    ]
+    # ---------- Generate traces ----------
+    all_traces = []
 
-    for idx, (title, series, mode) in enumerate(plots, start=1):
-        row = (idx - 1) // n_cols + 1
-        col = (idx - 1) % n_cols + 1
-        if row <= n_rows:
-            add_bar_from_series(title, series, mode, row=row, col=col)
+    for label, (amin, amax) in age_ranges:
 
-    for r in range(1, n_rows + 1):
-        for c in range(1, n_cols + 1):
-            fig.update_yaxes(title_text="num scans", row=r, col=c)
+        dff = df.copy()
+        dff["Patient age"] = pd.to_numeric(dff["Patient age"], errors="coerce")
+        dff = dff[(dff["Patient age"] >= amin) & (dff["Patient age"] <= amax)]
 
-    template_name = "plotly_dark" if dark_mode else "plotly_white"
-    font_color = "white" if dark_mode else "black"
+        trace_ids = []
+
+        for i, (title, fn) in enumerate(plot_specs):
+            row = (i // n_cols) + 1
+            col = (i % n_cols) + 1
+
+            if title == "Patient age":
+                bin_w = auto_bin_width(amin, amax)
+                x, y, perc = age_hist(
+                    dff["Patient age"],
+                    bin_width=bin_w,
+                    amin=amin,
+                    amax=amax
+                )
+            else:
+                x, y, perc = fn(dff)
+
+            custom = np.c_[perc] if len(perc) else np.empty((0, 1))
+
+            fig.add_trace(
+                go.Bar(
+                    x=x,
+                    y=y,
+                    customdata=custom,
+                    visible=False,
+                    hovertemplate="Value: %{x}<br>Number: %{y} (%{customdata:.1f}%)<extra></extra>",
+                ),
+                row=row, col=col
+            )
+
+            trace_ids.append(len(fig.data) - 1)
+            fig.update_xaxes(title_text=title, row=row, col=col)
+
+        all_traces.append(trace_ids)
+
+    # ---------- Default visible traces ----------
+    for t in all_traces[0]:
+        fig.data[t].visible = True
+
+    # ---------- Dropdown ----------
+    n_total_traces = len(fig.data)
+    buttons = []
+
+    for idx, (label, _) in enumerate(age_ranges):
+        vis = [False] * n_total_traces
+        for t in all_traces[idx]:
+            vis[t] = True
+
+        buttons.append(dict(
+            label=label,
+            method="update",
+            args=[{"visible": vis}]
+        ))
+
+    # ---------- Dark/Light dropdown styling ----------
+    if dark_mode:
+        dropdown_style = dict(
+            bgcolor="rgba(20,20,20,1)",
+            font=dict(color="black", size=14),
+            bordercolor="white",
+            borderwidth=1,
+        )
+    else:
+        dropdown_style = dict(
+            bgcolor="rgba(245,245,245,0.95)",
+            font=dict(color="black", size=14),
+            bordercolor="black",
+            borderwidth=1,
+        )
 
     fig.update_layout(
-        template=template_name,
-        showlegend=False,
-        font=dict(color=font_color),
+        updatemenus=[
+            dict(
+                buttons=buttons,
+                direction="down",
+                x=1.05,
+                y=1.05,
+                **dropdown_style
+            )
+        ]
     )
 
+    # ---------- Global style ----------
+    template = "plotly_dark" if dark_mode else "plotly_white"
+    fig.update_layout(template=template, showlegend=False)
+
+    # ---------- Render ----------
     if export_to_browser:
         import plotly.io as pio
         pio.show(fig, renderer="browser")
