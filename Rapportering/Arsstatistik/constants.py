@@ -16,15 +16,17 @@ MODALITY_CT: str = "CT"
 MODALITY_DX: str = "DX"
 MODALITY_MG: str = "MG"
 MODALITY_XA: str = "XA"
-MODALITY_DCBCT: str = "DCBCT"
+MODALITY_DCBCT: str = "DCBCT",
+MODALITY_NUK: str = "NUK"
 
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
-    # MODALITY_CT
+    MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
-    MODALITY_XA
+    MODALITY_XA,
+    # MODALITY_NUK
 ]
 
 MISC_CATEGORY_GROUP_CT = "DT10:Datortomograf (fast installerad eller mobil):Diagnostik:Övrig diagnostik"
@@ -82,6 +84,7 @@ MODALITY_FILTER_SELECTION_PER_MODALITY = {
     MODALITY_MG: ["MG"],
     MODALITY_XA: ["XASTAT"],
     MODALITY_DCBCT: ["CT", "DCBCT"],
+    MODALITY_NUK: ["SPECT/CT", "PET/CT"]
 }
 
 REPORT_TEMPLATE_PATH_PER_MODALITY = {
@@ -99,16 +102,96 @@ EXAM_GROUPING_TYPE_PROCEDURE_CODE = "Procedure Code"
 EXAM_GROUPING_RULES_BY_MODALITY = {
     MODALITY_CT: {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
-            "DT01:Datortomograf (fast installerad eller mobil):Diagnostik:Huvud och hals": [],
-            "DT02:Datortomograf (fast installerad eller mobil):Diagnostik:Thorax inkl lunga/hjärta/bröstkorg": [],
-            "DT03:Datortomograf (fast installerad eller mobil):Diagnostik:Övre buk (exlusive njurar)": [],
-            "DT04:Datortomograf (fast installerad eller mobil):Diagnostik:Nedre Buk (inklusive njurar)": [],
-            "DT05:Datortomograf (fast installerad eller mobil):Diagnostik:Bäcken, höfter": [],
-            "DT06:Datortomograf (fast installerad eller mobil):Diagnostik:Extremitetsskelett,  inklusive axlar/axelled": [],
-            "DT07:Datortomograf (fast installerad eller mobil):Diagnostik:Ryggraden": [],
-            "DT08:Datortomograf (fast installerad eller mobil):Diagnostik:Hela bålen (inkl. thorax-buk kombination)": [],
-            "DT09:Datortomograf (fast installerad eller mobil):Diagnostik:Hela kroppen (multitrauma)": [],
-            "DT10:Datortomograf (fast installerad eller mobil):Diagnostik:Övrig diagnostik": [],
+            ####################### Diagnostik ##########################
+            "DT01:Datortomograf (fast installerad eller mobil):Diagnostik:Huvud och hals": [
+                "80100", "80101", "80105", "80180", "80181", "801D1", "801HH", # spottkörtlar
+                "80300", "80301", "80305", "80380", "80381", "803HH", # munbotten
+                "80400", "80401", "804HH", # Tandimplantat
+                "80800", "80801", "80805", "80880", "80881", "808HH", # Perfusion hjärna
+                "81000", "81001", "81003", "81005", "81070", "81071", "81080", "81081", "81087", "81097", "810D0",
+                "810E0", "810E1", "810HH", "810M0", "810RH", "810RM", # DT hjärna
+                "81100", "81101", "811HH", # DT hjärna + cistern
+                "81200", "81201", "81205", "81280", "81281", "812HH", #DT orbita
+                "81500", "81501", "81505", "81550", "81580", "81581", "815HH2", "815KK", "815SS", # skalle/sinus/ansikte
+                "81600", "81601", "81605", "81680", "81681", "816HH", # Temporalben
+                "81700", "81701", "81705", "81780", "81781", "817HH", # DT käkleder
+                "81800", "81801", "81805", "81850", "81880", "81881", "818D1", "818HH", # DT hals/larynx/thyr
+                "81900", "81901", "81968", "81969", # DT esofagus
+                "87500", "87501", "87580", "87581", "875A1", "875A2", "875C1", "875C2", "875R2", "875V1", "875V2", # DT angio
+            ],
+            "DT02:Datortomograf (fast installerad eller mobil):Diagnostik:Thorax inkl lunga/hjärta/bröstkorg": [
+                "83000", "83000F", "83001", "83005", "83050", "83067", "83068", "83069", "83070", "83071", "83079",
+                "83080", "83081", "830D1", "830E0", "830E1", "830HH", # DT thorax
+                "83100", "83101", "83105", "83116", "83180", "83181", "83184", "83185", "831HH", # DT hjärta
+                "83201", "832HH", # DT lungor
+                "83300", "83301", "83380", "83384", "833HH", # DT aorta thorakalangio
+                "83600", "83601", "83605", "83680", "83681", "836HH", #DT thorax-hals
+                "86100", "86101", "86105", "86150", "86181", # DT sternum
+                "87601", "87680", "876D1", "876E1", # DT pulm angio
+                "87700", "87701", "87716", "87755", "87763", "87780", "87781", "87783", "87785", # DT aorta angio
+                "87800", "87801", "87805", "87880", "87881", # DT lungvener
+                "87900", "87901", "87980", "87981", # DT aorta-pulm angio
+                "89500", "89501", "89516", "89580", "89581", "89584", "89585", "895CS" # DT kranskärl
+            ],
+            "DT03:Datortomograf (fast installerad eller mobil):Diagnostik:Buk": [
+                "84000", "84001", "84005", "84050", "84063", "84068", "84069", "84070", "84071", "84075", "84080",
+                "84081", "84095", "840D1", "840D3", "840D4", "840E0", "840E1", "840HH", # DT buk
+                "84100", "84101", "8405", "84150", "84168", "84169", "84179", "84180", "84181", "841HH", # DT övre buken
+                "84300", "84301", "84305", "84350", "84363", "84380", "84381", # DT pancreas
+                "84400", "84401", "84405", "84450", "84463", "84464", "84480", "84481", # DT lever
+                "85100", "85101", "85163", "85180", #DT bukangio småkärl
+                "84700", "84701", "84705", "84780", "84781", # DT colon
+                "84800", "84801", "84880", "84881", "848D0", # DT urinvägsöversikt
+                "85200", "85201", "85205", "85250", "85263", "85264", "85280", "85281", # DT njurar
+                "85300", "85305", "85350", "85380", "85381", # DT binjurar
+                "85400", "85401", "85405", "85463", "85464", "85480", "85481", # DT urografi
+                "85500", "85501", "85505", "85550", "85568", "85569", "85580", "85581", # DT nedre buk/lilla bäckenet
+
+            ],
+            "DT05:Datortomograf (fast installerad eller mobil):Diagnostik:Bäcken, höfter": [
+                "82600", "82601", "82605", "82649", "82650", "82680", "82681", "826HH" # DT sacrum
+                "82800", "82801", "82805", "82850", "82880", "82881", "828D0", "828HH",  # DT sacroiliaceleder
+                "82900", "82901", "82903", "82905", "82939", "82950", "82980", "82981", #DT bäcken/höftled
+                "88900", "88901", # DT bäckenmätning
+            ],
+            "DT06:Datortomograf (fast installerad eller mobil):Diagnostik:Extremitetsskelett,  inklusive axlar/axelled": [
+                "86200", "86201", "86205", "86250", "86250", "86280", "86281", "86288", #DT axelled
+                "86300", "86301", "86305", "86350", "86380", "86381", # DT överarm
+                "86400", "86401", "86405", "86450", "86480", "86481", # DT armbåde
+                "86500", "86501", "86505", "86550", "86580", "86581", # DT underarm
+                "86600", "86601", "86605", "86650", "86680", "86681", # DT handled
+                "86700", "86701", "86705", "86750", "86780", "86781", # DT hand
+                "86800", "86801", "86805", "86850", "86880", "86881", # DT lårben
+                "86900", "86901", "86905", "86939", "86950", "86980", "86981" # DT knäled
+                "87000", "87001", "87005", "87050", "87080", "87081", # DT underben
+                "87100", "87101", "87105", "87150", "87180", "897181", # DT fotled
+                "87200", "87201", "87205", "87250", "87280", "87281", # DT fot
+                "87300", "87301", "87305", "87350", "87380", "87381", # DT extremiteter
+                "87400", "87401", # DT scaphoideum
+            ],
+            "DT07:Datortomograf (fast installerad eller mobil):Diagnostik:Ryggraden": [
+                "82000", "82001", "82003", "82005", "82049", "82050", "82080", "82081", "820D0", "820HH", "820M0",  # DT halsryggrad
+                "82200", "82201", "82203", "82205", "82249", "82250", "82280", "82281", "822D0", "822HH", #bröstryggrad
+                "82300", "82301", "82303", "82380", "82381", "82381", "823D0", "823D0", "823HH", # Bröst-ländrygg
+                "82400", "82401", "82403", "82405", "82449", "82450", "82480", "82481", "82488", "824D0", "824HH" # DT ländryggrad
+            ],
+            "DT08:Datortomograf (fast installerad eller mobil):Diagnostik:Hela bålen (inkl. thorax-buk kombination)": [
+                "83500", "83501", "83505", "83575", "83580", "83581", "835D1", "835D3", "835HH", # DT hals-thorax-buk"
+                "83800", "83801", "83805", "83863", "83869", "83871", "83871", "83875", "83878", "83880", "83881",
+                "838D1", "838D3", "838D4", "838E0", "838E1", "838M1", # Thorax-buk
+                "83900", "83901", "83980", "83981", "839HH", # Thorax - övre buk
+                "85600", "85601", "85663", "85664", # DT thorax-urografi
+                "85900", "85901", "85980", "85981", # DT aorta bukangio
+            ],
+            "DT09:Datortomograf (fast installerad eller mobil):Diagnostik:Hela kroppen (multitrauma)": [
+                "88001", "88080", # DT multitrauma
+                "89100", "89101", # helkropp lågdos
+                "89200", "89201", # DT myelomskelett
+            ],
+            "DT10:Datortomograf (fast installerad eller mobil):Diagnostik:Övrig diagnostik": [
+
+            ],
+            ####################### Behandling ##########################
             "DT11:Datortomograf (fast installerad eller mobil):Behandling:Huvud och hals": [],
             "DT12:Datortomograf (fast installerad eller mobil):Behandling:Thorax inkl lunga/hjärta/bröstkorg": [],
             "DT13:Datortomograf (fast installerad eller mobil):Behandling:Övrigt": [],
