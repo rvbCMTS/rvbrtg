@@ -22,10 +22,10 @@ MODALITY_NUK: str = "NUK"
 REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
-    MODALITY_CT,
-    MODALITY_DX,
+    #MODALITY_CT,
+    #MODALITY_DX,
     MODALITY_MG,
-    MODALITY_XA,
+    #MODALITY_XA,
     # MODALITY_NUK
 ]
 

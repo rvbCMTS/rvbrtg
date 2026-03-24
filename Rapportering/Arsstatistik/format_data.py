@@ -137,6 +137,7 @@ def _format_mg_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     data_dose = data.copy()
     data_dose["mgdose"] = (data_dose[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseLeftBreast] + data_dose[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseRightBreast]) / 2.0
+    data_dose["mgdose"] = data_dose["mgdose"].round(2)  
     data_dose = data_dose.dropna(subset=["mgdose"])
     data_dose = data_dose.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
         dose_mean=pd.NamedAgg(column="mgdose", aggfunc="mean"),
