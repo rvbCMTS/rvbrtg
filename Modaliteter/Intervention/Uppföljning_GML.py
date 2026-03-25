@@ -278,7 +278,7 @@ def _(series_data, study_data):
 
 @app.cell
 def _(study):
-    study.head()
+    study.columns
     return
 
 
@@ -324,6 +324,29 @@ def _(pd, study):
 
 
 @app.cell
+def _(pd, study):
+    STnames_data_path = 'C:/Projekt/GIT/rvbrtg/Data/input_data/SToperators_2026.xlsx'
+    STnames = pd.read_excel(STnames_data_path)
+    # Loaded spreadsheet contains ST names
+    print(f"Loaded {len(STnames)} ST names")
+
+    # build a set of ST names for fast lookup
+    st_set = set(STnames['STname'].dropna())
+    # mark rows in study where any of the ST names appear in the main operator name
+    study['ST'] = study['mainOperatorName'].isin(st_set)
+    # you can extend this to other name columns if needed
+    return (STnames,)
+
+
+@app.cell
+def _(STnames, study):
+    # preview first few special training names and count flagged rows
+    STnames.head()
+    print(study['ST'].value_counts(dropna=False))
+    return
+
+
+@app.cell
 def _():
     #study.to_csv('C:/Projekt/GIT/rvbrtg/Data/output_data/Operators_missing_GML_2026.csv')
     return
@@ -337,17 +360,55 @@ def _(px, study):
 
 
 @app.cell
-def _(go, make_subplots, study):
+def _(go, make_subplots, px, study):
+    # create a consistent colour mapping for each procedureCodeMeaning
+    unique_procs = study['procedureCodeMeaning'].dropna().unique()
+    # choose a qualitative palette (Plotly default) and cycle if there are more procedures than colours
+    palette = px.colors.qualitative.Plotly
+    marker_colors = {proc: palette[i % len(palette)] for i, proc in enumerate(unique_procs)}
+
     unique_citys = study['city'].unique()
     num_city = len(unique_citys)
-    fig_citys = make_subplots(rows=num_city, cols=1, shared_xaxes=True, vertical_spacing=0.02, subplot_titles=[f'City {city}' for city in unique_citys])
+    fig_citys = make_subplots(rows=num_city, cols=1, shared_xaxes=True, vertical_spacing=0.02,
+                              subplot_titles=[f'City {city}' for city in unique_citys])
+
+    added_procs = set()
     for idx, city in enumerate(unique_citys):
         row = idx + 1
         col = 1
         city_data = study[study['city'] == unique_citys[idx]]
-        values = city_data['doseAreaProductTotal']
-        fig_citys.add_trace(go.Scatter(x=city_data['studyDateTime'], y=values, name=f'City {city}', mode = 'markers'), row=row, col=col)
-    fig_citys.update_layout(height=500 * num_city, title_text='DAP Distribution for All Cities', showlegend=True)
+        # create a trace for each procedure type within this city
+        for proc in city_data['procedureCodeMeaning'].dropna().unique():
+            mask = city_data['procedureCodeMeaning'] == proc
+            show = proc not in added_procs
+            if show:
+                added_procs.add(proc)
+            # build hover text including procedureCodeMeaning, studyDateTime, doseAreaProductTotal,
+            # accessionNumber and mainOperatorName
+            hover_df = city_data.loc[mask, ['procedureCodeMeaning', 'studyDateTime', 'doseAreaProductTotal', 'accessionNumber', 'mainOperatorName']].fillna('')
+            hover_text = hover_df.apply(
+                lambda r: f"Procedure: {r['procedureCodeMeaning']}<br>Date: {r['studyDateTime']}<br>DAP: {r['doseAreaProductTotal']}<br>Accession: {r['accessionNumber']}<br>Operator: {r['mainOperatorName']}",
+                axis=1
+            ).tolist()
+
+            fig_citys.add_trace(
+                go.Scatter(
+                    x=city_data.loc[mask, 'studyDateTime'],
+                    y=city_data.loc[mask, 'doseAreaProductTotal'],
+                    name=proc,
+                    mode='markers',
+                    legendgroup=proc,
+                    showlegend=show,
+                    marker=dict(color=marker_colors.get(proc, '#333333')),
+                    text=hover_text,
+                    hovertemplate='%{text}<extra></extra>'
+                ),
+                row=row, col=col
+            )
+
+    fig_citys.update_layout(height=300 * num_city,
+                            title_text='DAP Distribution for All Cities',
+                            showlegend=True)
     fig_citys.show()
     return
 
@@ -362,8 +423,24 @@ def _(px, study):
 
 @app.cell
 def _(px, study):
+    fig_Umeå = px.scatter(study[study['city'] == 'Umeå'], x='studyDateTime', y='doseAreaProductTotal', color='procedureCodeMeaning', hover_data=['accessionNumber'])
+    #fig_Skellefteå.write_html("C:/Projekt/GIT/rvbrtg/Data/output_data/Umeå.html")
+    fig_Umeå.show()
+    return
+
+
+@app.cell
+def _(px, study):
+    fig_Lycksele = px.scatter(study[study['city'] == 'Lycksele'], x='studyDateTime', y='doseAreaProductTotal', color='procedureCodeMeaning', hover_data=['accessionNumber'])
+    #fig_Skellefteå.write_html("C:/Projekt/GIT/rvbrtg/Data/output_data/Umeå.html")
+    fig_Lycksele.show()
+    return
+
+
+@app.cell
+def _(px, study):
     nefrobyten = study[study['procedureCode'] == '59100']
-    fig_nefrobyten = px.scatter(nefrobyten, x='studyDateTime', y='doseAreaProductTotal', color='mainOperatorName', hover_data=['accessionNumber', 'machine'])
+    fig_nefrobyten = px.scatter(nefrobyten, x='studyDateTime', y='doseAreaProductTotal', color='mainOperatorName', hover_data=['accessionNumber', 'machine', 'ST'])
     #fig_Skellefteå.write_html("C:/Projekt/GIT/rvbrtg/Data/output_data/Nefrobyten.html")
     fig_nefrobyten.show()
     return (nefrobyten,)
@@ -371,13 +448,20 @@ def _(px, study):
 
 @app.cell
 def _(nefrobyten, px):
-    nefrobyten_2025 = nefrobyten[nefrobyten['studyDateTime'] >= '2025-01-01']
-    fig_nefrobyten_gml = px.scatter(nefrobyten_2025, x='totalFluoroTime', y='fluoroDoseAreaProductTotal', color='mainOperatorName', hover_data=['accessionNumber', 'machine'])
+    nefrobyten_2025 = nefrobyten[nefrobyten['machine'] == 'S08_2025']
+    fig_nefrobyten_gml = px.scatter(nefrobyten_2025, x='totalFluoroTime', y='fluoroDoseAreaProductTotal', color='mainOperatorName', hover_data=['accessionNumber', 'machine', 'studyDateTime', 'ST'])
     #fig_Skellefteå.write_html("C:/Projekt/GIT/rvbrtg/Data/output_data/Nefrobyten.html")
-    fig_nefrobyten_gml.update_layout(height=700)
+    fig_nefrobyten_gml.update_layout(height=900)
     fig_nefrobyten_gml.show()
+    return
 
-    # TODO: Fixa detta för ST respektive Specialiter
+
+@app.cell
+def _(nefrobyten, px):
+    nefrobyten_ST_umea = nefrobyten[nefrobyten['machine'] == 'U110']
+    fig_nefrobyten_ST_umea = px.scatter(nefrobyten_ST_umea, x='totalFluoroTime', y='fluoroDoseAreaProductTotal', color='ST', hover_data=['accessionNumber', 'machine', 'mainOperatorName'])
+    fig_nefrobyten_ST_umea.update_layout(height=700)
+    fig_nefrobyten_ST_umea.show()
     return
 
 
@@ -398,10 +482,11 @@ def _(study):
 
 @app.cell
 def _(study):
-    procedure_dap_operator = study.groupby(
-        ['procedureCode', 'procedureCodeMeaning', 'machine', 'acquisitionPlane', 'operatorName']
+    procedure_dap_operator = study.groupby( #[study['ST'] == True]
+        ['procedureCode', 'procedureCodeMeaning', 'machine', 'mainOperatorName']
         ).agg({'doseAreaProductTotal': ['count', 'median'], 
-        'fluoroDoseAreaProductTotal': 'median', 
+        'fluoroDoseAreaProductTotal': 'median',
+        'acquisitionDoseAreaProductTotal': 'median',
         'totalFluoroTime': 'median', 
         'normalisedFluoroDap': 'median'}
         ).reset_index().round(3)
@@ -415,7 +500,7 @@ def _(study):
     removals_procCode = removals_procCode[removals_procCode['count'] > 10]
     filtered_procCode = study[study['procedureCodeMeaning'].isin(removals_procCode['procedureCodeMeaning'])]
     filtered_procedure_dap = filtered_procCode[filtered_procCode['machine'] == 'U110'].groupby(
-        ['procedureCode', 'procedureCodeMeaning', 'machine']
+        ['procedureCode', 'procedureCodeMeaning', 'machine', 'ST']
         ).agg({'doseAreaProductTotal': ['count', 'median'], 
         'acquisitionDoseAreaProductTotal': 'median', 
         'fluoroDoseAreaProductTotal': 'median', 
@@ -441,20 +526,20 @@ def _(go, make_subplots, math, study):
     removals_procCode_U110 = removals_procCode_U110[removals_procCode_U110['count'] > 10]
     filtered_procCode_U110 = study_U110[study_U110['procedureCodeMeaning'].isin(removals_procCode_U110['procedureCodeMeaning'])]
     unique_procedure_codes_U110 = filtered_procCode_U110['procedureCode'].unique()
-    num_procedures = len(unique_procedure_codes_U110)
-    grid_size = math.ceil(math.sqrt(num_procedures))
-    median_dap = filtered_procCode_U110.groupby('procedureCode')['doseAreaProductTotal'].median()
-    fig_procCode_U110 = make_subplots(rows=grid_size, cols=grid_size, specs=[[{'type': 'domain'} for _ in range(grid_size)] for _ in range(grid_size)], subplot_titles=[f'ProcedureCode {code}<br>Median DAP: {median_dap[code]:.2f}' if code in median_dap else f'ProcedureCode {code}' for code in unique_procedure_codes_U110])
-    for idx, code in enumerate(unique_procedure_codes_U110):
-        row = idx // grid_size + 1
-        col = idx % grid_size + 1
+    num_procedures_U110 = len(unique_procedure_codes_U110)
+    sub_grid_size = math.ceil(math.sqrt(num_procedures_U110))
+    median_dap_U110 = filtered_procCode_U110.groupby('procedureCode')['doseAreaProductTotal'].median()
+    fig_procCode_U110 = make_subplots(rows=sub_grid_size, cols=sub_grid_size, specs=[[{'type': 'domain'} for _ in range(sub_grid_size)] for _ in range(sub_grid_size)], subplot_titles=[f'ProcedureCode {code}<br>Median DAP: {median_dap_U110[code]:.2f}' if code in median_dap_U110 else f'ProcedureCode {code}' for code in unique_procedure_codes_U110])
+    for indx, code in enumerate(unique_procedure_codes_U110):
+        sub_row = indx // sub_grid_size + 1
+        sub_col = indx % sub_grid_size + 1
         procedure_data = filtered_procCode_U110[filtered_procCode_U110['procedureCode'] == code]
         acquisition_dap = procedure_data['acquisitionDoseAreaProductTotal'].median()
         fluoro_dap = procedure_data['fluoroDoseAreaProductTotal'].median()
         values = [acquisition_dap, fluoro_dap]
         labels = ['Acquisition DAP', 'Fluoro DAP']
-        fig_procCode_U110.add_trace(go.Pie(labels=labels, values=values, name=f'ProcedureCode {code}'), row=row, col=col)
-    fig_procCode_U110.update_layout(height=300 * grid_size, width=300 * grid_size, title_text='Median DAP Distribution for All ProcedureCodes', showlegend=True)
+        fig_procCode_U110.add_trace(go.Pie(labels=labels, values=values, name=f'ProcedureCode {code}'), row=sub_row, col=sub_col)
+    fig_procCode_U110.update_layout(height=300 * sub_grid_size, width=300 * sub_grid_size, title_text='Median DAP Distribution for All ProcedureCodes', showlegend=True)
     fig_procCode_U110.show()
     return
 
@@ -476,9 +561,10 @@ def _(px, study):
     removals_procCode_all = removals_procCode_all[removals_procCode_all['count'] > 20]
     removals = removals_procCode_all
     filtered_procCode_all = study[study['procedureCodeMeaning'].isin(removals['procedureCodeMeaning'])]
-    fig_procCode_all = px.box(filtered_procCode_all, x='procedureCodeMeaning', y='doseAreaProductTotal', color='machine', points='all')
+    fig_procCode_all = px.box(filtered_procCode_all[filtered_procCode_all['ST'] == True], x='procedureCodeMeaning', y='doseAreaProductTotal', color='mainOperatorName', points='all', hover_data=['accessionNumber', 'studyDateTime', 'machine', 'mainOperatorName', 'acquisitionDoseAreaProductTotal', 'fluoroDoseAreaProductTotal'])
     fig_procCode_all.update_layout(height=1000)
     fig_procCode_all.show()
+    fig_procCode_all.write_html("C:/Projekt/GIT/rvbrtg/Data/output_data/Skellefteå_ingrepp_2024-2026.html")
     return
 
 
