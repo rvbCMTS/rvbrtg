@@ -1,40 +1,52 @@
 import nbformat
 import os
+import copy
+from pathlib import Path
 
-def normalize_metadata(path, repo_root):
+
+def clean_notebook_outputs(path):
+    print(f"Checking: {path}")
     with open(path, "r", encoding="utf-8") as f:
-        nb = nbformat.read(f, as_version=4)
+        nb = nbformat.read(f, as_version=nbformat.NO_CONVERT)
 
     changed = False
-    langinfo = nb.metadata.get("language_info", {})
-    
-    if langinfo.get("version") != "3":
-        langinfo["version"] = "3"
-        changed = True
-    if langinfo.get("pygments_lexer") != "ipython3":
-        langinfo["pygments_lexer"] = "ipython3"
-        changed = True
-    nb.metadata["language_info"] = langinfo
 
-    rel_path = os.path.relpath(path, repo_root)
+    # Spara original metadata (djup kopia)
+    original_metadata = copy.deepcopy(nb.metadata)
+
+    # Rensa outputs från kodceller
+    for cell in nb.cells:
+        if cell.cell_type == "code":
+            if cell.get("outputs") or cell.get("execution_count") is not None:
+                cell["outputs"] = []
+                cell["execution_count"] = None
+                changed = True
+
+    # Återställ metadata om den har ändrats
+    if nb.metadata != original_metadata:
+        nb.metadata = original_metadata
+        changed = True
 
     if changed:
-        with open(path, "w", encoding="utf-8") as f:
-            nbformat.write(nb, f)
-        print(f"Normalized metadata in: {rel_path}")
+        with open(path, "w", encoding="utf-8") as fo:
+            nbformat.write(nb, fo)
+        print(f"Cleaned: {path}")
     else:
-        print(f"No metadata changes needed: {rel_path}")
+        print(f" :No changes: {path}")
+
 
 def find_all_notebooks(root_dir):
     notebooks = []
     for dirpath, _, filenames in os.walk(root_dir):
-        for f in filenames:
-            if f.endswith(".ipynb"):
-                notebooks.append(os.path.join(dirpath, f))
+        for file in filenames:
+            if file.endswith(".ipynb"):
+                notebooks.append(os.path.join(dirpath, file))
     return notebooks
 
+
 if __name__ == "__main__":
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+    repo_root = Path(__file__).parent.parent.parent
     notebooks = find_all_notebooks(repo_root)
+    print(f"Found {len(notebooks)} notebooks under {repo_root}")
     for path in notebooks:
-        normalize_metadata(path, repo_root)
+        clean_notebook_outputs(path)
