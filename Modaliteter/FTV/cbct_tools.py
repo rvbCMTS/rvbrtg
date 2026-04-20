@@ -256,7 +256,8 @@ def plot_statistic(
     reference_labels=None,
     reference_colors=None,
     reference_dash=None,
-    dark_mode=False
+    dark_mode=False,
+    remove_datetime=True,
 ):
     #
     # ----------- Dropdown parameters -----------
@@ -277,7 +278,10 @@ def plot_statistic(
 
     df = df.reset_index(drop=False)
     cols = df.columns.tolist()
-
+    
+    if remove_datetime:
+        cols.remove('DateTime')
+    
     hover_lines = [f"{col}: %{{customdata[{i}]}}" for i, col in enumerate(cols)]
     hovertemplate = "<br>".join(hover_lines) + "<extra></extra>"
 
@@ -455,8 +459,6 @@ def plot_statistic(
         pio.show(fig, renderer="browser")
     else:
         fig.show()
-
-
 
 def plot_summary_statistics(
     df,
@@ -688,6 +690,155 @@ def plot_summary_statistics(
         fig.show()
 
 
+def plot_unique_combinations(
+    df: pd.DataFrame, 
+    columns: list, 
+    title=None,
+    dark_mode=False,
+    export_to_browser=False
+):
+    # --- Kontrollera kolumner ---
+    missing = [c for c in columns if c not in df.columns]
+    if missing:
+        raise ValueError(f"Columns missing in DataFrame: {missing}")
+
+    # --- Auto-titel ---
+    if title is None:
+        title = "Unique combinations of " + ", ".join(columns)
+
+    # --- Åldersintervall för dropdown ---
+    age_ranges = [
+        ("All ages (0-100)", (0, 100)),
+        ("Children (0-17)", (0, 17)),
+        ("Teens (13-19)", (13, 19)),
+        ("Adults (18-100)", (18, 100)),
+        ("0-10", (0, 10)),
+        ("10-20", (10, 20)),
+        ("20-30", (20, 30)),
+        ("30-40", (30, 40)),
+        ("40-50", (40, 50)),
+        ("50-60", (50, 60)),
+        ("60-70", (60, 70)),
+        ("70-80", (70, 80)),
+        ("80-90", (80, 90)),
+        ("90-100", (90, 100)),
+    ]
+
+    # --- Tema ---
+    template = "plotly_dark" if dark_mode else "plotly_white"
+    font_color = "white" if dark_mode else "black"
+
+    fig = go.Figure()
+    trace_groups = []  # Indexgrupper för varje åldersintervall
+
+    # ============================================================
+    #    SKAPA TRACES FÖR VARJE ÅLDERSINTERVALL
+    # ============================================================
+
+    for label, (amin, amax) in age_ranges:
+        dff = df.copy()
+        dff["Patient age"] = pd.to_numeric(dff["Patient age"], errors="coerce")
+        dff = dff[(dff["Patient age"] >= amin) & (dff["Patient age"] <= amax)]
+
+        # Om inga data – skapa tomt trace för layout-konsistens
+        if dff.empty:
+            counts = pd.DataFrame({ "_combination": [], "count": [], "percent": [] })
+        else:
+            # skapa kombinationer
+            combo_col = "_combination"
+            dff[combo_col] = dff[columns].astype(str).agg(" | ".join, axis=1)
+
+            total_n = len(dff)
+            counts = (
+                dff[[combo_col] + columns]
+                .groupby(combo_col)
+                .agg(**{col: (col, "first") for col in columns},
+                     count=(combo_col, "count"))
+                .reset_index()
+            )
+
+            counts["percent"] = 100 * counts["count"] / total_n
+            counts = counts.sort_values("count", ascending=False).reset_index(drop=True)
+
+        hover_cols = ["_combination"] + columns + ["count", "percent"]
+        customdata = counts[hover_cols].values if len(counts) else np.empty((0, len(hover_cols)))
+
+        # skapa trace (osynligt initialt)
+        fig.add_trace(
+            go.Bar(
+                x=counts["_combination"] if len(counts) else [],
+                y=counts["count"] if len(counts) else [],
+                text=counts["count"] if len(counts) else [],
+                textposition="outside",
+                customdata=customdata,
+                hovertemplate="<br>".join([
+                    f"{col}: %{{customdata[{i}]}}" for i, col in enumerate(hover_cols)
+                ]) + "<extra></extra>",
+                marker=dict(color="#1f77b4"),
+                visible=False
+            )
+        )
+
+        trace_groups.append([len(fig.data) - 1])
+
+    # ============================================================
+    #   Gör första åldersintervallet synligt
+    # ============================================================
+    first_group = trace_groups[0]
+    for idx in first_group:
+        fig.data[idx].visible = True
+
+    # ============================================================
+    #   Dropdown för att byta åldersintervall
+    # ============================================================
+    buttons = []
+    n_total = len(fig.data)
+
+    for (label, _), group in zip(age_ranges, trace_groups):
+        vis = [False] * n_total
+        for t in group:
+            vis[t] = True
+
+        buttons.append(dict(
+            label=label,
+            method="update",
+            args=[
+                {"visible": vis},
+                {"title": f"<b>{title}</b> — {label}"}
+            ]
+        ))
+
+    fig.update_layout(
+        updatemenus=[
+            dict(
+                buttons=buttons,
+                direction="down",
+                x=1.05,
+                y=1.05
+            )
+        ]
+    )
+
+    # ============================================================
+    #   Layout
+    # ============================================================
+    fig.update_layout(
+        title=f"<b>{title}</b> — {age_ranges[0][0]}",
+        xaxis_title="Combination",
+        yaxis_title="Count",
+        xaxis=dict(tickangle=45),
+        #height=600,
+        bargap=0.2,
+        template=template,
+        font=dict(color=font_color),
+        hovermode="closest"
+    )
+
+    if export_to_browser:
+        import plotly.io as pio
+        pio.show(fig, renderer="browser")
+    else:
+        fig.show()
 
 
 
