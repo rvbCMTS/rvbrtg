@@ -315,7 +315,7 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
 
     if modality == MODALITY_DX:
         data = _categorize_dx_misc_exams(data)
-    elif modality == MODALITY_MG:d
+    elif modality == MODALITY_MG:
         data = _categorize_mg_misc_exams(data)
     elif modality == MODALITY_XA:
         data = _categorize_xa_misc_exams(data)
