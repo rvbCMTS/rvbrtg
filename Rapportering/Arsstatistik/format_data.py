@@ -76,24 +76,27 @@ def _format_ct_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     # TODO: Kolla om DT behöver justeras för specialla fall.
     data.loc[(data[OUTPUT_COL_EXAM] == ""), OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_CT
 
-    data_number = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
-        Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="count"),
+    data_number = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY])
+                  .agg(Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="count"))
+                  .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+                  .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
     )
-    data_number = data_number.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
-    output_number = data_number.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
 
     data = data.dropna(subset=[VALID_STUDY_COLUMNS.DlpTotal])
-    data_dose = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
+    data_dose = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .agg(
         dose_mean=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="mean"),
         dose_median=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="median"),
         dose_Q1=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc=lambda x: np.percentile(x, 25)),
         dose_Q3=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc=lambda x: np.percentile(x, 75)),
-    )
-    data_dose = data_dose.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
-    output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE,
+        )
+        .round(2)
+        .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE,
                                   values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
+    )
 
-    return output_number, output_dose
+    return data_number, data_dose
 
 
 def _format_dx_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -103,23 +106,28 @@ def _format_dx_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_DX)
 
-    data_number = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
-        Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"),
+    data_number = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY])
+        .agg(
+            Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"),
+        )
+        .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+        .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
     )
-    data_number = data_number.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
-    output_number = data_number.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
 
     data = data.dropna(subset=[VALID_STUDY_COLUMNS.DoseAreaProductTotal])
-    data_dose = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
+    data_dose = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .agg(
         dose_mean=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="mean"),
         dose_median=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="median"),
         dose_Q1=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc=lambda x: np.percentile(x, 25)),
         dose_Q3=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc=lambda x: np.percentile(x, 75)),
+        )
+        .round(2)
+        .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
     )
-    data_dose = data_dose.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
-    output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
 
-    return output_number, output_dose
+    return data_number, data_dose
 
 
 def _format_mg_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -129,28 +137,31 @@ def _format_mg_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_MG)
 
-    data_number = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
-        Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc="count"),
+    data_number = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY])
+                  .agg(Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc="count"))
+                  .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+                  .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])                   
     )
-    data_number = data_number.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
-    output_number = data_number.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
 
     data_dose = data.copy()
     data_dose["mgdose"] = (data_dose[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseLeftBreast] + data_dose[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseRightBreast]) / 2.0
-    data_dose["mgdose"] = data_dose["mgdose"].round(2)  
     data_dose = data_dose.dropna(subset=["mgdose"])
-    data_dose = data_dose.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
+    data_dose = (data_dose.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+    .agg(
         dose_mean=pd.NamedAgg(column="mgdose", aggfunc="mean"),
         dose_median=pd.NamedAgg(column="mgdose", aggfunc="median"),
         dose_Q1=pd.NamedAgg(column="mgdose", aggfunc=lambda x: np.percentile(x, 25)),
         dose_Q3=pd.NamedAgg(column="mgdose", aggfunc=lambda x: np.percentile(x, 75)),
     )
-    data_dose = data_dose.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
-    output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
+    .round(2)
+    .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+    .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
+    )
+
     # TODO: Se över dosberäkningen så att den stämmer överens med SSMs definitioner, förhoppningsvis på ett rimligare
     #  sätt än överensstämmelsen som faktiskt finns redan nu!
 
-    return output_number, output_dose
+    return data_number, data_dose
 
 
 def _format_xa_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -158,23 +169,26 @@ def _format_xa_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_XA)
 
-    data_number = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
-        Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"),
+    data_number = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY])
+                   .agg(Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"))
+                   .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+                   .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
     )
-    data_number = data_number.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
-    output_number = data_number.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
 
     data = data.dropna(subset=[VALID_STUDY_COLUMNS.DoseAreaProductTotal])
-    data_dose = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]).agg(
+    data_dose = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .agg(
         dose_mean=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="mean"),
         dose_median=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="median"),
         dose_Q1=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc=lambda x: np.percentile(x, 25)),
         dose_Q3=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc=lambda x: np.percentile(x, 75)),
+        )
+        .round(2)
+        .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
     )
-    data_dose = data_dose.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
-    output_dose = data_dose.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
 
-    return output_number, output_dose
+    return data_number, data_dose
 
 
 def _categorize_by_age_and_sex(data: pd.DataFrame, modality: Optional[str] = None) -> pd.DataFrame:
@@ -301,7 +315,7 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
 
     if modality == MODALITY_DX:
         data = _categorize_dx_misc_exams(data)
-    elif modality == MODALITY_MG:
+    elif modality == MODALITY_MG:d
         data = _categorize_mg_misc_exams(data)
     elif modality == MODALITY_XA:
         data = _categorize_xa_misc_exams(data)
