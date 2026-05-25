@@ -2,6 +2,72 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from utils.dit_utils import _calculate_image_lims_exclude_cornerbox
+from pathlib import Path
+import matplotlib.pyplot as plt
+
+
+def export_flatfield_image(
+    file,
+    file_name,
+    dcm_res_path,
+    cmap="binary",
+    figsize=(20, 15),
+    interpolation=None,
+    use_title=False,
+    lims_fn=_calculate_image_lims_exclude_cornerbox,
+    add_colorbar=True,
+    colorbar_width="1%",
+    colorbar_bbox_to_anchor=(0.05, 0, 1, 1),
+    out_subdir="flat_field_plots",
+    out_ext=".png",
+    dpi=500,
+    bbox_inches="tight",
+    pad_inches=0.05,
+    ensure_dir=True,
+):
+    mat = file.pixel_array
+    lims = lims_fn(mat)
+
+    fig, ax = plt.subplots(figsize=figsize)
+    im = ax.imshow(
+        mat,
+        cmap=cmap,
+        vmin=lims[0],
+        vmax=lims[1],
+        interpolation=interpolation,
+    )
+
+    label = getattr(file, "DetectorID", None)
+    if label is not None:
+        if use_title:
+            ax.set_title(label)
+        else:
+            ax.set_xlabel(label)
+
+    if add_colorbar:
+        _create_colorbar(
+            fig,
+            im,
+            ax,
+            width=colorbar_width,
+            bbox_to_anchor=colorbar_bbox_to_anchor,
+        )
+
+    path_export = Path(dcm_res_path).parent / out_subdir
+    if ensure_dir:
+        path_export.mkdir(parents=True, exist_ok=True)
+
+    out_path = path_export / f"{Path(file_name).stem}{out_ext}"
+    fig.savefig(
+        out_path,
+        dpi=dpi,
+        bbox_inches=bbox_inches,
+        pad_inches=pad_inches,
+    )
+    plt.close(fig)
+
+    return out_path
 
 
 def _create_colorbar(
@@ -115,7 +181,7 @@ def _create_subplot(ax, mat, lims, cmap, xlabel, ylabel, title):
 
 
 def _set_ax_shape(ax, shape, white=True):
-    return ax.imshow(np.ones(shape), cmap=plt.cm.gray if white else plt.cm.binary, vmin=0, vmax=1)
+    return ax.imshow(np.ones(shape), cmap="gray" if white else "binary", vmin=0, vmax=1)
 
 
 def _plotdpi(dpi=124):

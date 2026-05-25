@@ -12,3 +12,4 @@ rich
 hvplot
 bokeh
 openpyxl
+tqdm
