@@ -6,6 +6,7 @@ import pandas as pd
 import pydicom
 from check_axial_alignment import check_axial_alignment
 from parse_vendor_specific_cbct_info import get_serie_ssm_data_from_gendex_dicom_files
+from tqdm import tqdm
 
 
 def select_axial_series(series, alignment_limit=0.9):
@@ -13,9 +14,7 @@ def select_axial_series(series, alignment_limit=0.9):
     alignments = []
     nr_images = []
     for serie in data[selected_study].Series:
-        axial_alignment = check_axial_alignment(
-            serie.CompleteMetadata[-1], mode="calc_alignment"
-        )
+        axial_alignment = check_axial_alignment(serie.CompleteMetadata[-1], mode="calc_alignment")
         alignments.append(np.round(axial_alignment, 2))
         nr_images.append(len(serie.CompleteMetadata))
 
@@ -68,7 +67,7 @@ def find_scout_strip_indices(serie):
     idx_keeps = []
 
     for fp in serie.FilePaths:
-        tmp = pydicom.read_file(fp)
+        tmp = pydicom.dcmread(fp)
         if "SCOUT" in tmp.ImageType:
             idx_keeps.append(False)
 
@@ -78,14 +77,14 @@ def find_scout_strip_indices(serie):
     return np.asarray(idx_keeps)
 
 
-# folder
-folder = Path(r"F:\Max\U922_mod")
+# Enter pathlib path to dcm exports
+folder = Path()
+
 procedure_dicts = []
 
 for pat in folder.iterdir():
-    # print(pat.name)
     print(pat.name.split(" ")[0])
-    
+
     data = dit.import_dicom_from_folder(folder=pat)
     studies = [study for study in data.keys()]
 
@@ -96,16 +95,11 @@ for pat in folder.iterdir():
 
     # remove all non CT series
     data[selected_study].Series = [
-        item
-        for item in data[selected_study].Series
-        if isinstance(item, dit.dicom_handlers.ct.CtSeries)
+        item for item in data[selected_study].Series if isinstance(item, dit.dicom_handlers.ct.CtSeries)
     ]
-
     # remove Sectra Reconstructions
     data[selected_study].Series = [
-        item
-        for item in data[selected_study].Series
-        if item.SeriesDescription != "Sectra Reconstruction"
+        item for item in data[selected_study].Series if item.SeriesDescription != "Sectra Reconstruction"
     ]
 
     # strip scouts from CT series
@@ -119,8 +113,7 @@ for pat in folder.iterdir():
 
     # get series info (for SSM stats for all axial stacks)
     axial_series_info = [
-        get_serie_ssm_data_from_gendex_dicom_files(axial_series[i], alignments[i])
-        for i in range(len(axial_series))
+        get_serie_ssm_data_from_gendex_dicom_files(axial_series[i], alignments[i]) for i in range(len(axial_series))
     ]
 
     # select only one
