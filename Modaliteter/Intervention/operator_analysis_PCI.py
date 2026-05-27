@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.18.4"
+__generated_with = "0.23.6"
 app = marimo.App(width="full")
 
 
@@ -93,7 +93,7 @@ def _(REMboxDataQuery, pd, rembox, valid_series_columns, valid_study_columns):
 
         rembox.filter_options.patient_age_interval_include_nulls = True
 
-        rembox.filter_options.study_time_interval_start_date = "2023-01-01T00:00:00Z"
+        rembox.filter_options.study_time_interval_start_date = "2025-01-01T00:00:00Z"
         rembox.filter_options.study_time_interval_end_date = "2025-12-10T00:00:00Z"
 
 
@@ -175,6 +175,7 @@ def _(REMboxDataQuery, pd, rembox, valid_series_columns, valid_study_columns):
         )
 
         return rembox.run_query()
+
     return (get_data_from_fluoro,)
 
 
@@ -554,6 +555,7 @@ def _():
 @app.cell
 def _():
     import marimo as mo
+
     return (mo,)
 
 

@@ -45,7 +45,7 @@ def _create_report_main(template_path: Path, data: pd.DataFrame, modality:str, m
 
     tmp_data = data[(data[OUTPUT_COL_EXAM] == exam_name) & (data[VALID_STUDY_COLUMNS.Machine] == machine)].reset_index()
     if modality != MODALITY_MG:
-        tmp_data = tmp_data[data[OUTPUT_COL_WEIGTH_CATEGORY] == weight].reset_index()
+        tmp_data = tmp_data[tmp_data[OUTPUT_COL_WEIGTH_CATEGORY] == weight].reset_index()
 
     if modality not in [
         MODALITY_DX, MODALITY_MG, MODALITY_XA, MODALITY_CT

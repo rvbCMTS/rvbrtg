@@ -2,7 +2,7 @@
 name = "rvbrtg"
 version = "2026.0.0"
 dependencies =  [
-  "marimo>=0.20.2",
+  "marimo>=0.23.3",
   "pandas>=3.0.1",
 ]
 
