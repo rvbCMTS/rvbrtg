@@ -37,9 +37,9 @@ REPORT_OUTPUT_DIR: Path = Path(__file__).parent / "Reports"
 
 MODALITY_LIST = [
 #    MODALITY_CT,
-#    MODALITY_DX
-    MODALITY_MG,
-#    MODALITY_XA
+#    MODALITY_DX,
+#    MODALITY_MG,
+    MODALITY_XA
 ]
 
 COLUMN_SELECTION_GENERAL = [
@@ -167,7 +167,7 @@ EXAM_GROUPING_RULES_BY_MODALITY = {
         EXAM_GROUPING_TYPE_PROCEDURE_CODE: {
             "Koronarangiografi": ["37300"],
             "Nefrostomiinläggning": ["59000", "59005"],
-            "ERCP": ["E4905", "E4903"],
+            "ERCP": ["E4900", "E4905", "E4903"],
         }
     },
     MODALITY_MG: {
