@@ -1,18 +1,27 @@
-import logging
-import time
 from datetime import datetime
+import logging
 from math import floor
+from pathlib import Path
+import os
+import sys
+import time
 
 from rich.console import Console
-from rich.progress import track
+
+sys.path.append(str(Path(__file__).parent.parent.parent.absolute()))
 
 from Rapportering.Arsstatistik.fetch_data import get_modality_data_for_year
-from Rapportering.Arsstatistik.constants import MODALITY_LIST
+from Rapportering.Arsstatistik.constants import CLIENT_ID_ENV_VAR, MODALITY_LIST
 from Rapportering.Arsstatistik.format_data import format_data
 from Rapportering.Arsstatistik.save_formatted_data import save_formatted_data
 
 rprint = Console(soft_wrap=True).print
 
+if not os.environ.get(CLIENT_ID_ENV_VAR):
+    try:
+        import auth # noqa: F401
+    except:
+        rprint("[red]ERROR: Ingen inloggning hittad.[/red]")
 
 class CustomRichHandler(logging.Handler):
     LEVEL_MAPPING = {
@@ -67,11 +76,11 @@ def main(year: int = 0):
         logger.info(f"Hämtade {len(study_data)} study rader")
 
         logger.info(f"Formaterar data för att stoppa in i rapporterna")
-        formatted_data = format_data(data=study_data, modality=modality)
+        formatted_data_count, formatted_data_dose = format_data(data=study_data, modality=modality)
         logger.info(f"Data för {modality} formaterad")
 
         logger.info(f"Sparar formaterad data för {modality}")
-        save_formatted_data(data=formatted_data, modality=modality)
+        save_formatted_data(data_count=formatted_data_count, data_dose=formatted_data_dose, modality=modality)
         logger.info(f"Rapporter skapade för {modality}")
 
     total_time = (time.time_ns() - start_time) / 1000000000

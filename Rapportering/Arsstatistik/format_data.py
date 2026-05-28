@@ -6,19 +6,53 @@ import pandas as pd
 from Rapportering.Arsstatistik.constants import (
     AGE_SEX_CATEGORY_JUNIOR_MALE,
     AGE_SEX_CATEGORY_JUNIOR_FEMALE,
-    AGE_SEX_CATEGORY_ADULT_MALE,
-    AGE_SEX_CATEGORY_ADULT_FEMALE,
+    AGE_SEX_CATEGORY_ADULT_MALE_16_40,
+    AGE_SEX_CATEGORY_ADULT_FEMALE_16_40,
+    AGE_SEX_CATEGORY_ADULT_MALE_41_65,
+    AGE_SEX_CATEGORY_ADULT_FEMALE_41_65,
+    AGE_SEX_CATEGORY_ADULT_MALE_66plus,
+    AGE_SEX_CATEGORY_ADULT_FEMALE_66plus,
+    AGE_SEX_CATEGORY_DOSE_BOY,
+    AGE_SEX_CATEGORY_DOSE_GIRL,
+    AGE_SEX_CATEGORY_DOSE_MALE,
+    AGE_SEX_CATEGORY_DOSE_FEMALE,
     MODALITY_CT,
     MODALITY_DX,
     MODALITY_MG,
     MODALITY_XA,
     OUTPUT_COL_AGE_SEX_CATEGORY,
-    VALID_STUDY_COLUMNS, OUTPUT_COL_EXAM, EXAM_GROUPING_RULES_BY_MODALITY, EXAM_GROUPING_TYPE_PROTOCOL_CODE,
-    EXAM_GROUPING_TYPE_STUDY_DESCRIPTION, EXAM_GROUPING_TYPE_PROCEDURE_CODE,
+    OUTPUT_COL_AGE_SEX_CATEGORY_DOSE,
+    VALID_STUDY_COLUMNS,
+    OUTPUT_COL_EXAM,
+    EXAM_GROUPING_RULES_BY_MODALITY,
+    EXAM_GROUPING_TYPE_PROTOCOL_CODE,
+    EXAM_GROUPING_TYPE_STUDY_DESCRIPTION,
+    EXAM_GROUPING_TYPE_PROCEDURE_CODE,
+    MODALITY_DX_MACHINE_GENERAL,
+    MODALITY_DX_MACHINE_MOBILE,
+    MODALITY_XA_MACHINE_DIAGNOSTIC,
+    MODALITY_XA_MACHINE_TREATMENT,
+    MISC_CATEGORY_GROUP_CT,
+    MISC_CATEGORY_GROUP_STATIONARY_DX,
+    MISC_CATEGORY_GROUP_MOBILE_XA,
+    MISC_CATEGORY_GROUP_MOBILE_DX_REF2,
+    MISC_CATEGORY_GROUP_MOBILE_DX_REF,
+    MISC_CATEGORY_GROUP_MOBILE_DX_VAL2,
+    MISC_CATEGORY_GROUP_MOBILE_DX_VAL,
+    MISC_CATEGORY_GROUP_MOBILE_DX_REF3,
+    MISC_CATEGORY_GROUP_MOBILE_DX_VAL3,
+    MISC_CATEGORY_GROUP_MG,
+    MISC_CATEGORY_GROUP_STATIONARY_XA_DIAGNOSTIC,
+    MISC_CATEGORY_GROUP_STATIONARY_XA_TREATMENT,
+    MODALITY_XA_MACHINE_MOBILE,
+    OUTPUT_KEY_MEAN_DOSE,
+    OUTPUT_KEY_MEDIAN_DOSE,
+    OUTPUT_KEY_Q1_DOSE,
+    OUTPUT_KEY_Q3_DOSE,
 )
 
 
-def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
+def format_data(data: pd.DataFrame, modality: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     if modality == MODALITY_CT:
         return _format_ct_data(data)
 
@@ -34,75 +68,127 @@ def format_data(data: pd.DataFrame, modality: str) -> pd.DataFrame:
     raise NotImplementedError(f"Modality {modality} not implemented")
 
 
-def _format_ct_data(data: pd.DataFrame) -> pd.DataFrame:
+def _format_ct_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     data = _categorize_by_age_and_sex(data)
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_CT)
 
-    data = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
-        Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="count"),
-        DLP=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="mean")
+    # TODO: Kolla om DT behöver justeras för specialla fall.
+    data.loc[(data[OUTPUT_COL_EXAM] == ""), OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_CT
+
+    data_number = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY])
+                  .agg(Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="count"))
+                  .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+                  .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
     )
-    data = data.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
 
-    output = data.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal", "DLP"])
+    data = data.dropna(subset=[VALID_STUDY_COLUMNS.DlpTotal])
+    data_dose = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .agg(
+        dose_mean=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="mean"),
+        dose_median=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc="median"),
+        dose_Q1=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc=lambda x: np.percentile(x, 25)),
+        dose_Q3=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DlpTotal, aggfunc=lambda x: np.percentile(x, 75)),
+        )
+        .round(2)
+        .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE,
+                                  values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
+    )
 
-    return output
+    return data_number, data_dose
 
 
-def _format_dx_data(data: pd.DataFrame) -> pd.DataFrame:
+def _format_dx_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     data.loc[data[VALID_STUDY_COLUMNS.Hospital] == "Södra Lappland", [VALID_STUDY_COLUMNS.Hospital]] = "Lycksele"
 
     data = _categorize_by_age_and_sex(data)
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_DX)
 
-    data = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
-        Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"),
-        DAP=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="mean")
+    data_number = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY])
+        .agg(
+            Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"),
+        )
+        .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+        .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
     )
 
-    data = data.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+    data = data.dropna(subset=[VALID_STUDY_COLUMNS.DoseAreaProductTotal])
+    data_dose = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .agg(
+        dose_mean=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="mean"),
+        dose_median=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="median"),
+        dose_Q1=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc=lambda x: np.percentile(x, 25)),
+        dose_Q3=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc=lambda x: np.percentile(x, 75)),
+        )
+        .round(2)
+        .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
+    )
 
-    output = data.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal", "DAP"])
-
-    return output
+    return data_number, data_dose
 
 
-def _format_mg_data(data: pd.DataFrame) -> pd.DataFrame:
+def _format_mg_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     data = data[data[VALID_STUDY_COLUMNS.PatientsSex] == "F"]
     data = data.reset_index(drop=True)
-    data.loc[:, OUTPUT_COL_AGE_SEX_CATEGORY] = AGE_SEX_CATEGORY_ADULT_FEMALE
+    data = _categorize_by_age_and_sex(data)
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_MG)
 
-    data = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
-        Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc="count"),
-        AGD=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc="mean")
+    data_number = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY])
+                  .agg(Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseBothBreasts, aggfunc="count"))
+                  .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+                  .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])                   
     )
 
-    data = data.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+    data_dose = data.copy()
+    data_dose["mgdose"] = (data_dose[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseLeftBreast] + data_dose[VALID_STUDY_COLUMNS.AccumulatedAverageGlandularDoseRightBreast]) / 2.0
+    data_dose = data_dose.dropna(subset=["mgdose"])
+    data_dose = (data_dose.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+    .agg(
+        dose_mean=pd.NamedAgg(column="mgdose", aggfunc="mean"),
+        dose_median=pd.NamedAgg(column="mgdose", aggfunc="median"),
+        dose_Q1=pd.NamedAgg(column="mgdose", aggfunc=lambda x: np.percentile(x, 25)),
+        dose_Q3=pd.NamedAgg(column="mgdose", aggfunc=lambda x: np.percentile(x, 75)),
+    )
+    .round(2)
+    .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+    .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
+    )
 
-    output = data.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal", "AGD"])
+    # TODO: Se över dosberäkningen så att den stämmer överens med SSMs definitioner, förhoppningsvis på ett rimligare
+    #  sätt än överensstämmelsen som faktiskt finns redan nu!
 
-    return output
+    return data_number, data_dose
 
 
-def _format_xa_data(data: pd.DataFrame) -> pd.DataFrame:
+def _format_xa_data(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     data = _categorize_by_age_and_sex(data, modality=MODALITY_XA)
 
     data = _categorize_exams_according_to_ssm(data=data, modality=MODALITY_XA)
 
-    data = data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY]).agg(
-        Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"),
-        DAP=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="mean")
+    data_number = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY])
+                   .agg(Antal=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="count"))
+                   .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+                   .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal"])
     )
 
-    data = data.reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY])
+    data = data.dropna(subset=[VALID_STUDY_COLUMNS.DoseAreaProductTotal])
+    data_dose = (data.groupby(by=[VALID_STUDY_COLUMNS.Hospital, OUTPUT_COL_EXAM, OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .agg(
+        dose_mean=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="mean"),
+        dose_median=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc="median"),
+        dose_Q1=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc=lambda x: np.percentile(x, 25)),
+        dose_Q3=pd.NamedAgg(column=VALID_STUDY_COLUMNS.DoseAreaProductTotal, aggfunc=lambda x: np.percentile(x, 75)),
+        )
+        .round(2)
+        .reset_index(level=[OUTPUT_COL_AGE_SEX_CATEGORY_DOSE])
+        .pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY_DOSE, values=[OUTPUT_KEY_MEAN_DOSE, OUTPUT_KEY_MEDIAN_DOSE, OUTPUT_KEY_Q1_DOSE, OUTPUT_KEY_Q3_DOSE])
+    )
 
-    output = data.pivot(columns=OUTPUT_COL_AGE_SEX_CATEGORY, values=["Antal", "DAP"])
-
-    return output
+    return data_number, data_dose
 
 
 def _categorize_by_age_and_sex(data: pd.DataFrame, modality: Optional[str] = None) -> pd.DataFrame:
@@ -120,6 +206,11 @@ def _categorize_by_age_and_sex(data: pd.DataFrame, modality: Optional[str] = Non
     data[OUTPUT_COL_AGE_SEX_CATEGORY] = [None] * len(data)
 
     data.loc[
+        (~data[VALID_STUDY_COLUMNS.PatientAge].isna()) & (data[VALID_STUDY_COLUMNS.PatientAgeUnit] != "Y"),
+        [VALID_STUDY_COLUMNS.PatientAge]
+    ] = 0
+
+    data.loc[
         (data[VALID_STUDY_COLUMNS.PatientAge] < 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
         [OUTPUT_COL_AGE_SEX_CATEGORY]
     ] = AGE_SEX_CATEGORY_JUNIOR_MALE
@@ -130,25 +221,58 @@ def _categorize_by_age_and_sex(data: pd.DataFrame, modality: Optional[str] = Non
     ] = AGE_SEX_CATEGORY_JUNIOR_FEMALE
 
     data.loc[
-        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientAge] < 41) &
+        (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
         [OUTPUT_COL_AGE_SEX_CATEGORY]
-    ] = AGE_SEX_CATEGORY_ADULT_MALE
+    ] = AGE_SEX_CATEGORY_ADULT_MALE_16_40
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientAge] < 41) &
+        (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_FEMALE_16_40
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 41) & (data[VALID_STUDY_COLUMNS.PatientAge] < 66) &
+        (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_MALE_41_65
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 41) & (data[VALID_STUDY_COLUMNS.PatientAge] < 66) &
+        (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_FEMALE_41_65
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 66) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_MALE_66plus
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 66) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY]
+    ] = AGE_SEX_CATEGORY_ADULT_FEMALE_66plus
 
     data.loc[
         (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
-        [OUTPUT_COL_AGE_SEX_CATEGORY]
-    ] = AGE_SEX_CATEGORY_ADULT_FEMALE
+        [OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]
+    ] = AGE_SEX_CATEGORY_DOSE_FEMALE
 
-    if modality is not None and modality == MODALITY_XA:
-        data.loc[
-            data[VALID_STUDY_COLUMNS.PatientsSex] == "M",
-            [OUTPUT_COL_AGE_SEX_CATEGORY]
-        ] = AGE_SEX_CATEGORY_ADULT_MALE
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] >= 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]
+    ] = AGE_SEX_CATEGORY_DOSE_MALE
 
-        data.loc[
-            data[VALID_STUDY_COLUMNS.PatientsSex] == "F",
-            [OUTPUT_COL_AGE_SEX_CATEGORY]
-        ] = AGE_SEX_CATEGORY_ADULT_FEMALE
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] < 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "F"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]
+    ] = AGE_SEX_CATEGORY_DOSE_GIRL
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.PatientAge] < 16) & (data[VALID_STUDY_COLUMNS.PatientsSex] == "M"),
+        [OUTPUT_COL_AGE_SEX_CATEGORY_DOSE]
+    ] = AGE_SEX_CATEGORY_DOSE_BOY
 
     return data
 
@@ -189,4 +313,71 @@ def _categorize_exams_according_to_ssm(data: pd.DataFrame, modality: str) -> pd.
                 continue
             data.loc[data[grouping_column].isin(exam_group_values), [OUTPUT_COL_EXAM]] = exam_name
 
+    if modality == MODALITY_DX:
+        data = _categorize_dx_misc_exams(data)
+    elif modality == MODALITY_MG:
+        data = _categorize_mg_misc_exams(data)
+    elif modality == MODALITY_XA:
+        data = _categorize_xa_misc_exams(data)
+
     return data.dropna(subset=[OUTPUT_COL_EXAM])
+
+
+def _categorize_ct_misc_exams(data: pd.DataFrame) -> pd.DataFrame:
+    # TODO: Add misc categorization code here from CT when merged with changes made
+    return data
+
+
+def _categorize_dx_misc_exams(data: pd.DataFrame) -> pd.DataFrame:
+    data.loc[
+        (data[OUTPUT_COL_EXAM].isnull()) & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_GENERAL)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_DX
+
+    data.loc[
+        (data[OUTPUT_COL_EXAM].isnull()) & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_MOBILE)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_XA
+
+    data.loc[
+        (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF) &
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL
+
+    data.loc[
+        (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF2) &
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL2
+
+    data.loc[
+        (data[OUTPUT_COL_EXAM] == MISC_CATEGORY_GROUP_MOBILE_DX_REF3) &
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL3
+
+    data = data.drop_duplicates(subset=[VALID_STUDY_COLUMNS.AccessionNumber, VALID_STUDY_COLUMNS.StudyInstanceUID])
+
+    data.loc[
+        (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_DX_MACHINE_MOBILE)) &
+        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL) &
+        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL2) &
+        (data[OUTPUT_COL_EXAM] != MISC_CATEGORY_GROUP_MOBILE_DX_VAL3),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MOBILE_DX_VAL3
+
+    return data
+
+
+def _categorize_mg_misc_exams(data: pd.DataFrame) -> pd.DataFrame:
+    data.loc[
+        (data[OUTPUT_COL_EXAM].isnull()),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_MG
+    return data
+
+
+def _categorize_xa_misc_exams(data: pd.DataFrame) -> pd.DataFrame:
+    data.loc[
+        (data[OUTPUT_COL_EXAM].isnull()) & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_DIAGNOSTIC)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_XA_DIAGNOSTIC
+
+    data.loc[
+        (data[OUTPUT_COL_EXAM].isnull()) & (data[VALID_STUDY_COLUMNS.Machine].isin(MODALITY_XA_MACHINE_TREATMENT)),
+        OUTPUT_COL_EXAM] = MISC_CATEGORY_GROUP_STATIONARY_XA_TREATMENT
+
+    return data
